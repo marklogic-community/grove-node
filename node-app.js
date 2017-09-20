@@ -4,14 +4,17 @@ var fs = require('fs')
 var express = require('express')
 var helmet = require('helmet')
 var expressSession = require('express-session')
+
 var app = express()
 var logger = require('morgan')
+app.use(logger('dev'))
+
 var four0four = require('./utils/404')()
-var options = require('./utils/options')()
 var http = require('http')
 var https = require('https')
 var passport = require('passport')
 var authHelper = require('./utils/auth-helper')
+var options = require('./utils/options')()
 var port = options.appPort
 var environment = options.env
 
@@ -41,8 +44,6 @@ app.use(expressSession({
 
 app.use(passport.initialize())
 app.use(passport.session())
-
-app.use(logger('dev'))
 
 app.use('/v1', require('./proxy'))
 app.use('/api', require('./routes'))
@@ -106,3 +107,5 @@ server.listen(port, function () {
 })
 
 server.timeout = 0
+
+module.exports = server
