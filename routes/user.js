@@ -17,7 +17,7 @@ if (options.mlCertificate) {
   httpClient = http
 }
 
-router.get('/user/status', function (req, res) {
+router.get('/status', function (req, res) {
   var headers = req.headers
   noCache(res)
   if (!req.isAuthenticated()) {
@@ -105,7 +105,7 @@ router.get('/user/status', function (req, res) {
   }
 })
 
-router.post('/user/login', function (req, res, next) {
+router.post('/login', function (req, res, next) {
   // Attempt to read the user's profile, then check the response code.
   // 404 - valid credentials, but no profile yet
   // 401 - bad credentials
@@ -122,7 +122,7 @@ router.post('/user/login', function (req, res, next) {
   }
 })
 
-router.get('/user/logout', function (req, res) {
+router.get('/logout', function (req, res) {
   noCache(res)
   req.logout()
   authHelper.clearAuthenticator(req.session)
