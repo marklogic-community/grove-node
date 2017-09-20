@@ -1,6 +1,6 @@
 {
   "name": "ml-treehouse-node",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "dependencies": {
     "body-parser": "^1.14.0",
     "express": "^4.4.1",

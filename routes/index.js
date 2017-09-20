@@ -10,6 +10,7 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json())
 
 router.use('/user', require('./user'))
+router.use('/search', require('./search'))
 
 var four0four = require('../utils/404')()
 router.get('/*', four0four.notFoundMiddleware)
