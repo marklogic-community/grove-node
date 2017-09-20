@@ -1,13 +1,10 @@
-/* jshint node:true */
+'use strict'
 
-'use strict';
+module.exports = function () {
+  var environment = process.env.NODE_ENV || 'local'
+  environment = environment === 'build' ? 'prod' : environment
 
-module.exports = function() {
-
-  var environment = process.env.NODE_ENV || 'local';
-  environment = environment === 'build' ? 'prod' : environment;
-
-  var envJson = getEnvOptions(environment);
+  var envJson = getEnvOptions(environment)
 
   var options = {
     env: environment,
@@ -25,35 +22,34 @@ module.exports = function() {
     guestAccess: bool(process.env.GUEST_ACCESS || envJson['guest-access'] || false),
     disallowUpdates: bool(process.env.DISALLOW_UPDATES || envJson['disallow-updates'] || false),
     appUsersOnly: bool(process.env.APP_USERS_ONLY || envJson['appusers-only'] || false)
-  };
+  }
 
   if (options.httpsStrict) {
-    console.info('Self signed certificates not allowed.');
+    console.info('Self signed certificates not allowed.')
   } else {
-    console.warn('Allowing self signed certificates. Not advisable on production.');
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    console.warn('Allowing self signed certificates. Not advisable on production.')
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   }
 
-  return options;
+  return options
 
-  function getEnvOptions(env) {
-    var envJson;
-    var envFile = '../../' + env + '.json';
-    console.log('envFile:', envFile);
+  function getEnvOptions (env) {
+    var envJson
+    var envFile = '../../' + env + '.json'
+    console.log('envFile:', envFile)
 
     try {
-      envJson = require(envFile);
+      envJson = require(envFile)
     } catch (e) {
-      envJson = {};
+      envJson = {}
       console.log('Couldn\'t find ' + envFile + '; you can create this file to override properties - ' +
-        '`gulp init-local` creates local.json which can be modified for other environments as well');
+        '`gulp init-local` creates local.json which can be modified for other environments as well')
     }
 
-    return envJson;
+    return envJson
   }
 
-  function bool(x) {
-    return (x === 'true' || x === true);
+  function bool (x) {
+    return (x === 'true' || x === true)
   }
-
-};
+}
