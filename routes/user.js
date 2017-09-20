@@ -1,11 +1,8 @@
 'use strict'
 
 var router = require('express').Router()
-
-var authHelper = require('./utils/auth-helper')
-var bodyParser = require('body-parser')
-var four0four = require('./utils/404')()
-var options = require('./utils/options')()
+var options = require('../utils/options')()
+var authHelper = require('../utils/auth-helper')
 var http = require('http')
 var https = require('https')
 var fs = require('fs')
@@ -19,12 +16,6 @@ if (options.mlCertificate) {
 } else {
   httpClient = http
 }
-
-// [GJo] (#31) Moved bodyParsing inside routing, otherwise it might try to parse uploaded binaries as json..
-router.use(bodyParser.urlencoded({
-  extended: true
-}))
-router.use(bodyParser.json())
 
 router.get('/user/status', function (req, res) {
   var headers = req.headers
@@ -137,8 +128,6 @@ router.get('/user/logout', function (req, res) {
   authHelper.clearAuthenticator(req.session)
   res.send()
 })
-
-router.get('/*', four0four.notFoundMiddleware)
 
 function noCache (response) {
   response.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
