@@ -8,11 +8,15 @@ const expect = chai.expect
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 
-const server = require('../node-app')
-
 describe('/', () => {
-  // beforeEach((done) => {
-  // })
+  let server
+  beforeEach(() => {
+    delete require.cache[require.resolve('../node-app')] // delete from cache
+    server = require('../node-app')
+  })
+  afterEach(done => {
+    server.close(done)
+  })
 
   it('returns a 404', (done) => {
     chai.request(server)

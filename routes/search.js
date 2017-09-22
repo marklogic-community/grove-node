@@ -15,9 +15,25 @@ const options = require('../utils/options')()
 //   })
 // }
 
+const processSearchResponse = function (mlSearchBody) {
+  const searchResponse = JSON.parse(mlSearchBody)
+  const executionTime = parseFloat(
+    searchResponse.metrics['total-time'].replace('PT', '')
+  ).toFixed(3) + ' seconds'
+  const pageLength = searchResponse['page-length']
+  const page = Math.ceil(searchResponse.start / pageLength)
+  return {
+    qtext: searchResponse.qtext,
+    executionTime: executionTime,
+    total: searchResponse.total,
+    pageLength: pageLength,
+    page: page,
+    results: searchResponse.results
+  }
+}
+
 router.post('/', (req, res) => {
   const query = req.body
-  console.log('query:', query)
   // getAuth(req).then(auth => {
   const httpOptions = {
     // protocol: options.httpsStrict ? 'https' : 'http',
@@ -32,12 +48,12 @@ router.post('/', (req, res) => {
     // auth: auth
   }
   const mlRequest = http.request(httpOptions, mlResponse => {
-    var body = ''
+    var mlSearchBody = ''
     mlResponse.on('data', (chunk) => {
-      body += chunk
+      mlSearchBody += chunk
     })
     mlResponse.on('end', () => {
-      res.json(JSON.parse(body))
+      res.json(processSearchResponse(mlSearchBody))
     })
   })
 
