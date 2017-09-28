@@ -18,8 +18,8 @@ const options = require('../utils/options')()
 const processSearchResponse = function (mlSearchBody) {
   const searchResponse = JSON.parse(mlSearchBody)
   const executionTime = parseFloat(
-    searchResponse.metrics['total-time'].replace('PT', '')
-  ).toFixed(3) + ' seconds'
+    searchResponse.metrics['total-time'].replace(/^PT/, '')
+  )
   const pageLength = searchResponse['page-length']
   const page = Math.ceil(searchResponse.start / pageLength)
   return {
@@ -34,12 +34,14 @@ const processSearchResponse = function (mlSearchBody) {
 
 router.post('/', (req, res) => {
   const query = req.body
+  const start = (query.pageLength * (query.page - 1)) + 1
   // getAuth(req).then(auth => {
   const httpOptions = {
     // protocol: options.httpsStrict ? 'https' : 'http',
     hostname: options.mlHost,
     port: options.mlHttpPort,
-    path: '/v1/search?pageLength=' + query.pageLength,
+    path: '/v1/search?format=json&pageLength=' + query.pageLength +
+          '&start=' + start,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

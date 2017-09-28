@@ -26,10 +26,15 @@ describe('/api/search', () => {
   })
 
   describe('POST', () => {
-    it('POSTs  search to MarkLogic', (done) => {
-      const searchResponse = require('./helpers/qtextSearchResponse')
+    it('POSTs search to MarkLogic', (done) => {
+      const searchResponse = require('./helpers/qtextSearchResponse').henry
       nock('http://' + mlHost + ':' + mlPort)
-        .post(/search/)
+        .post('/v1/search', { search: { qtext: 'henry' } })
+        .query({
+          format: 'json',
+          pageLength: 10,
+          start: 1
+        })
         .reply(200, searchResponse)
       const executedQuery = {
         qtext: 'henry',
@@ -42,16 +47,50 @@ describe('/api/search', () => {
         .end((error, response) => {
           expect(error).to.not.exist
           expect(response.status).to.equal(200)
-          // TODO: be more specific about what the response should be
           expect(response.body).to.deep.equal(
             {
               qtext: 'henry',
-              // round total execution time
-              executionTime: '0.011 seconds',
+              executionTime: 0.010867,
               total: 2,
               pageLength: 10,
               // convert start to page, which is our front-end abstraction
               page: 1,
+              results: searchResponse.results // Straight pass-through
+            }
+          )
+          done()
+        })
+    })
+
+    it('requests the second page', (done) => {
+      const searchResponse = require('./helpers/qtextSearchResponse').henryPageTwo
+      nock('http://' + mlHost + ':' + mlPort)
+        .post('/v1/search', { search: { qtext: 'henry' } })
+        .query({
+          format: 'json',
+          pageLength: 10,
+          start: 11
+        })
+        .reply(200, searchResponse)
+      const executedQuery = {
+        qtext: 'henry',
+        page: 2,
+        pageLength: 10
+      }
+      chai.request(server)
+        .post('/api/search')
+        .send(executedQuery)
+        .end((error, response) => {
+          expect(error).to.not.exist
+          expect(response.status).to.equal(200)
+          expect(response.body).to.deep.equal(
+            {
+              qtext: 'henry',
+              executionTime: 0.010867,
+              total: 12,
+              pageLength: 10,
+              // convert start to page, which is our front-end abstraction
+              page: 2,
               results: searchResponse.results // Straight pass-through
             }
           )
