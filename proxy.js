@@ -39,9 +39,15 @@ function getAuth (req) {
   var user = req.session.passport && req.session.passport.user &&
     req.session.passport.user.username
 
-  return authHelper.getAuthorization(req.session, req.method, req.path, {
-    authUser: user
-  })
+  return authHelper.getAuthorization(
+    req.session,
+    req.method,
+    target.pathname,
+    req.path,
+    {
+      authUser: user
+    }
+  )
 }
 
 function proxy (req, res) {
