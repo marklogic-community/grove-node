@@ -11,6 +11,7 @@ router.use(bodyParser.json())
 
 router.use('/user', require('./user'))
 router.use('/search', require('./search'))
+router.use('/documents', require('./documents'))
 
 var four0four = require('../utils/404')()
 router.get('/*', four0four.notFoundMiddleware)
