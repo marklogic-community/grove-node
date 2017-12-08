@@ -5,9 +5,9 @@ const http = require('http')
 const options = require('../utils/options')()
 
 const processDetailResponse = function (doc) {
-  const detailResponse = JSON.parse(doc)
+  const content = JSON.parse(doc)
   return {
-    detailResponse
+    content
   }
 }
 
