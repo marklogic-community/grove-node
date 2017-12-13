@@ -4,13 +4,6 @@ const router = require('express').Router()
 const http = require('http')
 const options = require('../utils/options')()
 
-const processDetailResponse = function (doc) {
-  const content = JSON.parse(doc)
-  return {
-    content
-  }
-}
-
 router.get('/', (req, res) => {
   // getAuth(req).then(auth => {
   const uri = req.query.uri
@@ -21,18 +14,24 @@ router.get('/', (req, res) => {
     path: '/v1/documents?uri=' + uri,
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Content-Type': 'application/json'
     }
     // auth: auth
   }
   const mlRequest = http.request(httpOptions, mlResponse => {
-    var mlSearchBody = ''
+    let docBody = ''
     mlResponse.on('data', (chunk) => {
-      mlSearchBody += chunk
+      docBody += chunk
     })
     mlResponse.on('end', () => {
-      res.json(processDetailResponse(mlSearchBody))
+      const contentType = mlResponse.headers['content-type']
+      if (contentType.includes('application/json')) {
+        docBody = JSON.parse(docBody)
+      }
+      res.json({
+        content: docBody,
+        contentType: contentType
+      })
     })
   })
 
@@ -40,11 +39,6 @@ router.get('/', (req, res) => {
     console.error(`problem with request: ${e.message}`)
   })
 
-  mlRequest.write(JSON.stringify({
-    search: {
-      qtext: 'qtext from mlRequest.write'
-    }
-  }))
   mlRequest.end()
   // })
 })
