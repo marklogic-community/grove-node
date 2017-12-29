@@ -23,12 +23,19 @@ const processSearchResponse = function (mlSearchBody) {
   const pageLength = searchResponse['page-length']
   const page = Math.ceil(searchResponse.start / pageLength)
   return {
-    qtext: searchResponse.qtext,
-    executionTime: executionTime,
-    total: searchResponse.total,
-    pageLength: pageLength,
-    page: page,
-    results: searchResponse.results
+    query: {
+      queryText: searchResponse.qtext,
+      pageLength: pageLength,
+      page: page
+    },
+    response: {
+      metadata: {
+        executionTime: executionTime,
+        total: searchResponse.total
+      },
+      results: searchResponse.results,
+      facets: searchResponse.facets
+    }
   }
 }
 
@@ -65,7 +72,7 @@ router.post('/', (req, res) => {
 
   mlRequest.write(JSON.stringify({
     search: {
-      qtext: query.qtext
+      qtext: query.queryText
     }
   }))
   mlRequest.end()

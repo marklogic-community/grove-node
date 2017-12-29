@@ -37,7 +37,7 @@ describe('/api/search', () => {
         })
         .reply(200, searchResponse)
       const executedQuery = {
-        qtext: 'henry',
+        queryText: 'henry',
         page: 1,
         pageLength: 10
       }
@@ -47,17 +47,22 @@ describe('/api/search', () => {
         .end((error, response) => {
           expect(error).to.not.exist
           expect(response.status).to.equal(200)
-          expect(response.body).to.deep.equal(
-            {
-              qtext: 'henry',
-              executionTime: 0.010867,
-              total: 2,
+          expect(response.body).to.deep.equal({
+            query: {
+              queryText: 'henry',
               pageLength: 10,
-              // convert start to page, which is our front-end abstraction
-              page: 1,
-              results: searchResponse.results // Straight pass-through
+              // convert start to page, our front-end abstraction
+              page: 1
+            },
+            response: {
+              metadata: {
+                executionTime: 0.010867,
+                total: 2
+              },
+              results: searchResponse.results,
+              facets: searchResponse.facets
             }
-          )
+          })
           done()
         })
     })
@@ -73,7 +78,7 @@ describe('/api/search', () => {
         })
         .reply(200, searchResponse)
       const executedQuery = {
-        qtext: 'henry',
+        queryText: 'henry',
         page: 2,
         pageLength: 10
       }
@@ -83,17 +88,22 @@ describe('/api/search', () => {
         .end((error, response) => {
           expect(error).to.not.exist
           expect(response.status).to.equal(200)
-          expect(response.body).to.deep.equal(
-            {
-              qtext: 'henry',
-              executionTime: 0.010867,
-              total: 12,
+          expect(response.body).to.deep.equal({
+            query: {
+              queryText: 'henry',
               pageLength: 10,
               // convert start to page, which is our front-end abstraction
-              page: 2,
-              results: searchResponse.results // Straight pass-through
+              page: 2
+            },
+            response: {
+              metadata: {
+                executionTime: 0.010867,
+                total: 12
+              },
+              results: searchResponse.results,
+              facets: searchResponse.facets
             }
-          )
+          })
           done()
         })
     })

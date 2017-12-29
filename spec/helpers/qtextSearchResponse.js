@@ -7,6 +7,23 @@ module.exports = {
     },
     'page-length': 10,
     'qtext': 'henry',
+    facets: {
+      'EyeColor': {
+        type: 'xs:string',
+        facetValues: [
+          {
+            name: 'brown',
+            count: 60,
+            value: 'brown'
+          },
+          {
+            name: 'blue',
+            count: 30,
+            value: 'blue'
+          }
+        ]
+      }
+    },
     'results': [
       {
         'confidence': 0.6000114,
@@ -85,6 +102,23 @@ module.exports = {
     },
     'page-length': 10,
     'qtext': 'henry',
+    facets: {
+      'EyeColor': {
+        type: 'xs:string',
+        facetValues: [
+          {
+            name: 'brown',
+            count: 60,
+            value: 'brown'
+          },
+          {
+            name: 'blue',
+            count: 30,
+            value: 'blue'
+          }
+        ]
+      }
+    },
     'results': [
       {
         'confidence': 0.6000114,
