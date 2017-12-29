@@ -3,6 +3,7 @@
 const router = require('express').Router()
 const http = require('http')
 const options = require('../utils/options')()
+const queryBuilder = require('marklogic').queryBuilder
 
 // TODO: add authentication again
 // // TODO: DRY up into authHelper
@@ -15,6 +16,8 @@ const options = require('../utils/options')()
 //   })
 // }
 
+// TODO: extract out to separate module that could alternatively
+// be run inside MarkLogic itself
 const processSearchResponse = function (mlSearchBody) {
   const searchResponse = JSON.parse(mlSearchBody)
   const executionTime = parseFloat(
@@ -37,6 +40,29 @@ const processSearchResponse = function (mlSearchBody) {
       facets: searchResponse.facets
     }
   }
+}
+
+// TODO: extract out to separate module that could alternatively
+// be run inside MarkLogic itself
+const buildMarklogicQuery = function (query) {
+  let structuredQuery
+  if (query.constraints) {
+    const constraintQueries = Object.keys(query.constraints).map(constraintName => {
+      return queryBuilder.range(
+        constraintName,
+        query.constraints[constraintName].map(c => c.name)
+      )
+    })
+    structuredQuery = {queries: [{'and-query': {
+      queries: constraintQueries
+    }}]}
+  }
+  return JSON.stringify({
+    search: {
+      qtext: query.queryText,
+      query: structuredQuery
+    }
+  })
 }
 
 router.post('/', (req, res) => {
@@ -71,11 +97,7 @@ router.post('/', (req, res) => {
     console.error(`problem with request: ${e.message}`)
   })
 
-  mlRequest.write(JSON.stringify({
-    search: {
-      qtext: query.queryText
-    }
-  }))
+  mlRequest.write(buildMarklogicQuery(query))
   mlRequest.end()
   // })
 })

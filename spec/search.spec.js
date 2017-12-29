@@ -109,5 +109,69 @@ describe('/api/search', () => {
           done()
         })
     })
+
+    it('builds a constraint query', (done) => {
+      const searchResponse = require('./helpers/qtextSearchResponse').henry
+      nock('http://' + mlHost + ':' + mlPort)
+        .post('/v1/search', {
+          search: {
+            qtext: 'henry',
+            query: {
+              queries: [{
+                'and-query': {
+                  queries: [{
+                    'range-query': {
+                      'json-property': 'Gender',
+                      value: ['F'],
+                      'range-operator': 'EQ'
+                    }
+                  }]
+                }
+              }]
+            }
+          }
+        })
+        .query({
+          format: 'json',
+          pageLength: 10,
+          start: 1,
+          options: 'all'
+        })
+        .reply(200, searchResponse)
+      const executedQuery = {
+        queryText: 'henry',
+        page: 1,
+        pageLength: 10,
+        constraints: {
+          'Gender': [{name: 'F'}]
+        }
+      }
+      chai.request(server)
+        .post('/api/search')
+        .send(executedQuery)
+        .end((error, response) => {
+          expect(error).to.not.exist
+          expect(response.status).to.equal(200)
+          expect(response.body).to.deep.equal({
+            query: {
+              queryText: 'henry',
+              pageLength: 10,
+              // convert start to page, our front-end abstraction
+              page: 1
+            },
+            response: {
+              metadata: {
+                executionTime: 0.010867,
+                total: 2
+              },
+              results: searchResponse.results,
+              facets: searchResponse.facets
+            }
+          })
+          done()
+        })
+    })
+
+    it('handles 400 errors from MarkLogic')
   })
 })
