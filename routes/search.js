@@ -48,7 +48,8 @@ router.post('/', (req, res) => {
     hostname: options.mlHost,
     port: options.mlHttpPort,
     path: '/v1/search?format=json&pageLength=' + query.pageLength +
-          '&start=' + start,
+      '&start=' + start +
+      '&options=all', // TODO: make configurable and get from client
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

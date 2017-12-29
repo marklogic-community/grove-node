@@ -33,7 +33,8 @@ describe('/api/search', () => {
         .query({
           format: 'json',
           pageLength: 10,
-          start: 1
+          start: 1,
+          options: 'all'
         })
         .reply(200, searchResponse)
       const executedQuery = {
@@ -74,7 +75,8 @@ describe('/api/search', () => {
         .query({
           format: 'json',
           pageLength: 10,
-          start: 11
+          start: 11,
+          options: 'all'
         })
         .reply(200, searchResponse)
       const executedQuery = {
