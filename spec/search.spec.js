@@ -172,6 +172,33 @@ describe('/api/search', () => {
         })
     })
 
-    it('handles 400 errors from MarkLogic')
+    it('handles 400 errors from MarkLogic', (done) => {
+      nock('http://' + mlHost + ':' + mlPort)
+        // We don't want to assert on post body in this spec
+        .filteringRequestBody(body => '*')
+        .post('/v1/search', '*')
+        .query(true) // We don't care about the queryString in this spec
+        .reply(400, {
+          errorResponse: {
+            statusCode: 400,
+            status: 'Bad Request',
+            messageCode: 'XDMP-ELEMRIDXNOTFOUND',
+            message: 'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
+          }
+        })
+      chai.request(server)
+        .post('/api/search')
+        .end((error, response) => {
+          expect(error).to.exist
+          expect(response.status).to.equal(400)
+          expect(response.body).to.deep.equal({
+            statusCode: 400,
+            status: 'Bad Request',
+            messageCode: 'XDMP-ELEMRIDXNOTFOUND',
+            message: 'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
+          })
+          done()
+        })
+    })
   })
 })

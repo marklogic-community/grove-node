@@ -18,8 +18,7 @@ const queryBuilder = require('marklogic').queryBuilder
 
 // TODO: extract out to separate module that could alternatively
 // be run inside MarkLogic itself
-const processSearchResponse = function (mlSearchBody) {
-  const searchResponse = JSON.parse(mlSearchBody)
+const processSearchResponse = function (searchResponse) {
   const executionTime = parseFloat(
     searchResponse.metrics['total-time'].replace(/^PT/, '')
   )
@@ -65,6 +64,8 @@ const buildMarklogicQuery = function (query) {
   })
 }
 
+const processSearchError = error => error.errorResponse
+
 router.post('/', (req, res) => {
   const query = req.body
   const start = (query.pageLength * (query.page - 1)) + 1
@@ -89,7 +90,14 @@ router.post('/', (req, res) => {
       mlSearchBody += chunk
     })
     mlResponse.on('end', () => {
-      res.json(processSearchResponse(mlSearchBody))
+      mlSearchBody = JSON.parse(mlSearchBody)
+      if (mlResponse.statusCode === 200) {
+        res.json(processSearchResponse(mlSearchBody))
+      } else {
+        res.status(mlResponse.statusCode).json(
+          processSearchError(mlSearchBody)
+        )
+      }
     })
   })
 
