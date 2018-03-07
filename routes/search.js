@@ -47,9 +47,10 @@ const buildMarklogicQuery = function (query) {
   let structuredQuery
   if (query.constraints) {
     const constraintQueries = Object.keys(query.constraints).map(constraintName => {
+      const andValues  = query.constraints[constraintName].and || []
       return queryBuilder.range(
         constraintName,
-        query.constraints[constraintName].map(c => c.name)
+        andValues.map(c => c.name)
       )
     })
     structuredQuery = {queries: [{'and-query': {
