@@ -1,5 +1,5 @@
 {
-  "name": "ml-treehouse-node",
+  "name": "muir-node",
   "version": "0.6.0",
   "dependencies": {
     "body-parser": "^1.14.0",

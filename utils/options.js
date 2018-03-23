@@ -8,7 +8,7 @@ module.exports = function () {
 
   var options = {
     env: environment,
-    appName: process.env.APP_NAME || envJson['app-name'] || 'ml-treehouse-app',
+    appName: process.env.APP_NAME || envJson['app-name'] || 'muir-app',
     httpsStrict: bool(process.env.HTTPS_STRICT || envJson.httpsStrict || true),
     // ML CERTIFICATE should be set if "ssl require client certificate" of the ML AppServer is set to true
     mlCertificate: process.env.ML_CERTIFICATE || envJson.mlCertificate || '',
