@@ -1,13 +1,13 @@
 'use strict'
 
-var router = require('express').Router()
+const express = require('express')
+var router = express.Router()
 
 // [GJo] (#31) Moved bodyParsing inside routing, otherwise it might try to parse uploaded binaries as json..
-var bodyParser = require('body-parser')
-router.use(bodyParser.urlencoded({
+router.use(express.urlencoded({
   extended: true
 }))
-router.use(bodyParser.json())
+router.use(express.json())
 
 router.use('/user', require('./user'))
 router.use('/search', require('./search'))

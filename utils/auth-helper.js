@@ -106,7 +106,7 @@ function handleLocalAuth (req, res, next) {
       return next(err)
     }
     if (!user) {
-      return res.json(401, {
+      return res.status(401).json({
         message: info.message
       })
     }
