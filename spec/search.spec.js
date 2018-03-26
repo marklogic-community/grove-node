@@ -1,5 +1,6 @@
 'use strict'
 
+// TODO: move to test.json
 process.env.NODE_ENV = 'test'
 process.env.APP_PORT = 61234
 const mlPort = '51234'
@@ -26,7 +27,7 @@ describe('/api/search', () => {
   })
 
   describe('POST', () => {
-    it('POSTs search to MarkLogic', (done) => {
+    it('POSTs search to MarkLogic', done => {
       const searchResponse = require('./helpers/qtextSearchResponse').henry
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', { search: { qtext: 'henry' } })
@@ -42,7 +43,8 @@ describe('/api/search', () => {
         page: 1,
         pageLength: 10
       }
-      chai.request(server)
+      chai
+        .request(server)
         .post('/api/search')
         .send(executedQuery)
         .end((error, response) => {
@@ -68,8 +70,9 @@ describe('/api/search', () => {
         })
     })
 
-    it('requests the second page', (done) => {
-      const searchResponse = require('./helpers/qtextSearchResponse').henryPageTwo
+    it('requests the second page', done => {
+      const searchResponse = require('./helpers/qtextSearchResponse')
+        .henryPageTwo
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', { search: { qtext: 'henry' } })
         .query({
@@ -84,7 +87,8 @@ describe('/api/search', () => {
         page: 2,
         pageLength: 10
       }
-      chai.request(server)
+      chai
+        .request(server)
         .post('/api/search')
         .send(executedQuery)
         .end((error, response) => {
@@ -110,24 +114,28 @@ describe('/api/search', () => {
         })
     })
 
-    it('builds a constraint query', (done) => {
+    it('builds a constraint query', done => {
       const searchResponse = require('./helpers/qtextSearchResponse').henry
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', {
           search: {
             qtext: 'henry',
             query: {
-              queries: [{
-                'and-query': {
-                  queries: [{
-                    'range-query': {
-                      'json-property': 'Gender',
-                      value: ['F'],
-                      'range-operator': 'EQ'
-                    }
-                  }]
+              queries: [
+                {
+                  'and-query': {
+                    queries: [
+                      {
+                        'range-query': {
+                          'json-property': 'Gender',
+                          value: ['F'],
+                          'range-operator': 'EQ'
+                        }
+                      }
+                    ]
+                  }
                 }
-              }]
+              ]
             }
           }
         })
@@ -143,10 +151,11 @@ describe('/api/search', () => {
         page: 1,
         pageLength: 10,
         constraints: {
-          'Gender': [{name: 'F'}]
+          Gender: { and: [{ name: 'F' }] }
         }
       }
-      chai.request(server)
+      chai
+        .request(server)
         .post('/api/search')
         .send(executedQuery)
         .end((error, response) => {
@@ -172,7 +181,7 @@ describe('/api/search', () => {
         })
     })
 
-    it('handles 400 errors from MarkLogic', (done) => {
+    it('handles 400 errors from MarkLogic', done => {
       nock('http://' + mlHost + ':' + mlPort)
         // We don't want to assert on post body in this spec
         .filteringRequestBody(body => '*')
@@ -183,10 +192,12 @@ describe('/api/search', () => {
             statusCode: 400,
             status: 'Bad Request',
             messageCode: 'XDMP-ELEMRIDXNOTFOUND',
-            message: 'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
+            message:
+              'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
           }
         })
-      chai.request(server)
+      chai
+        .request(server)
         .post('/api/search')
         .end((error, response) => {
           expect(error).to.exist
@@ -195,7 +206,8 @@ describe('/api/search', () => {
             statusCode: 400,
             status: 'Bad Request',
             messageCode: 'XDMP-ELEMRIDXNOTFOUND',
-            message: 'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
+            message:
+              'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
           })
           done()
         })
