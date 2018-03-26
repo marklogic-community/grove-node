@@ -45,7 +45,6 @@ app.use(expressSession({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use('/v1', require('./proxy'))
 app.use('/api', require('./routes'))
 
 console.log('About to crank up node')
