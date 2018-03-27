@@ -17,26 +17,22 @@ if (options.mlCertificate) {
   httpClient = http
 }
 
-router.get('/status', function (req, res) {
+router.get('/status', function(req, res) {
   var headers = req.headers
   noCache(res)
   if (!req.isAuthenticated()) {
     if (options.guestAccess) {
-      res.send(authStatus(
-        true,
-        options.defaultUser, {
+      res.send(
+        authStatus(true, options.defaultUser, {
           fullname: 'Guest'
-        }
-      ))
+        })
+      )
     } else {
-      res.send(authStatus(
-        false
-      ))
+      res.send(authStatus(false))
     }
   } else {
-    var queryString = req.originalUrl.split('?')[1]
-    var path = req.baseUrl + req.path + (queryString ? '?' + queryString : '')
     var passportUser = req.session.passport.user
+    var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
       hostname: options.mlHost,
       port: options.mlHttpPort,
@@ -46,58 +42,56 @@ router.get('/status', function (req, res) {
     }
 
     delete headers['content-length']
-    authHelper.getAuthorization(req.session, reqOptions.method, reqOptions.path, {
-      authHost: reqOptions.hostname || options.mlHost,
-      authPort: reqOptions.port || options.mlHttpPort,
-      authUser: passportUser.username,
-      authPassword: passportUser.password
-    }).then(
-      function (authorization) {
+    authHelper
+      .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
+        authHost: reqOptions.hostname || options.mlHost,
+        authPort: reqOptions.port || options.mlHttpPort,
+        authUser: passportUser.username,
+        authPassword: passportUser.password
+      })
+      .then(function(authorization) {
         delete headers['content-length']
         if (authorization) {
           headers.Authorization = authorization
         }
-        var profile = httpClient.get({
-          hostname: options.mlHost,
-          port: options.mlHttpPort,
-          path: '/v1/documents?uri=/api/users/' + passportUser.username + '.json',
-          headers: headers,
-          ca: ca
-        }, function (response) {
-          if (response.statusCode === 200) {
-            response.on('data', function (chunk) {
-              var json = JSON.parse(chunk)
-              if (json.user === undefined) {
-                console.log('did not find chunk.user')
-              }
-              res.status(200).send(authStatus(
-                true,
-                passportUser.username,
-                json.user
-              ))
-            })
-          } else if (response.statusCode === 404) {
-            // no profile yet for user
-            res.status(200).send(authStatus(
-              true,
-              passportUser.username,
-              null
-            ))
-          } else {
-            res.send(authStatus(
-              false
-            ))
+        var profile = httpClient.get(
+          {
+            hostname: options.mlHost,
+            port: options.mlHttpPort,
+            path: path,
+            headers: headers,
+            ca: ca
+          },
+          function(response) {
+            if (response.statusCode === 200) {
+              response.on('data', function(chunk) {
+                var json = JSON.parse(chunk)
+                if (json.user === undefined) {
+                  console.log('did not find chunk.user')
+                }
+                res
+                  .status(200)
+                  .send(authStatus(true, passportUser.username, json.user))
+              })
+            } else if (response.statusCode === 404) {
+              // no profile yet for user
+              res
+                .status(200)
+                .send(authStatus(true, passportUser.username, null))
+            } else {
+              res.send(authStatus(false))
+            }
           }
-        })
+        )
 
-        profile.on('socket', function (socket) {
-          socket.on('timeout', function () {
+        profile.on('socket', function(socket) {
+          socket.on('timeout', function() {
             console.log('Timeout reached, aborting call to ML..')
             profile.abort()
           })
         })
 
-        profile.on('error', function (e) {
+        profile.on('error', function(e) {
           console.log('Status check failed: ' + e.message)
           res.status(500).end()
         })
@@ -105,7 +99,7 @@ router.get('/status', function (req, res) {
   }
 })
 
-router.post('/login', function (req, res, next) {
+router.post('/login', function(req, res, next) {
   // Attempt to read the user's profile, then check the response code.
   // 404 - valid credentials, but no profile yet
   // 401 - bad credentials
@@ -122,20 +116,20 @@ router.post('/login', function (req, res, next) {
   }
 })
 
-router.get('/logout', function (req, res) {
+router.get('/logout', function(req, res) {
   noCache(res)
   req.logout()
   authHelper.clearAuthenticator(req.session)
   res.send()
 })
 
-function noCache (response) {
+function noCache(response) {
   response.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
   response.append('Pragma', 'no-cache') // HTTP 1.0
   response.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT') // Date in the past
 }
 
-function authStatus (authenticated, username, profile) {
+function authStatus(authenticated, username, profile) {
   return {
     authenticated: authenticated,
     username: username,
