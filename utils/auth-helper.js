@@ -23,8 +23,6 @@ if (options.mlCertificate) {
 var defaultOptions = {
   authHost: options.mlHost,
   authPort: options.mlHttpPort,
-  authUser: options.defaultUser,
-  authPassword: options.defaultPass,
   challengeMethod: 'HEAD',
   challengePath: '/v1/ping'
 }
@@ -205,10 +203,11 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
   reqMethod = reqMethod || 'GET'
   var authorization = null
   var d = q.defer()
+  if (!authOptions.authUser) { d.reject(); return d.promise }
   var mergedOptions = _.extend({}, defaultOptions, authOptions || {})
   var authenticator = getAuthenticator(
     session,
-    mergedOptions.authUser || options.defaultUser,
+    mergedOptions.authUser,
     mergedOptions.authHost,
     mergedOptions.authPort
   )
@@ -230,8 +229,8 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
           session,
           mergedOptions.authHost,
           mergedOptions.authPort,
-          mergedOptions.authUser || options.defaultUser,
-          mergedOptions.authPassword || options.defaultPass,
+          mergedOptions.authUser,
+          mergedOptions.authPassword,
           challenge
         )
         authorization = authenticator.authorize(reqMethod, reqPath)

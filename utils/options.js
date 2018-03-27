@@ -17,9 +17,6 @@ module.exports = function () {
     appPort: process.env.APP_PORT || process.env.PORT || envJson['node-port'] || '9003',
     mlHost: process.env.ML_HOST || envJson['ml-host'] || 'localhost',
     mlHttpPort: process.env.ML_PORT || envJson['ml-http-port'] || '8063',
-    defaultUser: process.env.ML_APP_USER || envJson['ml-app-user'] || 'admin',
-    defaultPass: process.env.ML_APP_PASS || envJson['ml-app-pass'] || 'admin',
-    guestAccess: bool(process.env.GUEST_ACCESS || envJson['guest-access'] || false),
     disallowUpdates: bool(process.env.DISALLOW_UPDATES || envJson['disallow-updates'] || false),
     appUsersOnly: bool(process.env.APP_USERS_ONLY || envJson['appusers-only'] || false)
   }
