@@ -203,7 +203,7 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
   reqMethod = reqMethod || 'GET'
   var authorization = null
   var d = q.defer()
-  if (!authOptions.authUser) { d.reject(); return d.promise }
+  if (!authOptions.authUser) { d.reject('Unauthorized'); return d.promise }
   var mergedOptions = _.extend({}, defaultOptions, authOptions || {})
   var authenticator = getAuthenticator(
     session,
@@ -237,7 +237,7 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
         d.resolve(authorization)
       } else {
         session.authenticators = {}
-        d.reject()
+        d.reject('Unauthorized')
       }
     })
     challengeReq.end()

@@ -2,7 +2,7 @@
 
 const router = require('express').Router()
 const http = require('http')
-const https = require('https')
+// const https = require('https')
 const options = require('../utils/options')()
 const queryBuilder = require('marklogic').queryBuilder
 
@@ -122,10 +122,12 @@ router.post('/', (req, res) => {
       mlRequest.write(builtQuery)
       mlRequest.end()
     },
-    error =>
+    error => {
+      console.error('error authenticating search:', error);
       res.status(401).json({
-        message: 'Unauthorized'
+        message: error
       })
+    }
   )
 })
 
