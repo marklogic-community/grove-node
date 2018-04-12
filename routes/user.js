@@ -21,15 +21,7 @@ router.get('/status', function(req, res) {
   var headers = req.headers
   noCache(res)
   if (!req.isAuthenticated()) {
-    if (options.guestAccess) {
-      res.send(
-        authStatus(true, options.defaultUser, {
-          fullname: 'Guest'
-        })
-      )
-    } else {
-      res.send(authStatus(false))
-    }
+    res.send(authStatus(false))
   } else {
     var passportUser = req.session.passport.user
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
@@ -134,7 +126,6 @@ function authStatus(authenticated, username, profile) {
     authenticated: authenticated,
     username: username,
     profile: profile || {},
-    guestAccess: options.guestAccess,
     disallowUpdates: options.disallowUpdates,
     appUsersOnly: options.appUsersOnly,
     appName: options.appName

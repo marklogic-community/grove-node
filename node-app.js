@@ -35,8 +35,9 @@ app.use(helmet({
   noCache: false // make sure it is disabled
 }))
 
+// TODO: switch out name when generating
 app.use(expressSession({
-  name: '@sample-app-name',
+  name: 'muir-app',
   secret: '1234567890QWERTY',
   saveUninitialized: true,
   resave: true
