@@ -245,12 +245,25 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
   return d.promise
 }
 
+function expiresAt(session) {
+  var authenticator = getAuthenticator(
+    session,
+    session.passport.user,
+    defaultOptions.authHost,
+    defaultOptions.authPort
+  );
+  var d = new Date();
+  d.setTime(d.getTime() + expirationTime);
+  return d;
+}
+
 var authHelper = {
   init: init,
   isAuthenticated: isAuthenticated,
   handleLocalAuth: handleLocalAuth,
   getAuthorization: getAuthorization,
-  clearAuthenticator: clearAuthenticator
+  clearAuthenticator: clearAuthenticator,
+  expiresAt: expiresAt
 }
 
 module.exports = authHelper
