@@ -102,7 +102,11 @@ router.post('/login', function(req, res, next) {
 
   // reply with 406 if client doesn't accept JSON
   var accept = req.headers['accept'];
-  if (accept.indexOf('application/json') === -1) {
+  if (
+    accept.indexOf('application/json') === -1 &&
+    accept.indexOf('*/*') === -1 &&
+    accept.indexOf('application/*' === -1)
+  ) {
     four0four.notAcceptable(req, res, ['application/json']);
     return;
   }
