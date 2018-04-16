@@ -6,6 +6,7 @@ var authHelper = require('../utils/auth-helper')
 var http = require('http')
 var https = require('https')
 var fs = require('fs')
+var four0four = require('../utils/404')()
 
 var ca = ''
 var httpClient = null
@@ -92,10 +93,31 @@ router.get('/status', function(req, res) {
 })
 
 router.post('/login', function(req, res, next) {
-  // Attempt to read the user's profile, then check the response code.
-  // 404 - valid credentials, but no profile yet
-  // 401 - bad credentials
-  var username = req.body.username || ''
+  // reply with 415 if body isn't JSON
+  var contentType = req.headers['content-type'];
+  if (contentType !== 'application/json') {
+    four0four.unsupportedMediaType(req, res, ['application/json']);
+    return;
+  }
+
+  // reply with 406 if client doesn't accept JSON
+  var accept = req.headers['accept'];
+  if (
+    accept.indexOf('application/json') === -1 &&
+    accept.indexOf('*/*') === -1 &&
+    accept.indexOf('application/*' === -1)
+  ) {
+    four0four.notAcceptable(req, res, ['application/json']);
+    return;
+  }
+
+  // reply with 400 if username or password is missing
+  var username = req.body.username;
+  var password = req.body.password;
+  if (username === undefined || password === undefined) {
+    four0four.missingRequired(req, res, ['username', 'password']);
+    return;
+  }
 
   // make sure login isn't cached
   noCache(res)
@@ -108,11 +130,21 @@ router.post('/login', function(req, res, next) {
   }
 })
 
-router.get('/logout', function(req, res) {
+// Anything except POST /login is denied with a 405
+router.use('/login', function(req, res) {
+  four0four.methodNotAllowed(req, res, ['POST']);
+})
+
+router.post('/logout', function(req, res) {
   noCache(res)
   req.logout()
   authHelper.clearAuthenticator(req.session)
-  res.send()
+  res.status(204).send('')
+})
+
+// Anything except POST /logout is denied with a 405
+router.use('/logout', function(req, res) {
+  four0four.methodNotAllowed(req, res, ['POST']);
 })
 
 function noCache(response) {

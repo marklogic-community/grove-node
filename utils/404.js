@@ -1,25 +1,64 @@
+/* jshint esnext: true */
+/* globals module */
+
 module.exports = function () {
-  'use strict'
+  'use strict';
 
   var service = {
-    notFoundMiddleware: notFoundMiddleware,
-    send404: send404
-  }
-  return service
+    missingRequired: missingRequired,
+    unauthorized: unauthorized,
+    notFound: notFound,
+    methodNotAllowed: methodNotAllowed,
+    notAcceptable: notAcceptable,
+    unsupportedMediaType: unsupportedMediaType,
+    send: send
+  };
 
-  function notFoundMiddleware (req, res, next) {
-    send404(req, res, 'API endpoint not found')
+  return service;
+
+  function missingRequired (req, res, params) {
+    send(req, res, 400, 'Bad Request', 'Required parameters: ' + params.join(', '));
   }
 
-  function send404 (req, res, description) {
+  function unauthorized (req, res) {
+    send(req, res, 401, 'Unauthorized', 'Unauthorized');
+  }
+
+  function notFound (req, res) {
+    send(req, res, 404, 'Not Found', 'API endpoint not found');
+  }
+
+  function methodNotAllowed (req, res, methods) {
+    send(req, res, 405, 'Method Not Allowed', 'Allowed methods: ' + methods.join(', '), {
+      allow: methods
+    });
+  }
+
+  function notAcceptable (req, res, types) {
+    send(req, res, 406, 'Not Acceptable', 'Supported Accept Types: ' + types.join(', '));
+  }
+
+  function unsupportedMediaType (req, res, types) {
+    send(req, res, 415, 'Unsupported Media Type', 'Supported Content-Types: ' + types.join(', '));
+  }
+
+  function send (req, res, status, text, message, headers) {
     var data = {
-      status: 404,
-      message: 'Not Found',
-      description: description,
+      status: status,
+      statusText: text,
+      message: message,
       url: req.url
+    };
+
+    if (headers) {
+      Object.entries(headers).forEach(header => {
+        res.setHeader(header[0], header[1]);
+      });
     }
-    res.status(404)
+
+    res
+      .status(status)
       .send(data)
-      .end()
+      .end();
   }
-}
+};

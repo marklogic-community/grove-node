@@ -9,11 +9,11 @@ router.use(express.urlencoded({
 }))
 router.use(express.json())
 
-router.use('/user', require('./user'))
+router.use('/auth', require('./auth'))
 router.use('/search', require('./search'))
 router.use('/documents', require('./documents'))
 
 var four0four = require('../utils/404')()
-router.get('/*', four0four.notFoundMiddleware)
+router.get('/*', four0four.notFound)
 
 module.exports = router
