@@ -33,22 +33,31 @@ router.get('/', (req, res) => {
           'Content-Type': 'application/json',
           authorization: auth
         }
-      }
+      };
       const mlRequest = http.request(httpOptions, mlResponse => {
-        let docBody = ''
+        let data = [];
         mlResponse.on('data', chunk => {
-          docBody += chunk
-        })
+          data.push(chunk);
+        });
         mlResponse.on('end', () => {
+          var docBody = Buffer.concat(data)
           if (mlResponse.statusCode === 200) {
-            const contentType = mlResponse.headers['content-type']
+            const contentType = mlResponse.headers['content-type'];
             if (contentType.includes('application/json')) {
-              docBody = JSON.parse(docBody)
+              docBody = JSON.parse(docBody);
+              res.json({
+                content: docBody,
+                contentType: contentType
+              });
+            } else if (contentType.includes('image')) {
+              res.set('Content-Type', contentType);
+              res.write(docBody, 'binary');
+              res.end();
+            } else {
+              res
+                .status(mlResponse.statusCode)
+                .json(processError(JSON.parse(docBody)));
             }
-            res.json({
-              content: docBody,
-              contentType: contentType
-            })
           } else {
             res
               .status(mlResponse.statusCode)
