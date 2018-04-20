@@ -4,7 +4,7 @@ const router = require('express').Router()
 const http = require('http')
 // const https = require('https')
 const options = require('../utils/options')()
-const queryBuilder = require('marklogic').queryBuilder
+// const queryBuilder = require('marklogic').queryBuilder
 
 module.exports = config => {
   // TODO: rename to authProvider (?)
@@ -68,29 +68,17 @@ module.exports = config => {
         "extract-path": config.extract
       }
     }
-    let structuredQuery
+    var appendText = '';
     if (query.constraints) {
-      const constraintQueries = Object.keys(query.constraints).map(
-        constraintName => {
-          const andValues = query.constraints[constraintName].and || []
-          return queryBuilder.range(constraintName, andValues.map(c => c.name))
-        }
-      )
-      structuredQuery = {
-        queries: [
-          {
-            'and-query': {
-              queries: constraintQueries
-            }
-          }
-        ]
-      }
+      Object.keys(query.constraints).forEach(key => {
+        query.constraints[key].and.forEach(value => {
+          appendText = appendText + ' ' + key + ':' + '"' + value.value + '"'
+        })
+      })
     }
     return JSON.stringify({
       search: {
-        qtext: query.queryText,
-        query: structuredQuery,
-        options: options
+        qtext: (query.queryText || '') + appendText
       }
     })
   }
