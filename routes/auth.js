@@ -20,10 +20,22 @@ var httpClient = http
 // }
 
 router.get('/status', function(req, res) {
+  // reply with 406 if client doesn't accept JSON
+  var accept = req.headers['accept'];
+  if (
+    accept.indexOf('application/json') === -1 &&
+    accept.indexOf('*/*') === -1 &&
+    accept.indexOf('application/*' === -1)
+  ) {
+    four0four.notAcceptable(req, res, ['application/json']);
+    return;
+  }
+
   var headers = req.headers
   noCache(res)
   if (!req.isAuthenticated()) {
-    res.send(authStatus(false))
+    // /status never returns 401
+    sendAuthStatus(res, false)
   } else {
     var passportUser = req.session.passport.user
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
@@ -37,60 +49,46 @@ router.get('/status', function(req, res) {
 
     delete headers['content-length']
     authHelper
-      .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
-        authHost: reqOptions.hostname || options.mlHost,
-        authPort: reqOptions.port || options.mlRestPort,
-        authUser: passportUser.username,
-        authPassword: passportUser.password
-      })
-      .then(function(authorization) {
-        delete headers['content-length']
-        if (authorization) {
-          headers.Authorization = authorization
+    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
+      authHost: reqOptions.hostname || options.mlHost,
+      authPort: reqOptions.port || options.mlHttpPort,
+      authUser: passportUser.username,
+      authPassword: passportUser.password
+    })
+    .then(function(authorization) {
+      delete headers['content-length']
+      if (authorization) {
+        headers.Authorization = authorization
+      }
+
+      clientRequest(req, {
+        hostname: options.mlHost,
+        port: options.mlHttpPort,
+        path: path,
+        headers: headers,
+        ca: ca
+      }, function(clientResponse, data) {
+        if (clientResponse.statusCode === 200) {
+          var json = JSON.parse(data.toString())
+          sendAuthStatus(res, true, passportUser.username, json.user)
+        } else if (response.statusCode === 404) {
+          // no profile yet for user
+          sendAuthStatus(res, true, passportUser.username, null)
+        } else {
+          sendAuthStatus(res, false)
         }
-        var profile = httpClient.get(
-          {
-            hostname: options.mlHost,
-            port: options.mlRestPort,
-            path: path,
-            headers: headers,
-            ca: ca
-          },
-          function(response) {
-            if (response.statusCode === 200) {
-              response.on('data', function(chunk) {
-                var json = JSON.parse(chunk)
-                if (json.user === undefined) {
-                  console.log('did not find chunk.user')
-                }
-                res
-                  .status(200)
-                  .send(authStatus(true, passportUser.username, json.user))
-              })
-            } else if (response.statusCode === 404) {
-              // no profile yet for user
-              res
-                .status(200)
-                .send(authStatus(true, passportUser.username, null))
-            } else {
-              res.send(authStatus(false))
-            }
-          }
-        )
-
-        profile.on('socket', function(socket) {
-          socket.on('timeout', function() {
-            console.log('Timeout reached, aborting call to ML..')
-            profile.abort()
-          })
-        })
-
-        profile.on('error', function(e) {
-          console.log('Status check failed: ' + e.message)
-          res.status(500).end()
-        })
       })
+
+    }, function(unauthorized) {
+      // /status never returns 401
+      sendAuthStatus(res, false)
+    })
   }
+})
+
+// Anything except GET /status is denied with a 405
+router.use('/status', function(req, res) {
+  four0four.methodNotAllowed(req, res, ['POST']);
 })
 
 router.post('/login', function(req, res, next) {
@@ -137,7 +135,7 @@ router.use('/login', function(req, res) {
 })
 
 router.post('/logout', function(req, res) {
-  noCache(res)
+  noCache(res) // TODO: nothing to cache?
   req.logout()
   authHelper.clearAuthenticator(req.session)
   res.status(204).send('')
@@ -148,21 +146,215 @@ router.use('/logout', function(req, res) {
   four0four.methodNotAllowed(req, res, ['POST']);
 })
 
+router.get('/profile', function(req, res) {
+  // reply with 406 if client doesn't accept JSON
+  var accept = req.headers['accept'];
+  if (
+    accept.indexOf('application/json') === -1 &&
+    accept.indexOf('*/*') === -1 &&
+    accept.indexOf('application/*' === -1)
+  ) {
+    four0four.notAcceptable(req, res, ['application/json']);
+    return;
+  }
+
+  var headers = req.headers
+  noCache(res) // TODO: should we disallow caching?
+  if (!req.isAuthenticated()) {
+    // /profile does return 401
+    four0four.unauthorized(req, res)
+  } else {
+    // TODO: still too much copy-paste from /status here
+    var passportUser = req.session.passport.user
+    var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
+    var reqOptions = {
+      hostname: options.mlHost,
+      port: options.mlHttpPort,
+      method: req.method,
+      path: path,
+      headers: req.headers
+    }
+
+    delete headers['content-length']
+    authHelper
+    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
+      authHost: reqOptions.hostname || options.mlHost,
+      authPort: reqOptions.port || options.mlHttpPort,
+      authUser: passportUser.username,
+      authPassword: passportUser.password
+    })
+    .then(function(authorization) {
+      delete headers['content-length']
+      if (authorization) {
+        headers.Authorization = authorization
+      }
+
+      // call backend, and pipe clientResponse straight into res
+      clientRequest(req, {
+        hostname: options.mlHost,
+        port: options.mlHttpPort,
+        path: path,
+        headers: headers,
+        ca: ca
+      }, null, res)
+
+    }, function(unauthorized) {
+      // /profile does return 401
+      four0four.unauthorized(req, res)
+    })
+  }
+})
+
+router.post('/profile', function(req, res) {
+  // reply with 415 if body isn't JSON
+  var contentType = req.headers['content-type'];
+  if (contentType !== 'application/json') {
+    four0four.unsupportedMediaType(req, res, ['application/json']);
+    return;
+  }
+
+  var headers = req.headers
+  noCache(res) // TODO: nothing to cache anyhow?
+  if (!req.isAuthenticated()) {
+    // /profile does return 401
+    four0four.unauthorized(req, res)
+  } else {
+    // TODO: still too much copy-paste from /status here
+    var passportUser = req.session.passport.user
+    var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
+    var reqOptions = {
+      method: 'PUT',
+      hostname: options.mlHost,
+      port: options.mlHttpPort,
+      method: req.method,
+      path: path,
+      headers: req.headers
+    }
+
+    delete headers['content-length']
+    authHelper
+    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
+      authHost: reqOptions.hostname || options.mlHost,
+      authPort: reqOptions.port || options.mlHttpPort,
+      authUser: passportUser.username,
+      authPassword: passportUser.password
+    })
+    .then(function(authorization) {
+      delete headers['content-length']
+      if (authorization) {
+        headers.Authorization = authorization
+      }
+
+      // call backend, and pipe clientResponse straight into res
+      clientRequest(req, {
+        hostname: options.mlHost,
+        port: options.mlHttpPort,
+        path: path,
+        headers: headers,
+        ca: ca
+      }, null, res)
+
+    }, function(unauthorized) {
+      // /profile does return 401
+      four0four.unauthorized(req, res)
+    })
+  }
+})
+
 function noCache(response) {
   response.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
   response.append('Pragma', 'no-cache') // HTTP 1.0
   response.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT') // Date in the past
 }
 
-function authStatus(authenticated, username, profile) {
-  return {
+function sendAuthStatus(res, authenticated, username, profile) {
+  res
+  .header('content-type', 'application/json')
+  .status(200)
+  .send({
     authenticated: authenticated,
     username: username,
     profile: profile || {},
     disallowUpdates: options.disallowUpdates,
     appUsersOnly: options.appUsersOnly,
     appName: options.appName
-  }
+  })
+}
+
+//// Helper function to make backend calls
+// invokes callback when backend call finishes
+// serverResponse is optional, clientResponse is piped into it if provided
+// otherwise data is returned as Buffer via callback
+function clientRequest(serverRequest, options, callback, serverResponse) {
+  var clientRequest = httpClient.request(
+    options,
+    function(clientResponse) {
+      var data = []
+
+      if (serverResponse) {
+        // proxy status to server response
+        serverResponse.statusCode = clientResponse.statusCode;
+
+        // proxy all headers to server response
+        for (var header in clientResponse.headers) {
+          // except auth challenge headers
+          if (header !== 'www-authenticate') {
+            serverResponse.header(header, clientResponse.headers[header]);
+          }
+        }
+      }
+
+      clientResponse.on('data', function(chunk) {
+        if (serverResponse) {
+          // proxy data to server response
+          serverResponse.write(chunk)
+        } else {
+          // or gather to pass back to callback
+          data.push(chunk)
+        }
+      })
+
+      clientResponse.on('end', function(chunk) {
+        if (serverResponse) {
+          // close server response for proxying convenience
+          serverResponse.end()
+        }
+
+        clientResponse.end();
+
+        // notify upstream, passing back data (if not streamed into server response yet)
+        if (callback) {
+          callback(clientResponse, Buffer.from(data))
+        }
+      })
+    }
+  )
+
+  // try to clean up in case of untimely responses
+  clientRequest.on('socket', function(socket) {
+    socket.on('timeout', function() {
+      console.log('Timeout reached, aborting proxy call..')
+      clientRequest.abort()
+    })
+  })
+
+  // try to clean up in case of failure
+  clientRequest.on('error', function(e) {
+    if (serverResponse) {
+      console.log('Problem with request: ' + e.message);
+      serverResponse.statusCode = 500;
+      serverResponse.end();
+    } else {
+      throw 'Proxy call failed: ' + e.message
+    }
+  })
+
+  // stream server request data into client request
+  serverRequest.pipe(clientRequest)
+
+  serverRequest.on('end', function() {
+    clientRequest.end();
+  });
 }
 
 module.exports = router
