@@ -123,7 +123,7 @@ router.post('/login', function(req, res, next) {
 
   var startsWithMatch = new RegExp('^' + options.appName + '-')
   if (options.appUsersOnly && !startsWithMatch.test(username)) {
-    res.status(403).send('Forbidden')
+    four0four.forbidden(req, res)
   } else {
     authHelper.handleLocalAuth(req, res, next)
   }
@@ -138,7 +138,7 @@ router.post('/logout', function(req, res) {
   noCache(res) // TODO: nothing to cache?
   req.logout()
   authHelper.clearAuthenticator(req.session)
-  res.status(204).send('')
+  res.status(204).end()
 })
 
 // Anything except POST /logout is denied with a 405
@@ -269,9 +269,8 @@ function noCache(response) {
 
 function sendAuthStatus(res, authenticated, username, profile) {
   res
-  .header('content-type', 'application/json')
   .status(200)
-  .send({
+  .json({
     authenticated: authenticated,
     username: username,
     profile: profile || {},
@@ -320,8 +319,6 @@ function clientRequest(serverRequest, options, callback, serverResponse) {
           serverResponse.end()
         }
 
-        clientResponse.end();
-
         // notify upstream, passing back data (if not streamed into server response yet)
         if (callback) {
           callback(clientResponse, Buffer.from(data))
@@ -342,8 +339,9 @@ function clientRequest(serverRequest, options, callback, serverResponse) {
   clientRequest.on('error', function(e) {
     if (serverResponse) {
       console.log('Problem with request: ' + e.message);
-      serverResponse.statusCode = 500;
-      serverResponse.end();
+      serverResponse
+      .status(500)
+      .end()
     } else {
       throw 'Proxy call failed: ' + e.message
     }
