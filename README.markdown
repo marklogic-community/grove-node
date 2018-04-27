@@ -8,36 +8,40 @@ This contains the Node implementation of a ML-UI-Resources (MUIR) middle-tier. I
 
 ## Configuration
 
-This project can be configured via environment variables or via configuration files. Environment variables will take precedence.
-
-### Configuration files
-
-**Be careful not to commit any configuration file containing application secrets into version control.** You should use environment variables or `.gitignore`-d configuration files for that.
-
-This project looks for options within a `muir.json` file. You can override or extend that configuration using a `muir-{NODE_ENV}.json` file. This is advisable in development, for example, for developer-specific `muir-development.json` configuration that is kept out of version control. It can also be used for production, with a `muir-production.json` file. Environment-specific files will take override `muir.json` properties.
-
-These configuration files can be located in this directory, or in the parent directory. A local file will override a file in the parent directory of the same name.
-
-You will find the allowable options in `utils/options.js`. You are advised to use the `muir config` command-line tool to update those, rather than changing them yourself. This allows any MUIR-configured UI to stay in sync.
-
-Those allowable options currently include:
-
-- `appName`: The name of this MUIR application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication.
-- `appPort`: The port this middle-tier will listen on.
-- `mlHost`: The host on which the MarkLogic REST server with which this server will communicate is available.
-- `mlRestPort`: The port on which the MarkLogic REST server with which this server will communicate is available.
-- `disallowUpdates`: An optional setting, allowing this application to inform the front-end that the user should not be allowed to update data.
+This project is configured via environment variables, roughly following the [recommendations from "The Twelve-Factor App"](https://12factor.net/config). Following established practice in the Vue.js and React communities, among others, we modify those recommendations by allowing configuration groupings for "development", "production" or other custom environments.
 
 ### Environment variables
 
-You can use environment variables to override specific pieces of configuration, or even to provide all the configuration for your MUIR application.
-
-There are influential schools of thought in current Web development that advocate keeping all of your configuration in environment variables. You can adopt that practice with this application.
+You can use environment variables to override specific pieces of configuration, or even to provide all the configuration for this MUIR-generated Node middle-tier.
 
 You can find the environment variables this application looks for in `utils/options.js`. Those environment variables currently include:
 
-- `MUIR_APP_NAME`: The name of this MUIR application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication.
+- `MUIR_APP_NAME`: The name of this MUIR application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication. It may also be used, for example, to establish which usernames are app-specific usernames. This can be used in conjunction with the `MUIR_APP_USERS_ONLY` setting to restrict the MarkLogic users considered valid by this middle-tier.
 - `MUIR_APP_PORT`: The port this middle-tier will listen on.
-- `ML_HOST`: The host on which the MarkLogic REST server with which this server will communicate is available.
-- `ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
-- `MUIR_DISALLOW_UPDATES`: An optional setting, allowing this application to inform the front-end that the user should not be allowed to update data.
+- `MUIR_ML_HOST`: The host on which the MarkLogic REST server with which this server will communicate is available.
+- `MUIR_ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
+- `MUIR_DISALLOW_UPDATES`: An optional setting, instructing this application not to allow any user to update data. During login, this application may also inform the front-end that users are not allowed to update data.
+
+### `.env` Configuration files
+
+There are many ways to set environment variables and those ways depend on the context within which your application is running. Feel free to use what fits your purposes.
+
+For convenience, this project adopts the pattern of `.env` files. When starting via `npm start`, the application will load environment variables stored with a `.env` file. You can override or extend that configuration for specific application-environments, such as "development", "production", or "test".
+
+ `.env` files **should be checked into version control** and **should not contain secrets**.**Be careful not to commit any configuration file containing application secrets into version control.** Such secrets could leak if the project repository was ever hosted publicly. Secrets belong in a `.env.local` file, or an application-environment-specific file such as `.env.development.local`. Such files are listed in this project's `.gitignore` file by default, and should remain there.
+
+The following files in the root of this project's source code are valid:
+
+- `.env`: Default, project-wide settings.
+- `.env.local`: Settings, ignored by git, which override those in `.env`. This is advisable to use in development, for example, for developer-specific configuration.
+- `.env.{app-environment}`: Settings loaded only in a specific app-environment. This depends on the NODE_ENV. For example, `npm start` will load `.env.development` while `npm test` will load `.env.test`. `npm run build` will run in production by default and use `.env.production`
+- `.env.{app-environment}.local`: Settings loaded only in a specific app-environment and ignored by git.
+
+You will find the allowable options in `utils/options.js`. You are advised to use the `muir config` command-line tool to update those, rather than changing them yourself. This allows any MUIR-configured UI to stay in sync.
+
+Upon generation, this application should already have a `.env` file, which as a simple `KEY=value` syntax:
+
+    FOO=bar
+    MUIR_APP_NAME=killer-demo
+
+For more advanced usage and information, please see the [documentation for the dotenv project](https://github.com/motdotla/dotenv).
