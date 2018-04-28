@@ -71,7 +71,7 @@ router.get('/status', function(req, res) {
         if (clientResponse.statusCode === 200) {
           var json = JSON.parse(data.toString())
           sendAuthStatus(res, true, passportUser.username, json.user)
-        } else if (response.statusCode === 404) {
+        } else if (clientResponse.statusCode === 404) {
           // no profile yet for user
           sendAuthStatus(res, true, passportUser.username, null)
         } else {
