@@ -292,13 +292,13 @@ function clientRequest(serverRequest, options, callback, serverResponse) {
 
       if (serverResponse) {
         // proxy status to server response
-        serverResponse.statusCode = clientResponse.statusCode;
+        serverResponse.status(clientResponse.statusCode)
 
         // proxy all headers to server response
         for (var header in clientResponse.headers) {
           // except auth challenge headers
           if (header !== 'www-authenticate') {
-            serverResponse.header(header, clientResponse.headers[header]);
+            serverResponse.header(header, clientResponse.headers[header])
           }
         }
       }
@@ -321,7 +321,7 @@ function clientRequest(serverRequest, options, callback, serverResponse) {
 
         // notify upstream, passing back data (if not streamed into server response yet)
         if (callback) {
-          callback(clientResponse, Buffer.from(data))
+          callback(clientResponse, Buffer.concat(data))
         }
       })
     }
