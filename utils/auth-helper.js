@@ -203,7 +203,7 @@ function getAuth (session, reqOptions) {
   var passportUser = session.passport.user
   return getAuthorization(session, reqOptions.method || 'GET', reqOptions.path, {
     authHost: reqOptions.hostname || options.mlHost,
-    authPort: reqOptions.port || options.mlHttpPort,
+    authPort: reqOptions.port || options.mlRestPort,
     authUser: passportUser.username,
     authPassword: passportUser.password
   })
