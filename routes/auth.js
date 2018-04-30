@@ -242,7 +242,6 @@ function sendAuthStatus(res, authenticated, username, profile) {
 function clientRequest(serverRequest, reqOptions, callback, serverResponse) {
   reqOptions.hostname = reqOptions.hostname || options.mlHost
   reqOptions.port = reqOptions.port || options.mlHttpPort
-  console.log(reqOptions)
   var clientRequest = httpClient.request(
     reqOptions,
     function(clientResponse) {
