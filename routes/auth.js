@@ -192,7 +192,6 @@ router.post('/profile', function(req, res) {
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
       method: 'PUT',
-      method: req.method,
       path: path,
       headers: req.headers,
       ca: ca
