@@ -199,6 +199,16 @@ function getAuthenticator (session, user, host, port) {
   return authenticator
 }
 
+function getAuth (session, reqOptions) {
+  var passportUser = session.passport.user
+  return getAuthorization(session, reqOptions.method || 'GET', reqOptions.path, {
+    authHost: reqOptions.hostname || options.mlHost,
+    authPort: reqOptions.port || options.mlHttpPort,
+    authUser: passportUser.username,
+    authPassword: passportUser.password
+  })
+}
+
 function getAuthorization (session, reqMethod, reqPath, authOptions) {
   reqMethod = reqMethod || 'GET'
   var authorization = null
@@ -262,6 +272,7 @@ var authHelper = {
   isAuthenticated: isAuthenticated,
   handleLocalAuth: handleLocalAuth,
   getAuthorization: getAuthorization,
+  getAuth: getAuth,
   clearAuthenticator: clearAuthenticator,
   expiresAt: expiresAt
 }

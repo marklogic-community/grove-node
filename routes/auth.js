@@ -31,7 +31,6 @@ router.get('/status', function(req, res) {
     return;
   }
 
-  var headers = req.headers
   noCache(res)
   if (!req.isAuthenticated()) {
     // /status never returns 401
@@ -40,34 +39,20 @@ router.get('/status', function(req, res) {
     var passportUser = req.session.passport.user
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
-      hostname: options.mlHost,
-      port: options.mlRestPort,
-      method: req.method,
       path: path,
-      headers: req.headers
+      headers: req.headers,
+      ca: ca
     }
+    delete reqOptions.headers['content-length']
 
-    delete headers['content-length']
     authHelper
-    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
-      authHost: reqOptions.hostname || options.mlHost,
-      authPort: reqOptions.port || options.mlHttpPort,
-      authUser: passportUser.username,
-      authPassword: passportUser.password
-    })
+    .getAuth(req.session, reqOptions)
     .then(function(authorization) {
-      delete headers['content-length']
       if (authorization) {
-        headers.Authorization = authorization
+        reqOptions.headers.Authorization = authorization
       }
 
-      clientRequest(req, {
-        hostname: options.mlHost,
-        port: options.mlHttpPort,
-        path: path,
-        headers: headers,
-        ca: ca
-      }, function(clientResponse, data) {
+      clientRequest(req, reqOptions, function(clientResponse, data) {
         if (clientResponse.statusCode === 200) {
           var json = JSON.parse(data.toString())
           sendAuthStatus(res, true, passportUser.username, json.user)
@@ -158,7 +143,6 @@ router.get('/profile', function(req, res) {
     return;
   }
 
-  var headers = req.headers
   noCache(res) // TODO: should we disallow caching?
   if (!req.isAuthenticated()) {
     // /profile does return 401
@@ -168,35 +152,21 @@ router.get('/profile', function(req, res) {
     var passportUser = req.session.passport.user
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
-      hostname: options.mlHost,
-      port: options.mlHttpPort,
-      method: req.method,
       path: path,
-      headers: req.headers
+      headers: req.headers,
+      ca: ca
     }
+    delete reqOptions.headers['content-length']
 
-    delete headers['content-length']
     authHelper
-    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
-      authHost: reqOptions.hostname || options.mlHost,
-      authPort: reqOptions.port || options.mlHttpPort,
-      authUser: passportUser.username,
-      authPassword: passportUser.password
-    })
+    .getAuth(req.session, reqOptions)
     .then(function(authorization) {
-      delete headers['content-length']
       if (authorization) {
-        headers.Authorization = authorization
+        reqOptions.headers.Authorization = authorization
       }
 
       // call backend, and pipe clientResponse straight into res
-      clientRequest(req, {
-        hostname: options.mlHost,
-        port: options.mlHttpPort,
-        path: path,
-        headers: headers,
-        ca: ca
-      }, null, res)
+      clientRequest(req, reqOptions, null, res)
 
     }, function(unauthorized) {
       // /profile does return 401
@@ -213,46 +183,31 @@ router.post('/profile', function(req, res) {
     return;
   }
 
-  var headers = req.headers
   noCache(res) // TODO: nothing to cache anyhow?
   if (!req.isAuthenticated()) {
     // /profile does return 401
     four0four.unauthorized(req, res)
   } else {
-    // TODO: still too much copy-paste from /status here
     var passportUser = req.session.passport.user
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
       method: 'PUT',
-      hostname: options.mlHost,
-      port: options.mlHttpPort,
       method: req.method,
       path: path,
-      headers: req.headers
+      headers: req.headers,
+      ca: ca
     }
+    delete reqOptions.headers['content-length']
 
-    delete headers['content-length']
     authHelper
-    .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
-      authHost: reqOptions.hostname || options.mlHost,
-      authPort: reqOptions.port || options.mlHttpPort,
-      authUser: passportUser.username,
-      authPassword: passportUser.password
-    })
+    .getAuth(req.session, reqOptions)
     .then(function(authorization) {
-      delete headers['content-length']
       if (authorization) {
-        headers.Authorization = authorization
+        reqOptions.headers.Authorization = authorization
       }
 
       // call backend, and pipe clientResponse straight into res
-      clientRequest(req, {
-        hostname: options.mlHost,
-        port: options.mlHttpPort,
-        path: path,
-        headers: headers,
-        ca: ca
-      }, null, res)
+      clientRequest(req, reqOptions, null, res)
 
     }, function(unauthorized) {
       // /profile does return 401
@@ -284,9 +239,12 @@ function sendAuthStatus(res, authenticated, username, profile) {
 // invokes callback when backend call finishes
 // serverResponse is optional, clientResponse is piped into it if provided
 // otherwise data is returned as Buffer via callback
-function clientRequest(serverRequest, options, callback, serverResponse) {
+function clientRequest(serverRequest, reqOptions, callback, serverResponse) {
+  reqOptions.hostname = reqOptions.hostname || options.mlHost
+  reqOptions.port = reqOptions.port || options.mlHttpPort
+  console.log(reqOptions)
   var clientRequest = httpClient.request(
-    options,
+    reqOptions,
     function(clientResponse) {
       var data = []
 
