@@ -17,10 +17,12 @@ You can use environment variables to override specific pieces of configuration, 
 You can find the environment variables this application looks for in `utils/options.js`. Those environment variables currently include:
 
 - `MUIR_APP_NAME`: The name of this MUIR application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication. It may also be used, for example, to establish which usernames are app-specific usernames. This can be used in conjunction with the `MUIR_APP_USERS_ONLY` setting to restrict the MarkLogic users considered valid by this middle-tier.
+- `MUIR_SESSION_SECRET`: The [session secret for this application's Express session](https://github.com/expressjs/session#secret). For security, it is advisable to set a different secret in each of your deployments and to keep it out of version control (see section on .env\*.local files for one strategy).
 - `MUIR_APP_PORT`: The port this middle-tier will listen on.
 - `MUIR_ML_HOST`: The host on which the MarkLogic REST server with which this server will communicate is available.
 - `MUIR_ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
-- `MUIR_DISALLOW_UPDATES`: An optional setting, instructing this application not to allow any user to update data. During login, this application may also inform the front-end that users are not allowed to update data.
+- `MUIR_APP_USERS_ONLY`: An optional setting, instructing this middle-tier application not to authorize any users whose usernames do not being with `MUIR_APP_NAME`. This is particularly helpful in a situation where the backend MarkLogic instance has many users, and you do not wish to allow those other users (including administrators) to log into this application. During auth calls, this application may inform the front-end of this setting.
+- `MUIR_DISALLOW_UPDATES`: An optional setting, instructing this middle-tier application not to allow any user to update data. During auth calls, this application may inform the front-end of this setting.
 
 ### `.env` Configuration files
 
