@@ -11,18 +11,18 @@ var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy
 
 var httpClient = http
-if (options.mlCertificate) {
-  console.log('ML Certificate = "' + options.mlCertificate + '"')
-  console.log('Will use https client.')
-  httpClient = https
-} else {
-  console.log('ML Certificate = "' + options.mlCertificate + '"')
-  console.log('Will use http client.')
-}
+// if (options.mlCertificate) {
+//   console.log('ML Certificate = "' + options.mlCertificate + '"')
+//   console.log('Will use https client.')
+//   httpClient = https
+// } else {
+//   console.log('ML Certificate = "' + options.mlCertificate + '"')
+//   console.log('Will use http client.')
+// }
 
 var defaultOptions = {
   authHost: options.mlHost,
-  authPort: options.mlHttpPort,
+  authPort: options.mlRestPort,
   challengeMethod: 'HEAD',
   challengePath: '/v1/ping'
 }
@@ -42,14 +42,14 @@ function init () {
     function (req, username, password, done) {
       var reqOptions = {
         hostname: options.mlHost,
-        port: options.mlHttpPort,
+        port: options.mlRestPort,
         path: '/v1/documents?uri=/api/users/' + username + '.json',
         headers: {}
       }
 
       getAuthorization(req.session, reqOptions.method, reqOptions.path, {
         authHost: options.mlHost,
-        authPort: options.mlHttpPort,
+        authPort: options.mlRestPort,
         authUser: username,
         authPassword: password
       }).then(function (authorization) {

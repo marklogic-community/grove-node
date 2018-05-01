@@ -26,7 +26,7 @@ router.get('/', (req, res) => {
       const httpOptions = {
         // protocol: options.httpsStrict ? 'https' : 'http',
         hostname: options.mlHost,
-        port: options.mlHttpPort,
+        port: options.mlRestPort,
         path: '/v1/documents?uri=' + uri,
         method: 'GET',
         headers: {

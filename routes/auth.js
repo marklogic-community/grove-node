@@ -4,19 +4,20 @@ var router = require('express').Router()
 var options = require('../utils/options')()
 var authHelper = require('../utils/auth-helper')
 var http = require('http')
-var https = require('https')
+// var https = require('https')
 var fs = require('fs')
 var four0four = require('../utils/404')()
 
-var ca = ''
-var httpClient = null
-if (options.mlCertificate) {
-  console.log('Loading ML Certificate ' + options.mlCertificate)
-  ca = fs.readFileSync(options.mlCertificate)
-  httpClient = https
-} else {
-  httpClient = http
-}
+var httpClient = http
+// var ca = ''
+// var httpClient = null
+// if (options.mlCertificate) {
+//   console.log('Loading ML Certificate ' + options.mlCertificate)
+//   ca = fs.readFileSync(options.mlCertificate)
+//   httpClient = https
+// } else {
+//   httpClient = http
+// }
 
 router.get('/status', function(req, res) {
   var headers = req.headers
@@ -28,7 +29,7 @@ router.get('/status', function(req, res) {
     var path = '/v1/documents?uri=/api/users/' + passportUser.username + '.json'
     var reqOptions = {
       hostname: options.mlHost,
-      port: options.mlHttpPort,
+      port: options.mlRestPort,
       method: req.method,
       path: path,
       headers: req.headers
@@ -38,7 +39,7 @@ router.get('/status', function(req, res) {
     authHelper
       .getAuthorization(req.session, reqOptions.method, reqOptions.path, {
         authHost: reqOptions.hostname || options.mlHost,
-        authPort: reqOptions.port || options.mlHttpPort,
+        authPort: reqOptions.port || options.mlRestPort,
         authUser: passportUser.username,
         authPassword: passportUser.password
       })
@@ -50,7 +51,7 @@ router.get('/status', function(req, res) {
         var profile = httpClient.get(
           {
             hostname: options.mlHost,
-            port: options.mlHttpPort,
+            port: options.mlRestPort,
             path: path,
             headers: headers,
             ca: ca

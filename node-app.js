@@ -35,10 +35,9 @@ app.use(helmet({
   noCache: false // make sure it is disabled
 }))
 
-// TODO: switch out name when generating
 app.use(expressSession({
-  name: 'muir-app',
-  secret: '1234567890QWERTY',
+  name: options.appName,
+  secret: options.sessionSecret,
   saveUninitialized: true,
   resave: true
 }))
@@ -78,24 +77,26 @@ switch (environment) {
     break
 }
 
-var server = null
-if (options.nodeJsCertificate) {
-  // Docs on how to create self signed certificates
-  // https://devcenter.heroku.com/articles/ssl-certificate-self#prerequisites
-  console.log('Starting the server in HTTPS')
-  console.log('Node Certificate ' + options.nodeJsCertificate)
-  console.log('Node JS key ' + options.nodeJsPrivateKey)
-  var privateKey = fs.readFileSync(options.nodeJsPrivateKey, 'utf8')
-  var certificate = fs.readFileSync(options.nodeJsCertificate, 'utf8')
-  var credentials = {
-    key: privateKey,
-    cert: certificate
-  }
-  server = https.createServer(credentials, app)
-} else {
-  console.log('Starting the server in HTTP')
-  server = http.createServer(app)
-}
+console.log('Starting the server in HTTP')
+var server = http.createServer(app)
+// var server = null
+// if (options.nodeJsCertificate) {
+//   // Docs on how to create self signed certificates
+//   // https://devcenter.heroku.com/articles/ssl-certificate-self#prerequisites
+//   console.log('Starting the server in HTTPS')
+//   console.log('Node Certificate ' + options.nodeJsCertificate)
+//   console.log('Node JS key ' + options.nodeJsPrivateKey)
+//   var privateKey = fs.readFileSync(options.nodeJsPrivateKey, 'utf8')
+//   var certificate = fs.readFileSync(options.nodeJsCertificate, 'utf8')
+//   var credentials = {
+//     key: privateKey,
+//     cert: certificate
+//   }
+//   server = https.createServer(credentials, app)
+// } else {
+//   console.log('Starting the server in HTTP')
+//   server = http.createServer(app)
+// }
 
 server.listen(port, function () {
   console.log('Express server listening on port ' + port)
