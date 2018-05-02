@@ -13,7 +13,8 @@ var availableOptions = {
   },
   sessionSecret: {
     default: 'D5sktFU2flpH&fPzf6Sw',
-    variable: 'MUIR_SESSION_SECRET'
+    variable: 'MUIR_SESSION_SECRET',
+    secret: true
   },
   appPort: {
     default: 9003,
@@ -73,13 +74,19 @@ function setOptions() {
   options = {}
   Object.keys(availableOptions).forEach(function(optionKey) {
     var optionConfig = availableOptions[optionKey]
-    var providedValue = process.env[optionConfig.variable]
+    var variable = optionConfig.variable
+    var providedValue = process.env[variable]
+    var finalValue
     if (typeof providedValue == 'undefined') {
-      optionsNotSetByUser.push(optionConfig.variable)
-      options[optionKey] = optionConfig.default
+      optionsNotSetByUser.push(variable)
+      finalValue = optionConfig.default
     } else {
-      options[optionKey] = coerce(providedValue, optionConfig.coerce)
+      finalValue = coerce(providedValue, optionConfig.coerce)
     }
+    if (!optionConfig.secret) {
+      console.log(variable + '=' + finalValue)
+    }
+    options[optionKey] = finalValue
   })
 }
 

@@ -1,5 +1,15 @@
 'use strict'
 
+// Makes the script crash on unhandled rejections instead of silently
+// ignoring them. In the future, promise rejections that are not handled will
+// terminate the Node.js process with a non-zero exit code.
+process.on('unhandledRejection', err => {
+  throw err
+})
+
+// Read environment variables
+require('./utils/readEnv').readEnv()
+
 var fs = require('fs')
 var express = require('express')
 var helmet = require('helmet')
@@ -47,10 +57,6 @@ app.use(passport.session())
 
 app.use('/api', require('./routes'))
 
-console.log('About to crank up node')
-console.log('PORT=' + port)
-console.log('NODE_ENV=' + environment)
-
 switch (environment) {
   case 'prod':
   case 'dev':
@@ -66,8 +72,6 @@ switch (environment) {
   default:
     console.log('** UI **')
     app.use(express.static('./ui/'))
-    app.use(express.static('./')) // for bower_components
-    app.use(express.static('./tmp'))
     // Any invalid calls for templateUrls are under app/* and should return 404
     app.use('/app/*', function (req, res, next) {
       four0four.send404(req, res)
