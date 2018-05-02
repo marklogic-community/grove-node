@@ -78,7 +78,8 @@ module.exports = config => {
     }
     return JSON.stringify({
       search: {
-        qtext: (query.queryText || '') + appendText
+        qtext: (query.queryText || '') + appendText,
+        options: options
       }
     })
   }
