@@ -6,7 +6,7 @@ process.env.APP_PORT = 61234
 const mlPort = '51234'
 process.env.ML_PORT = mlPort
 const mlHost = 'localhost'
-process.env.ML_HOST = mlHost
+process.env.MUIR_ML_HOST = mlHost
 process.env.HTTPS_STRICT = false
 
 const chai = require('chai')

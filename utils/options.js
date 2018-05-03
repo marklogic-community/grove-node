@@ -1,52 +1,116 @@
 'use strict'
 
-module.exports = function () {
-  var environment = process.env.NODE_ENV || 'local'
-  environment = environment === 'build' ? 'prod' : environment
-
-  var envJson = getEnvOptions(environment)
-
-  var options = {
-    env: environment,
-    appName: process.env.APP_NAME || envJson['app-name'] || 'muir-app',
-    httpsStrict: bool(process.env.HTTPS_STRICT || envJson.httpsStrict || true),
-    // ML CERTIFICATE should be set if "ssl require client certificate" of the ML AppServer is set to true
-    mlCertificate: process.env.ML_CERTIFICATE || envJson.mlCertificate || '',
-    nodeJsCertificate: process.env.NODEJS_CERTIFICATE || envJson.nodeJsCertificate || '',
-    nodeJsPrivateKey: process.env.NODEJS_PRIVATE_KEY || envJson.nodeJsPrivateKey || '',
-    appPort: process.env.APP_PORT || process.env.PORT || envJson['node-port'] || '9003',
-    mlHost: process.env.ML_HOST || envJson['ml-host'] || 'localhost',
-    mlHttpPort: process.env.ML_PORT || envJson['ml-http-port'] || '8063',
-    disallowUpdates: bool(process.env.DISALLOW_UPDATES || envJson['disallow-updates'] || false),
-    appUsersOnly: bool(process.env.APP_USERS_ONLY || envJson['appusers-only'] || false)
+var options
+var optionsNotSetByUser = []
+var availableOptions = {
+  env: {
+    default: 'development',
+    variable: 'NODE_ENV'
+  },
+  appName: {
+    default: 'muir-app',
+    variable: 'MUIR_APP_NAME'
+  },
+  sessionSecret: {
+    default: 'D5sktFU2flpH&fPzf6Sw',
+    variable: 'MUIR_SESSION_SECRET',
+    secret: true
+  },
+  appPort: {
+    default: 9003,
+    variable: 'MUIR_APP_PORT',
+    coerce: 'port'
+  },
+  mlHost: {
+    default: 'localhost',
+    variable: 'MUIR_ML_HOST'
+  },
+  mlRestPort: {
+    default: 8063,
+    variable: 'MUIR_ML_REST_PORT',
+    coerce: 'port'
+  },
+  disallowUpdates: {
+    default: false,
+    variable: 'MUIR_DISALLOW_UPDATES',
+    coerce: 'boolean'
+  },
+  appUsersOnly: {
+    default: false,
+    variable: 'MUIR_APP_USERS_ONLY',
+    coerce: 'boolean'
   }
+}
 
-  if (options.httpsStrict) {
-    console.info('Self signed certificates not allowed.')
-  } else {
-    console.warn('Allowing self signed certificates. Not advisable on production.')
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+function coerceToPort(port) {
+  var coerced = parseInt(port)
+  if (coerced < 1 || coerced > 65535) {
+    console.error(
+      '\nYou specified an invalid port: ' +
+        coerced +
+        '. Please check your application configuration.'
+    )
+    return
   }
+  return coerced
+}
 
-  return options
+function coerceToBool(x) {
+  return x === 'true' || x === true
+}
 
-  function getEnvOptions (env) {
-    var envJson
-    var envFile = '../../' + env + '.json'
-    console.log('envFile:', envFile)
+function coerce(value, coerceTo) {
+  switch (coerceTo) {
+    case 'boolean':
+      return coerceToBool(value)
+    case 'port':
+      return coerceToPort(value)
+    default:
+      return value
+  }
+}
 
-    try {
-      envJson = require(envFile)
-    } catch (e) {
-      envJson = {}
-      console.log('Couldn\'t find ' + envFile + '; you can create this file to override properties - ' +
-        '`gulp init-local` creates local.json which can be modified for other environments as well')
+function setOptions() {
+  options = {}
+  Object.keys(availableOptions).forEach(function(optionKey) {
+    var optionConfig = availableOptions[optionKey]
+    var variable = optionConfig.variable
+    var providedValue = process.env[variable]
+    var finalValue
+    if (providedValue === undefined) {
+      optionsNotSetByUser.push(variable)
+      finalValue = optionConfig.default
+    } else {
+      finalValue = coerce(providedValue, optionConfig.coerce)
     }
+    if (!optionConfig.secret) {
+      console.log(variable + '=' + finalValue)
+    }
+    options[optionKey] = finalValue
+  })
+}
 
-    return envJson
+function warnIfOptionsNotSpecified() {
+  if (optionsNotSetByUser.length > 0) {
+    console.warn(
+      '\nYou did not specify the following environment variables for app configuration: ' +
+        optionsNotSetByUser.join(', ') +
+        '. This might be fine, if you are comfortable with the default settings. Consult the README on how to configure this application.\n'
+    )
   }
+}
 
-  function bool (x) {
-    return (x === 'true' || x === true)
+module.exports = function() {
+  // memoize the options: shouldn't change during a single run of the server
+  if (!options) {
+    setOptions()
+    warnIfOptionsNotSpecified()
   }
+  return options
+  // if (options.httpsStrict) {
+  //   console.info('Self signed certificates not allowed.')
+  // } else {
+  //   console.warn('Allowing self signed certificates. Not advisable on production.')
+  //   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  // }
 }

@@ -95,7 +95,7 @@ module.exports = config => {
           // TODO: hanging with SSL at the moment
           // protocol: options.httpsStrict ? 'https' : 'http',
           hostname: options.mlHost,
-          port: options.mlHttpPort,
+          port: options.mlRestPort,
           path:
             '/v1/search?format=json&pageLength=' +
             query.pageLength +

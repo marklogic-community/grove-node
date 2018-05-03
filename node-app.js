@@ -1,5 +1,15 @@
 'use strict'
 
+// Makes the script crash on unhandled rejections instead of silently
+// ignoring them. In the future, promise rejections that are not handled will
+// terminate the Node.js process with a non-zero exit code.
+process.on('unhandledRejection', err => {
+  throw err
+})
+
+// Read environment variables
+require('./utils/readEnv').readEnv()
+
 var fs = require('fs')
 var express = require('express')
 var helmet = require('helmet')
@@ -35,10 +45,9 @@ app.use(helmet({
   noCache: false // make sure it is disabled
 }))
 
-// TODO: switch out name when generating
 app.use(expressSession({
-  name: 'muir-app',
-  secret: '1234567890QWERTY',
+  name: options.appName,
+  secret: options.sessionSecret,
   saveUninitialized: true,
   resave: true
 }))
@@ -47,10 +56,6 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use('/api', require('./routes'))
-
-console.log('About to crank up node')
-console.log('PORT=' + port)
-console.log('NODE_ENV=' + environment)
 
 switch (environment) {
   case 'prod':
@@ -67,8 +72,6 @@ switch (environment) {
   default:
     console.log('** UI **')
     app.use(express.static('./ui/'))
-    app.use(express.static('./')) // for bower_components
-    app.use(express.static('./tmp'))
     // Any invalid calls for templateUrls are under app/* and should return 404
     app.use('/app/*', function (req, res, next) {
       four0four.send404(req, res)
@@ -78,24 +81,26 @@ switch (environment) {
     break
 }
 
-var server = null
-if (options.nodeJsCertificate) {
-  // Docs on how to create self signed certificates
-  // https://devcenter.heroku.com/articles/ssl-certificate-self#prerequisites
-  console.log('Starting the server in HTTPS')
-  console.log('Node Certificate ' + options.nodeJsCertificate)
-  console.log('Node JS key ' + options.nodeJsPrivateKey)
-  var privateKey = fs.readFileSync(options.nodeJsPrivateKey, 'utf8')
-  var certificate = fs.readFileSync(options.nodeJsCertificate, 'utf8')
-  var credentials = {
-    key: privateKey,
-    cert: certificate
-  }
-  server = https.createServer(credentials, app)
-} else {
-  console.log('Starting the server in HTTP')
-  server = http.createServer(app)
-}
+console.log('Starting the server in HTTP')
+var server = http.createServer(app)
+// var server = null
+// if (options.nodeJsCertificate) {
+//   // Docs on how to create self signed certificates
+//   // https://devcenter.heroku.com/articles/ssl-certificate-self#prerequisites
+//   console.log('Starting the server in HTTPS')
+//   console.log('Node Certificate ' + options.nodeJsCertificate)
+//   console.log('Node JS key ' + options.nodeJsPrivateKey)
+//   var privateKey = fs.readFileSync(options.nodeJsPrivateKey, 'utf8')
+//   var certificate = fs.readFileSync(options.nodeJsCertificate, 'utf8')
+//   var credentials = {
+//     key: privateKey,
+//     cert: certificate
+//   }
+//   server = https.createServer(credentials, app)
+// } else {
+//   console.log('Starting the server in HTTP')
+//   server = http.createServer(app)
+// }
 
 server.listen(port, function () {
   console.log('Express server listening on port ' + port)
