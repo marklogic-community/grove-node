@@ -1,6 +1,7 @@
 'use strict'
 
 var fs = require('fs')
+var dotenv = require('dotenv')
 
 module.exports = {
   readEnv: function readEnv() {
@@ -11,22 +12,19 @@ module.exports = {
       )
     }
 
-    var dotenv = './.env'
+    var dotenvFilename = './.env'
     var dotenvFiles = [
-      dotenv + '.' + NODE_ENV + '.local',
-      dotenv + '.' + NODE_ENV,
-      // Don't include `.env.local` for `test` environment
-      // since normally you expect tests to produce the same
-      // results for everyone
-      NODE_ENV !== 'test' && dotenv + '.local',
-      dotenv
+      dotenvFilename + '.' + NODE_ENV + '.local',
+      dotenvFilename + '.' + NODE_ENV,
+      dotenvFilename + '.local',
+      dotenvFilename
     ].filter(Boolean)
 
     // Load environment variables from .env* files.
     // https://github.com/motdotla/dotenv
     dotenvFiles.forEach(function(dotenvFile) {
       if (fs.existsSync(dotenvFile)) {
-        require('dotenv').config({
+        dotenv.config({
           path: dotenvFile
         })
       }

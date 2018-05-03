@@ -35,7 +35,7 @@ For convenience, this project adopts the pattern of `.env` files. When starting 
 The following files in the root of this project's source code are valid. The existing environment is checked first, then the files in this list from bottom to top. The first value encountered will take precedence.
 
 - `.env`: Default, project-wide settings.
-- `.env.local`: Settings, ignored by git, which override those in `.env`. This is advisable to use in development, for example, for developer-specific configuration. **This file is not loaded when `NODE_ENV` = 'test'** because tests should be consistent across environments.
+- `.env.local`: Settings, ignored by git, which override those in `.env`. This is advisable to use in development, for example, for developer-specific configuration.
 - `.env.{app-environment}`: Settings loaded only in a specific app-environment. This depends on the NODE_ENV. For example, `npm start` will load `.env.development` while `npm test` will load `.env.test`. `npm run build` will run in production by default and use `.env.production`
 - `.env.{app-environment}.local`: Settings loaded only in a specific app-environment and ignored by git.
 

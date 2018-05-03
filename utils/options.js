@@ -77,7 +77,7 @@ function setOptions() {
     var variable = optionConfig.variable
     var providedValue = process.env[variable]
     var finalValue
-    if (typeof providedValue == 'undefined') {
+    if (providedValue === undefined) {
       optionsNotSetByUser.push(variable)
       finalValue = optionConfig.default
     } else {
