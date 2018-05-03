@@ -249,7 +249,9 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
         session.authenticators = {}
         d.reject('Unauthorized')
       }
-    })
+    }
+    // TODO: capture error response?
+    )
     challengeReq.end()
   }
   return d.promise

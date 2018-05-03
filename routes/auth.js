@@ -131,6 +131,9 @@ router.use('/logout', function(req, res) {
   four0four.methodNotAllowed(req, res, ['POST']);
 })
 
+// TODO: make more use of route middle-ware for checking authenticated and req assertions?
+// router.use(authHelper.handleLocalAuth);
+
 router.get('/profile', function(req, res) {
   // reply with 406 if client doesn't accept JSON
   var accept = req.headers['accept'];
@@ -169,6 +172,7 @@ router.get('/profile', function(req, res) {
       clientRequest(req, reqOptions, null, res)
 
     }, function(unauthorized) {
+      // TODO: might return an error too?
       // /profile does return 401
       four0four.unauthorized(req, res)
     })
@@ -182,6 +186,14 @@ router.post('/profile', function(req, res) {
     four0four.unsupportedMediaType(req, res, ['application/json']);
     return;
   }
+
+  // TODO: consider decorating req and res to allow doing things like:
+  // if (!req.hasJsonBody()) {
+  //   res.sendUnsupportedMedia(['json']);
+  //   return;
+  // }
+
+  // req.getAuth().then....
 
   noCache(res) // TODO: nothing to cache anyhow?
   if (!req.isAuthenticated()) {
