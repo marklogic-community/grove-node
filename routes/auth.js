@@ -8,27 +8,23 @@ var http = require('http')
 var fs = require('fs')
 var four0four = require('../utils/404')()
 
-var httpClient = http
-// var ca = ''
-// var httpClient = null
+var ca = ''
+var httpClient = null
 // if (options.mlCertificate) {
 //   console.log('Loading ML Certificate ' + options.mlCertificate)
 //   ca = fs.readFileSync(options.mlCertificate)
 //   httpClient = https
 // } else {
-//   httpClient = http
+  httpClient = http
 // }
+
+var acceptJsonTypes = ['application/json','application/*','*/*']
 
 router.get('/status', function(req, res) {
   // reply with 406 if client doesn't accept JSON
-  var accept = req.headers['accept'];
-  if (
-    accept.indexOf('application/json') === -1 &&
-    accept.indexOf('*/*') === -1 &&
-    accept.indexOf('application/*' === -1)
-  ) {
-    four0four.notAcceptable(req, res, ['application/json']);
-    return;
+  if (!req.accepts(acceptJsonTypes)) {
+    four0four.notAcceptable(req, res, acceptJsonTypes)
+    return
   }
 
   noCache(res)
@@ -78,40 +74,44 @@ router.use('/status', function(req, res) {
 
 router.post('/login', function(req, res, next) {
   // reply with 415 if body isn't JSON
-  var contentType = req.headers['content-type'];
-  if (contentType !== 'application/json') {
+  if (!req.is('application/json')) {
     four0four.unsupportedMediaType(req, res, ['application/json']);
-    return;
+    return
   }
 
   // reply with 406 if client doesn't accept JSON
-  var accept = req.headers['accept'];
-  if (
-    accept.indexOf('application/json') === -1 &&
-    accept.indexOf('*/*') === -1 &&
-    accept.indexOf('application/*' === -1)
-  ) {
-    four0four.notAcceptable(req, res, ['application/json']);
-    return;
+  if (!req.accepts(acceptJsonTypes)) {
+    four0four.notAcceptable(req, res, acceptJsonTypes)
+    return
   }
 
-  // reply with 400 if username or password is missing
-  var username = req.body.username;
-  var password = req.body.password;
-  if (username === undefined || password === undefined) {
-    four0four.missingRequired(req, res, ['username', 'password']);
-    return;
-  }
+  // handle body parsing old fashion way, as we only want to apply it for /login
+  // and only after doing above asserts
+  var data = []
+  req.on('data', function(chunk) {
+    data.push(chunk)
+  })
+  req.on('end', function() {
+    req.body = JSON.parse(Buffer.concat(data).toString())
 
-  // make sure login isn't cached
-  noCache(res)
+    // reply with 400 if username or password is missing
+    var username = req.body.username;
+    var password = req.body.password;
+    if (username === undefined || password === undefined) {
+      four0four.missingRequired(req, res, ['username', 'password']);
+      return;
+    }
 
-  var startsWithMatch = new RegExp('^' + options.appName + '-')
-  if (options.appUsersOnly && !startsWithMatch.test(username)) {
-    four0four.forbidden(req, res)
-  } else {
-    authHelper.handleLocalAuth(req, res, next)
-  }
+    // make sure login isn't cached
+    noCache(res)
+
+    var startsWithMatch = new RegExp('^' + options.appName + '-')
+    if (options.appUsersOnly && !startsWithMatch.test(username)) {
+      four0four.forbidden(req, res)
+    } else {
+      authHelper.handleLocalAuth(req, res, next)
+    }
+  })
 })
 
 // Anything except POST /login is denied with a 405
@@ -136,14 +136,9 @@ router.use('/logout', function(req, res) {
 
 router.get('/profile', function(req, res) {
   // reply with 406 if client doesn't accept JSON
-  var accept = req.headers['accept'];
-  if (
-    accept.indexOf('application/json') === -1 &&
-    accept.indexOf('*/*') === -1 &&
-    accept.indexOf('application/*' === -1)
-  ) {
-    four0four.notAcceptable(req, res, ['application/json']);
-    return;
+  if (!req.accepts(acceptJsonTypes)) {
+    four0four.notAcceptable(req, res, acceptJsonTypes)
+    return
   }
 
   noCache(res) // TODO: should we disallow caching?
@@ -181,19 +176,12 @@ router.get('/profile', function(req, res) {
 
 router.post('/profile', function(req, res) {
   // reply with 415 if body isn't JSON
-  var contentType = req.headers['content-type'];
-  if (contentType !== 'application/json') {
-    four0four.unsupportedMediaType(req, res, ['application/json']);
-    return;
+  if (!req.is('application/json')) {
+    four0four.unsupportedMediaType(req, res, ['application/json'])
+    return
   }
 
-  // TODO: consider decorating req and res to allow doing things like:
-  // if (!req.hasJsonBody()) {
-  //   res.sendUnsupportedMedia(['json']);
-  //   return;
-  // }
-
-  // req.getAuth().then....
+  // TODO? req.getAuth().then....
 
   noCache(res) // TODO: nothing to cache anyhow?
   if (!req.isAuthenticated()) {
@@ -252,7 +240,7 @@ function sendAuthStatus(res, authenticated, username, profile) {
 // otherwise data is returned as Buffer via callback
 function clientRequest(serverRequest, reqOptions, callback, serverResponse) {
   reqOptions.hostname = reqOptions.hostname || options.mlHost
-  reqOptions.port = reqOptions.port || options.mlHttpPort
+  reqOptions.port = reqOptions.port || options.mlRestPort
   var clientRequest = httpClient.request(
     reqOptions,
     function(clientResponse) {
