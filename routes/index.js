@@ -3,12 +3,6 @@
 const express = require('express')
 var router = express.Router()
 
-// [GJo] (#31) Moved bodyParsing inside routing, otherwise it might try to parse uploaded binaries as json..
-router.use(express.urlencoded({
-  extended: true
-}))
-router.use(express.json())
-
 router.use('/auth', require('./auth'))
 const authProvider = require('../utils/auth-helper')
 const searchRoute = require('./search')({

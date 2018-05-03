@@ -1,6 +1,7 @@
 'use strict'
 
-const router = require('express').Router()
+const express = require('express')
+var router = express.Router()
 const http = require('http')
 // const https = require('https')
 const options = require('../utils/options')()
@@ -85,6 +86,12 @@ module.exports = config => {
   }
 
   const processSearchError = error => error.errorResponse
+
+  // [GJo] (#31) Moved bodyParsing inside routing, otherwise it might try to parse uploaded binaries as json..
+  router.use(express.urlencoded({
+    extended: true
+  }))
+  router.use(express.json())
 
   router.post('/', (req, res) => {
     const query = req.body
