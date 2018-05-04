@@ -7,6 +7,7 @@ module.exports = function () {
   var service = {
     missingRequired: missingRequired,
     unauthorized: unauthorized,
+    forbidden: forbidden,
     notFound: notFound,
     methodNotAllowed: methodNotAllowed,
     notAcceptable: notAcceptable,
@@ -22,6 +23,10 @@ module.exports = function () {
 
   function unauthorized (req, res) {
     send(req, res, 401, 'Unauthorized', 'Unauthorized');
+  }
+
+  function forbidden (req, res) {
+    send(req, res, 403, 'Forbidden', 'Forbidden');
   }
 
   function notFound (req, res) {
@@ -52,13 +57,12 @@ module.exports = function () {
 
     if (headers) {
       Object.entries(headers).forEach(header => {
-        res.setHeader(header[0], header[1]);
+        res.header(header[0], header[1]);
       });
     }
 
     res
-      .status(status)
-      .send(data)
-      .end();
+    .status(status)
+    .json(data);
   }
 };
