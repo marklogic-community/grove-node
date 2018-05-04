@@ -48,7 +48,7 @@ router.get('/status', function(req, res) {
         reqOptions.headers.Authorization = authorization
       }
 
-      clientRequest(req, reqOptions, function(clientResponse, data) {
+      callBackend(req, reqOptions, function(clientResponse, data) {
         if (clientResponse.statusCode === 200) {
           var json = JSON.parse(data.toString())
           sendAuthStatus(res, true, passportUser.username, json.user)
@@ -164,7 +164,7 @@ router.get('/profile', function(req, res) {
       }
 
       // call backend, and pipe clientResponse straight into res
-      clientRequest(req, reqOptions, null, res)
+      callBackend(req, reqOptions, null, res)
 
     }, function(unauthorized) {
       // TODO: might return an error too?
@@ -206,7 +206,7 @@ router.post('/profile', function(req, res) {
       }
 
       // call backend, and pipe clientResponse straight into res
-      clientRequest(req, reqOptions, null, res)
+      callBackend(req, reqOptions, null, res)
 
     }, function(unauthorized) {
       // /profile does return 401
@@ -236,66 +236,66 @@ function sendAuthStatus(res, authenticated, username, profile) {
 
 //// Helper function to make backend calls
 // invokes callback when backend call finishes
-// serverResponse is optional, clientResponse is piped into it if provided
+// browserResponse is optional, backendResponse is piped into it if provided
 // otherwise data is returned as Buffer via callback
-function clientRequest(serverRequest, reqOptions, callback, serverResponse) {
-  reqOptions.hostname = reqOptions.hostname || options.mlHost
-  reqOptions.port = reqOptions.port || options.mlRestPort
-  var clientRequest = httpClient.request(
-    reqOptions,
-    function(clientResponse) {
+function callBackend(browserRequest, backendOptions, callback, browserResponse) {
+  backendOptions.hostname = backendOptions.hostname || options.mlHost
+  backendOptions.port = backendOptions.port || options.mlRestPort
+  var backendRequest = httpClient.request(
+    backendOptions,
+    function(backendResponse) {
       var data = []
 
-      if (serverResponse) {
+      if (browserResponse) {
         // proxy status to server response
-        serverResponse.status(clientResponse.statusCode)
+        browserResponse.status(backendResponse.statusCode)
 
         // proxy all headers to server response
-        for (var header in clientResponse.headers) {
+        for (var header in backendResponse.headers) {
           // except auth challenge headers
           if (header !== 'www-authenticate') {
-            serverResponse.header(header, clientResponse.headers[header])
+            browserResponse.header(header, backendResponse.headers[header])
           }
         }
       }
 
-      clientResponse.on('data', function(chunk) {
-        if (serverResponse) {
+      backendResponse.on('data', function(chunk) {
+        if (browserResponse) {
           // proxy data to server response
-          serverResponse.write(chunk)
+          browserResponse.write(chunk)
         } else {
           // or gather to pass back to callback
           data.push(chunk)
         }
       })
 
-      clientResponse.on('end', function(chunk) {
-        if (serverResponse) {
+      backendResponse.on('end', function(chunk) {
+        if (browserResponse) {
           // close server response for proxying convenience
-          serverResponse.end()
+          browserResponse.end()
         }
 
         // notify upstream, passing back data (if not streamed into server response yet)
         if (callback) {
-          callback(clientResponse, Buffer.concat(data))
+          callback(backendResponse, Buffer.concat(data))
         }
       })
     }
   )
 
   // try to clean up in case of untimely responses
-  clientRequest.on('socket', function(socket) {
+  backendRequest.on('socket', function(socket) {
     socket.on('timeout', function() {
       console.log('Timeout reached, aborting proxy call..')
-      clientRequest.abort()
+      backendRequest.abort()
     })
   })
 
   // try to clean up in case of failure
-  clientRequest.on('error', function(e) {
-    if (serverResponse) {
+  backendRequest.on('error', function(e) {
+    if (browserResponse) {
       console.log('Problem with request: ' + e.message);
-      serverResponse
+      browserResponse
       .status(500)
       .end()
     } else {
@@ -303,11 +303,12 @@ function clientRequest(serverRequest, reqOptions, callback, serverResponse) {
     }
   })
 
-  // stream server request data into client request
-  serverRequest.pipe(clientRequest)
+  // stream browser request data into backend request
+  // note: requires non-parsed body!
+  browserRequest.pipe(backendRequest)
 
-  serverRequest.on('end', function() {
-    clientRequest.end();
+  browserRequest.on('end', function() {
+    backendRequest.end();
   });
 }
 
