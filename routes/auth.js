@@ -48,11 +48,11 @@ router.get('/status', function(req, res) {
         reqOptions.headers.Authorization = authorization
       }
 
-      callBackend(req, reqOptions, function(clientResponse, data) {
-        if (clientResponse.statusCode === 200) {
+      callBackend(req, reqOptions, function(backendResponse, data) {
+        if (backendResponse.statusCode === 200) {
           var json = JSON.parse(data.toString())
           sendAuthStatus(res, true, passportUser.username, json.user)
-        } else if (clientResponse.statusCode === 404) {
+        } else if (backendResponse.statusCode === 404) {
           // no profile yet for user
           sendAuthStatus(res, true, passportUser.username, null)
         } else {
