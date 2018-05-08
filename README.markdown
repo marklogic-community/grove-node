@@ -26,7 +26,7 @@ You can find the environment variables this application looks for in `utils/opti
 
 ### `.env` Configuration files
 
-There are many ways to set environment variables and those ways depend on the context within which your application is running. Feel free to use what fits your purposes.
+There are many ways to set environment variables and those ways depend on the context within which your application is running. Feel free to use what fits your purposes. **Any system environment variables already set will take precedence over what is in these `.env` files.**
 
 For convenience, this project adopts the pattern of `.env` files. When starting via `npm start`, the application will load environment variables stored with a `.env` file. You can override or extend that configuration for specific application-environments, such as "development", "production", or "test".
 
