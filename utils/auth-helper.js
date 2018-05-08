@@ -252,23 +252,23 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
     }
     // TODO: capture error response?
     )
+    challengeReq.on('error', function challengeReqError(error) {
+      console.error(
+        'Received the following error when trying to connect to MarkLogic: ' +
+        error.message
+      );
+      if (error.code === 'ECONNRESET') {
+        console.error(
+          'Please ensure that MarkLogic is running on host ' +
+          options.mlHost +
+          ' and port ' +
+          options.mlRestPort
+        );
+      }
+      d.reject(error)
+    });
     challengeReq.end()
   }
-  challengeReq.on('error', function challengeReqError(error) {
-    console.error(
-      'Received the following error when trying to connect to MarkLogic: ' +
-      error.message
-    );
-    if (error.code === 'ECONNRESET') {
-      console.error(
-        'Please ensure that MarkLogic is running on host ' +
-        options.mlHost +
-        ' and port ' +
-        options.mlRestPort
-      );
-    }
-    d.reject(error)
-  });
   return d.promise
 }
 
