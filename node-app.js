@@ -57,6 +57,11 @@ app.use(passport.session())
 
 app.use('/api', require('./routes'))
 
+// error handling
+app.use(function(error, req, res, next) {
+  res.status(500).json({error: error.toString()})
+});
+
 switch (environment) {
   case 'prod':
   case 'dev':
