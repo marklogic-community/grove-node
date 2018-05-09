@@ -254,15 +254,16 @@ function getAuthorization (session, reqMethod, reqPath, authOptions) {
     )
     challengeReq.on('error', function challengeReqError(error) {
       console.error(
-        'Received the following error when trying to connect to MarkLogic: ' +
+        '\nReceived the following error when trying to connect to MarkLogic: ' +
         error.message
       );
-      if (error.code === 'ECONNRESET') {
+      if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
         console.error(
-          'Please ensure that MarkLogic is running on host ' +
+          'Please ensure that MarkLogic is running on the host specified by MUIR_ML_HOST (currently "' +
           options.mlHost +
-          ' and port ' +
-          options.mlRestPort
+          '") and the port specified by MUIR_ML_REST_PORT (currently "' +
+          options.mlRestPort +
+          '"). See the README for more information.'
         );
       }
       d.reject(error)
