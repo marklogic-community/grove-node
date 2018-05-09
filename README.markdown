@@ -4,7 +4,13 @@ This contains the Node implementation of a ML-UI-Resources (MUIR) middle-tier. I
 
 ## Running
 
+By default, this middle-tier starts in development mode (and sets `NODE_ENV` to 'development'):
+
     npm start
+
+You can start in a production-style mode with the following command (which does not set `NODE_ENV` for you):
+
+    npm start:prod
 
 ## Configuration
 

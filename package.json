@@ -20,7 +20,8 @@
   "scripts": {
     "test": "node_modules/.bin/mocha spec",
     "test:watch": "node_modules/.bin/mocha spec --watch",
-    "start": "cross-env NODE_ENV=development nodemon node-app.js"
+    "start": "cross-env NODE_ENV=development nodemon node-app.js",
+    "start:prod": "node node-app.js"
   },
   "private": true,
   "devDependencies": {
