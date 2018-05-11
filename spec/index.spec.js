@@ -1,7 +1,7 @@
 'use strict'
 
 process.env.NODE_ENV = 'test'
-process.env.APP_PORT = 61234
+process.env.MUIR_APP_PORT = 61234
 
 const chai = require('chai')
 const expect = chai.expect
@@ -14,16 +14,16 @@ describe('/', () => {
     delete require.cache[require.resolve('../node-app')] // delete from cache
     server = require('../node-app')
   })
-  afterEach(done => {
-    server.close(done)
-  })
 
-  it('returns a 404', (done) => {
-    chai.request(server)
+  it('returns a 404', () => {
+    return chai
+      .request(server)
       .get('/')
-      .end((error, response) => {
-        expect(error.status).to.equal(404)
-        done()
+      .then(response => {
+        expect(response.status).to.equal(404)
+      })
+      .catch(error => {
+        throw error
       })
   })
 })
