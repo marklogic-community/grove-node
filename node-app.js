@@ -28,6 +28,8 @@ var options = require('./utils/options')()
 var port = options.appPort
 var environment = options.env
 
+const enableLegacyProxy = true;
+
 authHelper.init()
 
 // Making this middle-tier slightly more secure: https://www.npmjs.com/package/helmet#how-it-works
@@ -56,6 +58,10 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use('/api', require('./routes'))
+
+if (enableLegacyProxy) {
+  app.use('/v1', require('./routes/proxy'))
+}
 
 // error handling
 app.use(function(error, req, res, next) {
