@@ -1,32 +1,86 @@
 'use strict'
 
+var options = require('../muir-node-server-utils/options')()
+var environment = options.env
+
 const express = require('express')
 var router = express.Router()
 
-router.use('/auth', require('./auth'))
-const authProvider = require('../utils/auth-helper')
-const searchRoute = require('./search')({
-  // authProvider
-  // - come up with an authProvider API
-  // can we replace this with middleware (before guarded routes, below unguarded routes)? This will stop it from ever reaching the guarded routes
-  // - still have to take into account that ML might not agree with middle-tier that you are authenticated (return a 401) - middle-tier should forward this along OR alert the Node app that authentication is invalid
-  // - also need the authenticator to authenticate each ML endpoint called
-  // authProvider.getAuthenticator
-  authProvider: authProvider,
-  // TODO: move this extract and makeLabel to a samplePerson branch
-  // because it is not generic, but it is useful for a quick MUIR demo
-  extract: '/name',
-  makeLabel: result => {
-    return result.extracted && result.extracted.content[0] && result.extracted.content[0].name
-  }
-  // mapping URIs to ids for CRUD in other routes
-  // even possibly going so far as to return IDs instead of URIs
-  // /dogs/1587 instead of dogs?uri=/somethingUgly
-})
-router.use('/search', searchRoute)
-router.use('/documents', require('./documents'))
+const enableLegacyProxy = true; // TODO: expose this as an env option
 
-var four0four = require('../utils/404')()
-router.get('/*', four0four.notFound)
+router.use('/api', require('./api'))
+
+if (enableLegacyProxy) {
+  router.use('/v1', require('../muir-legacy-routes').whitelistProxyRoute({
+    whitelist: [{
+      endpoint: '/config/query/*',
+      methods: ['get'],
+      authed: true
+    }, {
+      endpoint: '/graphs/sparql',
+      methods: ['get', 'post'],
+      authed: true
+    }, {
+      endpoint: '/search',
+      methods: ['get', 'post'],
+      authed: true
+    }, {
+      endpoint: '/suggest',
+      methods: ['get', 'post'],
+      authed: true
+    }, {
+      endpoint: '/values/*',
+      methods: ['get', 'post'],
+      authed: true
+    }, {
+      endpoint: '/documents',
+      methods: ['get'],
+      authed: true
+    }, {
+      endpoint: '/documents',
+      methods: ['all'],
+      authed: true,
+      update: true
+    }, {
+      endpoint: '/resources/*',
+      methods: ['get'],
+      authed: true
+    }, {
+      endpoint: '/resources/*',
+      methods: ['all'],
+      authed: true,
+      update: true
+    }]
+  }))
+}
+
+// error handling
+router.use(function(error, req, res, next) {
+  res.status(500).json({error: error.toString()})
+});
+
+switch (environment) {
+  case 'prod':
+  case 'dev':
+    console.log('** DIST **')
+    router.use(express.static('../dist/'))
+    // Any invalid calls for templateUrls are under app/* and should return 404
+    router.use('/app/*', function (req, res, next) {
+      four0four.send404(req, res)
+    })
+    // Any deep link calls should return index.html
+    router.use('/*', express.static('../dist/index.html'))
+    break
+  default:
+    console.log('** UI **')
+    router.use(express.static('../ui/'))
+    // Any invalid calls for templateUrls are under app/* and should return 404
+    router.use('/app/*', function (req, res, next) {
+      four0four.send404(req, res)
+    })
+    // Any deep link calls should return index.html
+    router.use('/*', express.static('../ui/index.html'))
+    break
+}
 
 module.exports = router
