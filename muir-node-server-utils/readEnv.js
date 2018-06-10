@@ -12,6 +12,7 @@ module.exports = {
       )
     }
 
+    // TODO: look in parent folder too?
     var dotenvFilename = './.env'
     var dotenvFiles = [
       dotenvFilename + '.' + NODE_ENV + '.local',

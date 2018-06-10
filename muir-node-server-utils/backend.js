@@ -1,5 +1,5 @@
 
-const options = require('../utils/options')();
+const options = require('../muir-node-server-utils/options')();
 
 const http = require('http');
 // const https = require('https');
@@ -24,6 +24,29 @@ var backend = (function() {
   var callBackend = function (browserRequest, backendOptions, callback, browserResponse) {
     backendOptions.hostname = backendOptions.hostname || options.mlHost
     backendOptions.port = backendOptions.port || options.mlRestPort
+
+    // append unencoded JSON params to request path
+    if (backendOptions.params) {
+      var params = [];
+
+      Object.keys(backendOptions.params).forEach(function(key) {
+        var value = backendOptions.params[key]
+        if (Array.isArray(value)) {
+          value.forEach(function(val) {
+            params.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
+          })
+        } else if (value !== undefined && value !== null) {
+          params.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+        }
+      });
+
+      var path = backendOptions.path;
+      backendOptions.path = path + ( (path.indexOf('?') > -1) ? '&' : '?' ) + params.join('&');
+
+      delete backendOptions.params;
+    }
+
+    // make actual backend call
     var backendRequest = httpClient.request(
       backendOptions,
       function(backendResponse) {

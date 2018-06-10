@@ -43,6 +43,7 @@ function init () {
       var reqOptions = {
         hostname: options.mlHost,
         port: options.mlRestPort,
+        // FIXME: /v1/documents??
         path: '/v1/documents?uri=/api/users/' + username + '.json',
         headers: {}
       }
