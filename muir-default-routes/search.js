@@ -94,7 +94,7 @@ var provider = (function() {
           '&start=' +
           query.options.start +
           '&options=' +
-          config.namedOptions || 'all',
+          (config.namedOptions || 'all'),
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

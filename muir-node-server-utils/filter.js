@@ -2,12 +2,6 @@
 const queryBuilder = require('marklogic').queryBuilder
 
 var filter = (function() {
-  var handlers = {
-    'queryText': queryTextDefaultHandler,
-    'selection': selectionDefaultHandler,
-    'range': rangeDefaultHandler
-  };
-
   var queryTextDefaultHandler = function(filter) {
     // TODO: how to support constraint?
     return queryBuilder.parsedFrom(filter.value);
@@ -25,6 +19,12 @@ var filter = (function() {
 
   var registerFilterType = function(type, handler) {
     handlers[type] = handler;
+  };
+
+  var handlers = {
+    'queryText': queryTextDefaultHandler,
+    'selection': selectionDefaultHandler,
+    'range': rangeDefaultHandler
   };
 
   var buildQuery = function(filters) {
