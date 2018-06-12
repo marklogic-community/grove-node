@@ -24,6 +24,11 @@ var provider = (function() {
         if (config.makeLabel) {
           result.label = config.makeLabel(result)
         }
+        if (config.uriToId) {
+          result.id = config.uriToId(result.uri)
+        } else {
+          result.id = encodeURIComponent(result.uri)
+        }
       })
       return results;
     }
@@ -31,26 +36,10 @@ var provider = (function() {
     // TODO: extract out to separate module that could alternatively
     // be run inside MarkLogic itself
     const processSearchResponse = function(searchResponse) {
-      const executionTime = parseFloat(
-        searchResponse.metrics['total-time'].replace(/^PT/, '')
-      )
-      const pageLength = searchResponse['page-length']
-      const page = Math.ceil(searchResponse.start / pageLength)
-      return {
-        query: {
-          queryText: searchResponse.qtext,
-          pageLength: pageLength,
-          page: page
-        },
-        response: {
-          metadata: {
-            executionTime: executionTime,
-            total: searchResponse.total
-          },
-          results: processResults(searchResponse.results),
-          facets: searchResponse.facets
-        }
+      if (searchResponse.results) {
+        searchResponse.results = processResults(searchResponse.results)
       }
+      return searchResponse
     }
 
     // TODO: extract out to separate module that could alternatively
@@ -62,6 +51,7 @@ var provider = (function() {
           "extract-path": config.extract
         }
       }
+      // TODO: cleanup..
       var appendText = '';
       if (query.constraints) {
         Object.keys(query.constraints).forEach(key => {
@@ -70,9 +60,14 @@ var provider = (function() {
           })
         })
       }
+      var structuredQuery = {}
+      if (query.filters) {
+        structuredQuery = require('../muir-node-server-utils/filter').buildQuery(query.filters)
+      }
       return JSON.stringify({
         search: {
           qtext: (query.queryText || '') + appendText,
+          query: structuredQuery,
           options: options
         }
       })
@@ -88,27 +83,31 @@ var provider = (function() {
 
     router.post('/', (req, res) => {
       const query = req.body
-      const start = query.pageLength * (query.page - 1) + 1
-      getAuth(req).then(
+      const httpOptions = {
+        // TODO: hanging with SSL at the moment
+        // protocol: options.httpsStrict ? 'https' : 'http',
+        hostname: options.mlHost,
+        port: options.mlRestPort,
+        path:
+          '/v1/search?format=json&pageLength=' +
+          query.options.pageLength +
+          '&start=' +
+          query.options.start +
+          '&options=' +
+          config.namedOptions || 'all',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        }
+      }
+      authProvider.getAuth(req.session, httpOptions).then(
         auth => {
-          const httpOptions = {
-            // TODO: hanging with SSL at the moment
-            // protocol: options.httpsStrict ? 'https' : 'http',
-            hostname: options.mlHost,
-            port: options.mlRestPort,
-            path:
-              '/v1/search?format=json&pageLength=' +
-              query.pageLength +
-              '&start=' +
-              start +
-              '&options=all', // TODO: make configurable and get from client
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              authorization: auth
-            }
+          if (auth) {
+            httpOptions.headers.Authorization = auth
           }
+
+          // TODO: make use of backend client here?
           const mlRequest = http.request(httpOptions, mlResponse => {
             var mlSearchBody = ''
             mlResponse.on('data', chunk => {
@@ -150,19 +149,6 @@ var provider = (function() {
     })
 
     return router;
-
-    // TODO: DRY up into authProvider
-    function getAuth(req) {
-      var user =
-        req.session.passport &&
-        req.session.passport.user &&
-        req.session.passport.user.username
-      return authProvider.getAuthorization(req.session, req.method, '/v1/search', {
-        authUser: user
-      })
-    }
-
-  };
 
   return provide;
 })();

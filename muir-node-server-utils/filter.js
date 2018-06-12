@@ -1,5 +1,5 @@
 
-import { queryBuilder } from "marklogic";
+const queryBuilder = require('marklogic').queryBuilder
 
 var filter = (function() {
   var handlers = {
@@ -9,6 +9,7 @@ var filter = (function() {
   };
 
   var queryTextDefaultHandler = function(filter) {
+    // TODO: how to support constraint?
     return queryBuilder.parsedFrom(filter.value);
   };
 
@@ -48,10 +49,13 @@ var filter = (function() {
         buildQuery(filters.not)
       );
     } else if (filters.near) {
-      return queryBuilder.near(
-        buildQuery(filters.near.left),
-        buildQuery(filters.near.right)
-      );
+      var arr = filters.near;
+      if (!Array.isArray(arr)) {
+        arr = [arr];
+      }
+      return queryBuilder.near(arr.map(function(filter) {
+        return buildQuery(filter);
+      }));
     } else {
       var handler = handlers[filters.type || 'selection'];
       if (handler) {
@@ -68,4 +72,4 @@ var filter = (function() {
   };
 })();
 
-export default filter;
+module.exports = filter;
