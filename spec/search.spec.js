@@ -16,7 +16,7 @@ chai.use(chaiHttp)
 
 const nock = require('nock')
 
-describe('/api/search', () => {
+describe('/api/search/all', () => {
   let agent
   beforeEach(() => {
     delete require.cache[require.resolve('../node-app')] // delete from cache
@@ -72,7 +72,7 @@ describe('/api/search', () => {
         pageLength: 10
       }
       agent
-        .post('/api/search')
+        .post('/api/search/all')
         .send(executedQuery)
         .then(response => {
           expect(response.status).to.equal(200)
@@ -123,7 +123,7 @@ describe('/api/search', () => {
         pageLength: 10
       }
       agent
-        .post('/api/search')
+        .post('/api/search/all')
         .send(executedQuery)
         .end((error, response) => {
           expect(error).to.not.exist
@@ -233,7 +233,7 @@ describe('/api/search', () => {
           }
         })
       agent
-        .post('/api/search')
+        .post('/api/search/all')
         .end((error, response) => {
           expect(response.status).to.equal(400)
           expect(response.body).to.deep.equal({

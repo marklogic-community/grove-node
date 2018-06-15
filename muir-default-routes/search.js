@@ -150,18 +150,19 @@ var provider = (function() {
     })
 
     return router;
-  };
 
-  // TODO: DRY up into authProvider
-  function getAuth(req) {
-    var user =
-      req.session.passport &&
-      req.session.passport.user &&
-      req.session.passport.user.username
-    return authProvider.getAuthorization(req.session, req.method, '/v1/search', {
-      authUser: user
-    })
-  }
+    // TODO: DRY up into authProvider
+    function getAuth(req) {
+      var user =
+        req.session.passport &&
+        req.session.passport.user &&
+        req.session.passport.user.username
+      return authProvider.getAuthorization(req.session, req.method, '/v1/search', {
+        authUser: user
+      })
+    }
+
+  };
 
   return provide;
 })();
