@@ -12,6 +12,10 @@ You can start in a production-style mode with the following command (which does 
 
     npm start:prod
 
+## Run the tests
+
+    npm test
+
 ## Configuration
 
 This project is configured via environment variables, roughly following the [recommendations from "The Twelve-Factor App"](https://12factor.net/config). Following established practice in the Vue.js and React communities, among others, we modify those recommendations by allowing configuration groupings for "development", "production" or other custom environments.
