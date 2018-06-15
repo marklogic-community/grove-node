@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
           data.push(chunk);
         });
         mlResponse.on('end', () => {
-          var docBody = Buffer.concat(data)
+          let docBody = Buffer.concat(data)
           if (mlResponse.statusCode === 200) {
             const contentType = mlResponse.headers['content-type'];
             if (contentType.includes('application/json')) {
@@ -54,9 +54,10 @@ router.get('/', (req, res) => {
               res.write(docBody, 'binary');
               res.end();
             } else {
-              res
-                .status(mlResponse.statusCode)
-                .json(processError(JSON.parse(docBody)));
+              res.json({
+                content: docBody.toString(),
+                contentType: contentType
+              });
             }
           } else {
             res
