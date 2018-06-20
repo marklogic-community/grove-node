@@ -25,6 +25,12 @@ var backend = (function() {
     backendOptions.hostname = backendOptions.hostname || options.mlHost
     backendOptions.port = backendOptions.port || options.mlRestPort
 
+    var body = backendOptions.body;
+    delete backendOptions.body;
+    if (body) {
+      delete backendOptions.headers['content-length']
+    }
+
     // append unencoded JSON params to request path
     if (backendOptions.params) {
       var params = [];
@@ -45,6 +51,12 @@ var backend = (function() {
 
       delete backendOptions.params;
     }
+
+    // Debug info
+    // console.log(backendOptions)
+    // if (body) {
+    //   console.log(body)
+    // }
 
     // make actual backend call
     var backendRequest = httpClient.request(
@@ -111,11 +123,15 @@ var backend = (function() {
 
     // stream browser request data into backend request
     // note: requires non-parsed body!
-    browserRequest.pipe(backendRequest)
-
-    browserRequest.on('end', function() {
+    if (body) {
+      backendRequest.write(body)
       backendRequest.end();
-    });
+    } else {
+      browserRequest.pipe(backendRequest)
+      browserRequest.on('end', function() {
+        backendRequest.end();
+      });
+    }
   };
 
   return {
