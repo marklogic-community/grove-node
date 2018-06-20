@@ -129,6 +129,7 @@ var provider = (function() {
     })
 
     return router;
+  }
 
   return provide;
 })();
