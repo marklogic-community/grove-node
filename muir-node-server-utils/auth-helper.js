@@ -40,6 +40,9 @@ function init () {
       passReqToCallback: true
     },
     function (req, username, password, done) {
+      // Debug info
+      // console.log('LocalStrategy callback')
+      // console.log(req)
       var reqOptions = {
         hostname: options.mlHost,
         port: options.mlRestPort,
