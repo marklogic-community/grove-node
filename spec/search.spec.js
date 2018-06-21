@@ -109,7 +109,22 @@ describe('/api/search/all', () => {
         })
     })
 
-    xit('works without optional options')
+    it('works with an empty request body', done => {
+      nock('http://' + mlHost + ':' + mlPort)
+        .post(/search/)
+        .reply(200, {})
+      agent
+        .post('/api/search/all')
+        .send({})
+        .then(response => {
+          expect(nock.isDone()).to.equal(true)
+          expect(response.status).to.equal(
+            200,
+            'Received response: ' + JSON.stringify(response.body)
+          )
+          done()
+        }).catch(done.fail)
+    })
 
     xit('requests the second page', done => {
       const searchResponse = require('./helpers/qtextSearchResponse')

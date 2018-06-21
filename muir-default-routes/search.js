@@ -78,13 +78,14 @@ var provider = (function() {
 
     router.post('/', (req, res) => {
       const query = req.body
+      const options = query.options || {}
       const reqOptions = {
         method: 'POST',
         path: '/v1/search',
         params: {
           format: 'json',
-          start: query.options.start,
-          pageLength: query.options.pageLength,
+          start: options.start,
+          pageLength: options.pageLength,
           options: (config.namedOptions || 'all')
         },
         headers: {
