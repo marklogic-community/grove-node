@@ -204,6 +204,7 @@ function getAuthenticator (session, user, host, port) {
 }
 
 function getAuth (session, reqOptions) {
+  if (!session.passport) { return Promise.reject('Unauthorized') }
   var passportUser = session.passport.user
   return getAuthorization(session, reqOptions.method || 'GET', reqOptions.path, {
     authHost: reqOptions.hostname || options.mlHost,

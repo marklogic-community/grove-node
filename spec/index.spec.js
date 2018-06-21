@@ -24,9 +24,6 @@ describe('/', () => {
         expect(response).to.be.json
         expect(response.body).to.include.keys('message')
       })
-      .catch(error => {
-        throw error
-      })
   })
 
   it('returns a 404 with bad POST', () => {
@@ -37,9 +34,6 @@ describe('/', () => {
         expect(response.status).to.equal(404)
         expect(response).to.be.json
         expect(response.body).to.include.keys('message')
-      })
-      .catch(error => {
-        throw error
       })
   })
 })
