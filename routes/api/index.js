@@ -43,7 +43,7 @@ router.use('/crud/' + type, factory.defaultCrudRoute({
   authProvider: authProvider,
   authed: true,                          // (default)
   neverCache: true,                      // (default)
-  prefix: '/' + type,                    // default: /
+  directory: '/' + type + '/',           // default: /
   //extension: 'json',                   // (default)
   //contentType: ['application/json'],   // (default)
   //temporalCollection: 'uni-temporal',  // default: none

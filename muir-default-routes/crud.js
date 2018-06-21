@@ -70,7 +70,7 @@ var provider = (function(){
       }
 
       // assume whatever comes after / is id
-      const uri = (req.path.length > 1) && idConverter.toUri(req.path.substring(1));
+      const uri = (req.path.length > 1) ? idConverter.toUri(req.path.substring(1)) : undefined;
 
       var path = '/v1/documents';
       var params = {
@@ -83,7 +83,7 @@ var provider = (function(){
 
         // ML Rest api will generate a uri using prefix and extension
         if (!uri) {
-          params.prefix = config.prefix || '/';
+          params.directory = config.directory || '/';
           params.extension = config.extension || 'json'
         }
       }
@@ -103,7 +103,7 @@ var provider = (function(){
       .getAuth(req.session, backendOptions)
       .then(function(authorization) {
         if (authorization) {
-          backendOptions.headers.Authorization = authorization
+          backendOptions.headers.authorization = authorization
         }
 
         var neverCache = (config.neverCache !== undefined) ? config.neverCache : true
@@ -112,7 +112,21 @@ var provider = (function(){
         }
 
         // call backend, and pipe clientResponse straight into res
-        backend.call(req, backendOptions, null, res)
+        backend.call(req, backendOptions, function(backendResponse, data) {
+          res.status(backendResponse.statusCode)
+          for (var header in backendResponse.headers) {
+            // rewrite location
+            if (header === 'location') {
+              res.header(header, idConverter.toId(backendResponse.headers[header].substring(18)))
+
+            // copy all others except auth challenge headers
+            } else if (header !== 'www-authenticate') {
+              res.header(header, backendResponse.headers[header])
+            }
+          }
+          res.write(data)
+          res.end()
+        })
 
       }, function(unauthorized) {
         // TODO: might return an error too?
