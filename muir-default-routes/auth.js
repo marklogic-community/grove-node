@@ -54,7 +54,7 @@ var provider = (function(){
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
-            reqOptions.headers.Authorization = authorization
+            reqOptions.headers.authorization = authorization
           }
 
           backend.call(req, reqOptions, function(backendResponse, data) {
@@ -172,7 +172,7 @@ var provider = (function(){
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
-            reqOptions.headers.Authorization = authorization
+            reqOptions.headers.authorization = authorization
           }
 
           // call backend, and pipe clientResponse straight into res
@@ -218,7 +218,7 @@ var provider = (function(){
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
-            reqOptions.headers.Authorization = authorization
+            reqOptions.headers.authorization = authorization
           }
 
           // call backend, and pipe clientResponse straight into res

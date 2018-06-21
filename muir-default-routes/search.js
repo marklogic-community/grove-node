@@ -96,7 +96,7 @@ var provider = (function() {
       authProvider.getAuth(req.session, reqOptions).then(
         auth => {
           if (auth) {
-            reqOptions.headers.Authorization = auth
+            reqOptions.headers.authorization = auth
           }
 
           const builtQuery = buildMarklogicQuery(query)
