@@ -16,7 +16,7 @@ var provider = (function() {
     const authProvider = config.authProvider
     if (!authProvider) {
       throw new Error(
-        'muir-node-search configuration must include an authProvider'
+        'defaultSearchRoute configuration must include an authProvider'
       )
     }
 
@@ -25,8 +25,8 @@ var provider = (function() {
         if (config.makeLabel) {
           result.label = config.makeLabel(result)
         }
-        if (config.uriToId) {
-          result.id = config.uriToId(result.uri)
+        if (config.idConverter && config.idConverter.toId) {
+          result.id = config.idConverter.toId(result.uri)
         } else {
           result.id = encodeURIComponent(result.uri)
         }

@@ -2,7 +2,6 @@
 
 var provider = (function(){
 
-  const authHelper = require('../muir-node-server-utils/auth-helper')
   const backend = require('../muir-node-server-utils/backend')
   //const fs = require('fs')
   const four0four = require('../muir-node-server-utils/404')()
@@ -20,6 +19,13 @@ var provider = (function(){
 
     var router = require('express').Router();
 
+    const authProvider = config.authProvider
+    if (!authProvider) {
+      throw new Error(
+        'defaultCrudRoute configuration must include an authProvider'
+      )
+    }
+
     var idConverter = config.idConverter || {
       toId: function(uri) {
         return encodeURIComponent(uri);
@@ -35,13 +41,13 @@ var provider = (function(){
     // by default all CRUD calls are shielded by authentication
     var authed = (config.authed !== undefined) ? config.authed : true
     if (authed) {
-      router.use(authHelper.isAuthenticated)
+      router.use(authProvider.isAuthenticated)
     }
 
     const allowedMethods = ['DELETE', 'GET', 'POST', 'PUT']
-    // Create -> PUT
+    // Create -> POST
     // Read   -> GET
-    // Update -> POST
+    // Update -> PUT
     // Delete -> DELETE
 
     router.use('/', function(req, res) {
@@ -85,16 +91,15 @@ var provider = (function(){
       // temporal applies to all methods, if specified (null is ignored)
       params['temporal-collection'] = config.temporalCollection;
 
-      // note: uri can be omitted for Create/PUT, but ML Rest expects POST in that case
       var backendOptions = {
-        method: (!uri && expectBody(req)) ? 'POST' : req.method,
+        method: req.method,
         path: path,
         params: params,
         headers: req.headers,
         ca: ca
       }
 
-      authHelper
+      authProvider
       .getAuth(req.session, backendOptions)
       .then(function(authorization) {
         if (authorization) {

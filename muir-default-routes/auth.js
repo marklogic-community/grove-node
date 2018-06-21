@@ -2,7 +2,6 @@
 
 var provider = (function(){
 
-  const authHelper = require('../muir-node-server-utils/auth-helper')
   const backend = require('../muir-node-server-utils/backend')
   //const fs = require('fs')
   const four0four = require('../muir-node-server-utils/404')()
@@ -19,6 +18,13 @@ var provider = (function(){
 
   var provide = function(config) {
     var router = require('express').Router()
+
+    const authProvider = config.authProvider
+    if (!authProvider) {
+      throw new Error(
+        'defaultAuthRoute configuration must include an authProvider'
+      )
+    }
 
     router.get('/status', function(req, res) {
       // reply with 406 if client doesn't accept JSON
@@ -44,7 +50,7 @@ var provider = (function(){
           ca: ca
         }
 
-        authHelper
+        authProvider
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
@@ -112,7 +118,7 @@ var provider = (function(){
         if (options.appUsersOnly && !startsWithMatch.test(username)) {
           four0four.forbidden(req, res)
         } else {
-          authHelper.handleLocalAuth(req, res, next)
+          authProvider.handleLocalAuth(req, res, next)
         }
       })
     })
@@ -125,7 +131,7 @@ var provider = (function(){
     router.post('/logout', function(req, res) {
       noCache(res) // TODO: nothing to cache?
       req.logout()
-      authHelper.clearAuthenticator(req.session)
+      authProvider.clearAuthenticator(req.session)
       res.status(204).end()
     })
 
@@ -162,7 +168,7 @@ var provider = (function(){
           ca: ca
         }
 
-        authHelper
+        authProvider
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
@@ -208,7 +214,7 @@ var provider = (function(){
           ca: ca
         }
 
-        authHelper
+        authProvider
         .getAuth(req.session, reqOptions)
         .then(function(authorization) {
           if (authorization) {
