@@ -51,7 +51,7 @@ var provider = (function() {
     app.use(config.routes) // FIXME: check for routes, and throw error if not
 
     app.use(four0four.notFound)
-    console.log('Starting the server in HTTP')
+    // console.log('Starting the server in HTTP')
     var server = http.createServer(app)
     // var server = null
     // if (options.nodeJsCertificate) {
@@ -73,11 +73,11 @@ var provider = (function() {
     // }
 
     server.listen(port, function () {
-      console.log('Express server listening on port ' + port)
+      // console.log('Express server listening on port ' + port)
       /* eslint-disable no-path-concat */
-      console.log('env = ' + app.get('env') +
-        '\n__dirname = ' + __dirname +
-        '\nprocess.cwd = ' + process.cwd())
+      // console.log('env = ' + app.get('env') +
+      //   '\n__dirname = ' + __dirname +
+      //   '\nprocess.cwd = ' + process.cwd())
       /* eslint-enable no-path-concat */
     })
 
