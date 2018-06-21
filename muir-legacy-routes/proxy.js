@@ -1,6 +1,5 @@
 'use strict'
 
-const authHelper = require('../muir-node-server-utils/auth-helper')
 const backend = require('../muir-node-server-utils/backend')
 //const fs = require('fs')
 const four0four = require('../muir-node-server-utils/404')()
@@ -16,6 +15,13 @@ var ca = ''
 var provider = (function() {
   var provide = function(config) {
     var router = require('express').Router()
+
+    const authProvider = config.authProvider
+    if (!authProvider) {
+      throw new Error(
+        'whitelistProxyRoute configuration must include an authProvider'
+      )
+    }
 
     config.whitelist.forEach(function(rule) {
       if (rule && rule.endpoint && rule.methods) {
@@ -42,54 +48,54 @@ var provider = (function() {
       }
     });
 
-    return router;
-  };
-
-  function authed(req, res, next) {
-    authHelper.isAuthenticated(req, res, next);
-  }
-
-  function update(req, res, next) {
-    if (options.disallowUpdates) {
-      return res.status(403).send('Forbidden');
+    function authed(req, res, next) {
+      authProvider.isAuthenticated(req, res, next);
     }
 
-    next();
-  }
-
-  function noCache(req, res, next) {
-    res.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
-    res.append('Pragma', 'no-cache') // HTTP 1.0
-    res.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT') // Date in the past
-
-    next();
-  }
-
-  function proxy(req, res) {
-    var path = req.originalUrl;
-
-    var reqOptions = {
-      method: req.method,
-      path: path,
-      headers: req.headers,
-      ca: ca
-    }
-
-    authHelper
-    .getAuth(req.session, reqOptions)
-    .then(function(authorization) {
-      if (authorization) {
-        reqOptions.headers.Authorization = authorization
+    function update(req, res, next) {
+      if (options.disallowUpdates) {
+        return res.status(403).send('Forbidden');
       }
 
-      // call backend, and pipe clientResponse straight into res
-      backend.call(req, reqOptions, null, res)
+      next();
+    }
 
-    }, function(unauthorized) {
-      // TODO: might return an error too?
-      four0four.unauthorized(req, res)
-    })
-  }
+    function noCache(req, res, next) {
+      res.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
+      res.append('Pragma', 'no-cache') // HTTP 1.0
+      res.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT') // Date in the past
+
+      next();
+    }
+
+    function proxy(req, res) {
+      var path = req.originalUrl;
+
+      var reqOptions = {
+        method: req.method,
+        path: path,
+        headers: req.headers,
+        ca: ca
+      }
+
+      authProvider
+      .getAuth(req.session, reqOptions)
+      .then(function(authorization) {
+        if (authorization) {
+          reqOptions.headers.authorization = authorization
+        }
+
+        // call backend, and pipe clientResponse straight into res
+        backend.call(req, reqOptions, null, res)
+
+      }, function(unauthorized) {
+        // TODO: might return an error too?
+        four0four.unauthorized(req, res)
+      })
+    }
+
+    return router;
+  };
 
   return provide;
 })();

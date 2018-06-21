@@ -6,12 +6,14 @@ var environment = options.env
 const express = require('express')
 var router = express.Router()
 
+const authProvider = require('../muir-node-server-utils/auth-helper')
 const enableLegacyProxy = true; // TODO: expose this as an env option
 
 router.use('/api', require('./api'))
 
 if (enableLegacyProxy) {
   router.use('/v1', require('../muir-legacy-routes').whitelistProxyRoute({
+    authProvider: authProvider,
     whitelist: [{
       endpoint: '/config/query/*',
       methods: ['get'],
