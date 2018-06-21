@@ -58,7 +58,7 @@ if (enableLegacyProxy) {
 
 // error handling
 router.use(function(error, req, res, next) {
-  res.status(500).json({error: error.toString()})
+  res.status(500).json({message: error.toString()})
 });
 
 switch (environment) {
