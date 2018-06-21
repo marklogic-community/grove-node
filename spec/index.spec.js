@@ -15,12 +15,28 @@ describe('/', () => {
     server = require('../node-app')
   })
 
-  it('returns a 404', () => {
+  it('returns a 404 for GET', () => {
     return chai
       .request(server)
       .get('/')
       .then(response => {
         expect(response.status).to.equal(404)
+        expect(response).to.be.json
+        expect(response.body).to.include.keys('message')
+      })
+      .catch(error => {
+        throw error
+      })
+  })
+
+  it('returns a 404 with bad POST', () => {
+    return chai
+      .request(server)
+      .post('/api/search')
+      .then(response => {
+        expect(response.status).to.equal(404)
+        expect(response).to.be.json
+        expect(response.body).to.include.keys('message')
       })
       .catch(error => {
         throw error

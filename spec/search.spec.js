@@ -109,7 +109,7 @@ describe('/api/search/all', () => {
         })
     })
 
-    it('works without optional options')
+    xit('works without optional options')
 
     xit('requests the second page', done => {
       const searchResponse = require('./helpers/qtextSearchResponse')

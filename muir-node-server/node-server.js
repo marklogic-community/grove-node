@@ -50,6 +50,7 @@ var provider = (function() {
 
     app.use(config.routes) // FIXME: check for routes, and throw error if not
 
+    app.use(four0four.notFound)
     console.log('Starting the server in HTTP')
     var server = http.createServer(app)
     // var server = null
