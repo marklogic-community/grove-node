@@ -48,7 +48,15 @@ router.use('/crud/' + type, factory.defaultCrudRoute({
   //contentType: ['application/json'],   // (default)
   //temporalCollection: 'uni-temporal',  // default: none
   collections: ['data', 'type/' + type], // default: none
-  idConverter: idConverter               // default: encode/decodeUriComponent
+  idConverter: idConverter,              // default: encode/decodeUriComponent
+  views: {                               // default: none
+    'to-json': {
+      transform: 'to-json'
+    },
+    indent: {
+      transform: 'indent'
+    }
+  }
 }))
 
 var four0four = require('../../muir-node-server-utils/404')()
