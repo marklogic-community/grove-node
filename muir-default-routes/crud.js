@@ -35,6 +35,41 @@ var provider = (function(){
       }
     };
 
+    config.views = config.views || {};
+    config.views.metadata = config.views.metadata || {
+      call: function(req, res, config, id) {
+        const uri = idConverter.toUri(id);
+
+        docsBackendCall(req, res, config, 'GET', uri, {}, function(backendResponse, head) {
+          const contentType = backendResponse.headers['content-type'].split(';')[0];
+          const format = backendResponse.headers['vnd.marklogic.document-format'];
+
+          docsBackendCall(req, res, config, 'GET', uri, {
+            category: 'metadata',
+            format: 'json'
+          }, function(backendResponse, metadata) {
+            res.status(backendResponse.statusCode)
+            for (var header in backendResponse.headers) {
+              // copy all others except auth challenge headers
+              if (header !== 'www-authenticate' && header !== 'content-length') {
+                res.header(header, backendResponse.headers[header])
+              }
+            }
+            if ('' + req.query.download === 'true') {
+              res.header('content-disposition', 'attachment; filename=' + uri.split('/').pop())
+            }
+            var data = JSON.parse(metadata);
+            data.contentType = contentType;
+            data.format = format;
+            data.fileName = uri.split('/').pop();
+            res.write(JSON.stringify(data));
+            res.end();
+          })
+        })
+
+      }
+    };
+
     var contentType = config.contentType || 'application/json'
     var acceptTypes = [contentType, contentType.replace(/[\/].*$/, '/*'), '*/*']
 
@@ -43,6 +78,40 @@ var provider = (function(){
     if (authed) {
       router.use(authProvider.isAuthenticated)
     }
+
+    // GET Crud paths take an extra suffix as 'view' parameter
+    router.get('/:id/:view', function(req, res) {
+      const id = req.params.id;
+      const view = req.params.view || 'raw';
+
+      if (config.views[view] && config.views[view].call) {
+        config.views[view].call(req, res, config, id, view)
+      } else {
+        const uri = idConverter.toUri(id);
+
+        var params = {
+          uri: uri,
+          transform: config.views[view] ? config.views[view].transform : undefined,
+          category: config.views[view] ? config.views[view].category : undefined,
+          format: config.views[view] ? config.views[view].format : 'json'
+        };
+
+        docsBackendCall(req, res, config, req.method, uri, params, function(backendResponse, data) {
+          res.status(backendResponse.statusCode)
+          for (var header in backendResponse.headers) {
+            // copy all others except auth challenge headers
+            if (header !== 'www-authenticate') {
+              res.header(header, backendResponse.headers[header])
+            }
+          }
+          if ('' + req.query.download === 'true') {
+            res.header('content-disposition', 'attachment; filename=' + uri.split('/').pop())
+          }
+          res.write(data)
+          res.end()
+        })
+      }
+    })
 
     const allowedMethods = ['DELETE', 'GET', 'POST', 'PUT']
     // Create -> POST
@@ -72,13 +141,9 @@ var provider = (function(){
       // assume whatever comes after / is id
       const uri = (req.path.length > 1) ? idConverter.toUri(req.path.substring(1)) : undefined;
 
-      var path = '/v1/documents';
-      var params = {
-        uri: uri // note: undefined/null params will be ignored
-      };
+      var params = {};
 
       if (expectBody(req)) {
-        // Create or Update
         params.collection = config.collections;
 
         // ML Rest api will generate a uri using prefix and extension
@@ -91,51 +156,62 @@ var provider = (function(){
       // temporal applies to all methods, if specified (null is ignored)
       params['temporal-collection'] = config.temporalCollection;
 
-      var backendOptions = {
-        method: req.method,
-        path: path,
-        params: params,
-        headers: req.headers,
-        ca: ca
-      }
+      docsBackendCall(req, res, config, req.method, uri, params, function(backendResponse, data) {
+        res.status(backendResponse.statusCode)
+        for (var header in backendResponse.headers) {
+          // rewrite location
+          if (header === 'location') {
+            res.header(header, idConverter.toId(backendResponse.headers[header].substring(18)))
 
-      authProvider
-      .getAuth(req.session, backendOptions)
-      .then(function(authorization) {
-        if (authorization) {
-          backendOptions.headers.authorization = authorization
-        }
-
-        var neverCache = (config.neverCache !== undefined) ? config.neverCache : true
-        if (neverCache || (req.method !== 'GET')) {
-          noCache(res)
-        }
-
-        // call backend, and pipe clientResponse straight into res
-        backend.call(req, backendOptions, function(backendResponse, data) {
-          res.status(backendResponse.statusCode)
-          for (var header in backendResponse.headers) {
-            // rewrite location
-            if (header === 'location') {
-              res.header(header, idConverter.toId(backendResponse.headers[header].substring(18)))
-
-            // copy all others except auth challenge headers
-            } else if (header !== 'www-authenticate') {
-              res.header(header, backendResponse.headers[header])
-            }
+          // copy all others except auth challenge headers
+          } else if (header !== 'www-authenticate') {
+            res.header(header, backendResponse.headers[header])
           }
-          res.write(data)
-          res.end()
-        })
-
-      }, function(unauthorized) {
-        // TODO: might return an error too?
-        four0four.unauthorized(req, res)
+        }
+        if ('' + req.query.download === 'true') {
+          res.header('content-disposition', 'attachment; filename=' + uri.split('/').pop())
+        }
+        res.write(data)
+        res.end()
       })
+
     })
 
     return router;
   };
+
+  function docsBackendCall(req, res, config, method, uri, params, callback) {
+    var path = '/v1/documents';
+    params.uri = uri;
+
+    var backendOptions = {
+      method: method,
+      path: path,
+      params: params,
+      headers: req.headers,
+      ca: ca
+    }
+
+    config.authProvider
+    .getAuth(req.session, backendOptions)
+    .then(function(authorization) {
+      if (authorization) {
+        backendOptions.headers.authorization = authorization
+      }
+
+      var neverCache = (config.neverCache !== undefined) ? config.neverCache : true
+      if (neverCache || (req.method !== 'GET')) {
+        noCache(res)
+      }
+
+      // call backend, and pipe clientResponse straight into res
+      backend.call(req, backendOptions, callback)
+
+    }, function(unauthorized) {
+      // TODO: might return an error too?
+      four0four.unauthorized(req, res)
+    })
+  }
 
   function expectBody(req) {
     return ['POST', 'PUT'].indexOf(req.method) > -1
@@ -152,6 +228,7 @@ var provider = (function(){
   }
 
   return provide;
+
 })();
 
 module.exports = provider;
