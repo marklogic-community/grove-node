@@ -46,7 +46,7 @@ var provider = (function() {
     // TODO: extract out to separate module that could alternatively
     // be run inside MarkLogic itself
     const buildMarklogicQuery = function(query) {
-      let options = query.options || {};
+      var options = query.options || {};
 
       if (config.extract) {
         options["extract-document-data"] = {
@@ -78,14 +78,19 @@ var provider = (function() {
 
     router.post('/', (req, res) => {
       const query = req.body
-      const options = query.options || {}
+      const start = query.options.start || 1;
+      const pageLength = query.options.pageLength || 10;
+
+      delete query.options.start
+      delete query.options.pageLength
+
       const reqOptions = {
         method: 'POST',
         path: '/v1/search',
         params: {
           format: 'json',
-          start: options.start,
-          pageLength: options.pageLength,
+          start: start,
+          pageLength: pageLength,
           options: (config.namedOptions || 'all')
         },
         headers: {
