@@ -45,7 +45,7 @@ router.use('/crud/' + type, factory.defaultCrudRoute({
   neverCache: true,                      // (default)
   directory: '/' + type + '/',           // default: /
   //extension: 'json',                   // (default)
-  //contentType: ['application/json'],   // (default)
+  contentType: '*/*',                    // default: application/json
   //temporalCollection: 'uni-temporal',  // default: none
   collections: ['data', 'type/' + type], // default: none
   idConverter: idConverter,              // default: encode/decodeUriComponent

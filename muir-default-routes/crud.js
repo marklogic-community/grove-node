@@ -40,9 +40,11 @@ var provider = (function(){
       call: function(req, res, config, id) {
         const uri = idConverter.toUri(id);
 
+        // Double-pass backend call required to get a (fairly) reliable content-type as well as metadata
         docsBackendCall(req, res, config, 'GET', uri, {}, function(backendResponse, head) {
           const contentType = backendResponse.headers['content-type'].split(';')[0];
           const format = backendResponse.headers['vnd.marklogic.document-format'];
+          const size = backendResponse.headers['content-length'];
 
           docsBackendCall(req, res, config, 'GET', uri, {
             category: 'metadata',
@@ -58,10 +60,14 @@ var provider = (function(){
             if ('' + req.query.download === 'true') {
               res.header('content-disposition', 'attachment; filename=' + uri.split('/').pop())
             }
+            // pass through REST-api metadata (props, collections, perms, etc)
             var data = JSON.parse(metadata);
+            // append some more, useful for showing binary files
             data.contentType = contentType;
-            data.format = format;
             data.fileName = uri.split('/').pop();
+            data.format = format;
+            data.size = size;
+            data.uri = uri;
             res.write(JSON.stringify(data));
             res.end();
           })
@@ -185,7 +191,7 @@ var provider = (function(){
     params.uri = uri;
 
     var backendOptions = {
-      method: method,
+      method: uri && method === 'POST' ? 'PUT' : method,
       path: path,
       params: params,
       headers: req.headers,
