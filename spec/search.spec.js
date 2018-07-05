@@ -43,6 +43,7 @@ describe('/api/search/all', () => {
 
   afterEach(done => {
     agent.close(done)
+    nock.cleanAll()
   })
 
   describe('POST', () => {
@@ -58,14 +59,13 @@ describe('/api/search/all', () => {
             // TODO: options like this maybe should come from client,
             // or at least host Express app
             options: {
-              page: 1,
-              pageLength: 10,
               'extract-document-data': { 'extract-path': '/name' }
             }
           }
         })
         .query({
           format: 'json',
+          start: 1,
           pageLength: 10,
           options: 'all'
         })
@@ -76,7 +76,7 @@ describe('/api/search/all', () => {
           value: 'henry'
         },
         options: {
-          page: 1,
+          start: 1,
           pageLength: 10
         }
       }
@@ -117,22 +117,29 @@ describe('/api/search/all', () => {
         .post('/api/search/all')
         .send({})
         .then(response => {
-          expect(nock.isDone()).to.equal(true)
+          expect(nock.isDone()).to.equal(
+            true,
+            'Pending Nocks: ' + nock.pendingMocks()
+          )
           expect(response.status).to.equal(
             200,
             'Received response: ' + JSON.stringify(response.body)
           )
           done()
-        }).catch(done.fail)
+        })
+        .catch(done.fail)
     })
 
-    xit('requests the second page', done => {
+    it('requests the second page', done => {
       const searchResponse = require('./helpers/qtextSearchResponse')
         .henryPageTwo
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', {
           search: {
-            qtext: 'henry',
+            qtext: '',
+            query: {
+              qtext: 'henry'
+            },
             // TODO: options like this maybe should come from client,
             // or at least host Express app
             options: {
@@ -142,38 +149,29 @@ describe('/api/search/all', () => {
         })
         .query({
           format: 'json',
-          pageLength: 10,
           start: 11,
+          pageLength: 10,
           options: 'all'
         })
         .reply(200, searchResponse)
       const executedQuery = {
-        queryText: 'henry',
-        page: 2,
-        pageLength: 10
+        filters: {
+          type: 'queryText',
+          value: 'henry'
+        },
+        options: {
+          start: 11,
+          pageLength: 10
+        }
       }
       agent
         .post('/api/search/all')
         .send(executedQuery)
-        .end((error, response) => {
-          expect(error).to.not.exist
-          expect(response.status).to.equal(200)
-          expect(response.body).to.deep.equal({
-            query: {
-              queryText: 'henry',
-              pageLength: 10,
-              // convert start to page, which is our front-end abstraction
-              page: 2
-            },
-            response: {
-              metadata: {
-                executionTime: 0.010867,
-                total: 12
-              },
-              results: searchResponse.results,
-              facets: searchResponse.facets
-            }
-          })
+        .then(response => {
+          expect(response.status).to.equal(
+            200,
+            'Received response: ' + JSON.stringify(response.body)
+          )
           done()
         })
     })

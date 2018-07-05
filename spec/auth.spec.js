@@ -20,6 +20,7 @@ describe('auth integration tests', () => {
       .post('/api/search/all')
       .send({})
       .then(response => {
+        console.log('response:', response.body);
         expect(response.status).to.equal(401)
       })
   })
