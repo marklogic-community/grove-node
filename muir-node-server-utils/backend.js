@@ -104,7 +104,7 @@ var backend = (function() {
     // try to clean up in case of untimely responses
     backendRequest.on('socket', function(socket) {
       socket.on('timeout', function() {
-        console.log('Timeout reached, aborting proxy call..')
+        console.log('Timeout reached, aborting network call..')
         backendRequest.abort()
       })
     })
@@ -117,7 +117,7 @@ var backend = (function() {
         .status(500)
         .end()
       } else {
-        throw 'Proxy call failed: ' + e.message
+        throw new Error('Network call failed: ' + e.message)
       }
     })
 
