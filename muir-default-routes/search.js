@@ -78,11 +78,12 @@ var provider = (function() {
 
     router.post('/', (req, res) => {
       const query = req.body
-      const start = query.options.start || 1;
-      const pageLength = query.options.pageLength || 10;
+      const options = query.options || {}
+      const start = options.start || 1;
+      const pageLength = options.pageLength || 10;
 
-      delete query.options.start
-      delete query.options.pageLength
+      delete options.start
+      delete options.pageLength
 
       const reqOptions = {
         method: 'POST',
@@ -105,7 +106,6 @@ var provider = (function() {
           }
 
           const builtQuery = buildMarklogicQuery(query)
-          console.log(builtQuery);
           reqOptions.body = builtQuery;
 
           backend.call(req, reqOptions, function(backendResponse, data) {
