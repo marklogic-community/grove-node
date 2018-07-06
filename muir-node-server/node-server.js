@@ -73,7 +73,7 @@ var provider = (function() {
     // }
 
     server.listen(port, function () {
-      // console.log('Express server listening on port ' + port)
+      console.log('Express server listening on port ' + port)
       /* eslint-disable no-path-concat */
       // console.log('env = ' + app.get('env') +
       //   '\n__dirname = ' + __dirname +
