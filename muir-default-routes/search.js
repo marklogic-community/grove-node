@@ -61,7 +61,6 @@ var provider = (function() {
 
       return JSON.stringify({
         search: {
-          qtext: (query.queryText || ''),
           query: structuredQuery,
           options: options
         }

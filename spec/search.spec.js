@@ -52,7 +52,6 @@ describe('/api/search/all', () => {
       nock(marklogicURL)
         .post('/v1/search', {
           search: {
-            qtext: '',
             query: {
               qtext: 'henry'
             },
@@ -136,7 +135,6 @@ describe('/api/search/all', () => {
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', {
           search: {
-            qtext: '',
             query: {
               qtext: 'henry'
             },
