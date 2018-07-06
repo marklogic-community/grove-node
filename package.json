@@ -18,8 +18,8 @@
     "node": ">=6.11.2"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha --exit spec",
-    "test:watch": "node_modules/.bin/mocha spec --exit --watch",
+    "test": "mocha --exit spec",
+    "test:watch": "mocha spec --exit --watch",
     "start": "cross-env NODE_ENV=development nodemon node-app.js",
     "start:prod": "node node-app.js"
   },
