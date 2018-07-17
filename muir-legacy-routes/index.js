@@ -1,8 +1,7 @@
 'use strict';
 
 var factory = (function() {
-
-  var whitelistProxyRoute = function (config) {
+  var whitelistProxyRoute = function(config) {
     return require('./proxy')(config);
   };
 

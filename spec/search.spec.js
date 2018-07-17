@@ -1,54 +1,54 @@
-'use strict'
+'use strict';
 
 // TODO: move to test.json
-process.env.NODE_ENV = 'test'
-process.env.MUIR_APP_PORT = 61234
-const mlPort = '51234'
-process.env.MUIR_ML_REST_PORT = mlPort
-const mlHost = 'localhost'
-process.env.MUIR_ML_HOST = mlHost
-const marklogicURL = 'http://' + mlHost + ':' + mlPort
+process.env.NODE_ENV = 'test';
+process.env.MUIR_APP_PORT = 61234;
+const mlPort = '51234';
+process.env.MUIR_ML_REST_PORT = mlPort;
+const mlHost = 'localhost';
+process.env.MUIR_ML_HOST = mlHost;
+const marklogicURL = 'http://' + mlHost + ':' + mlPort;
 
-const chai = require('chai')
-const expect = chai.expect
-const chaiHttp = require('chai-http')
-chai.use(chaiHttp)
+const chai = require('chai');
+const expect = chai.expect;
+const chaiHttp = require('chai-http');
+chai.use(chaiHttp);
 
-const nock = require('nock')
+const nock = require('nock');
 
 describe('/api/search/all', () => {
-  let agent
+  let agent;
   beforeEach(() => {
-    delete require.cache[require.resolve('../node-app')] // delete from cache
-    const server = require('../node-app')
-    agent = chai.request.agent(server)
-    const user = { username: 'admin', password: 'admin' }
+    delete require.cache[require.resolve('../node-app')]; // delete from cache
+    const server = require('../node-app');
+    agent = chai.request.agent(server);
+    const user = { username: 'admin', password: 'admin' };
     nock(marklogicURL)
       .head('/v1/ping')
       .reply(401, null, {
         'www-authenticate':
           'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
-      })
+      });
     nock(marklogicURL)
       .get('/v1/documents')
       .query({ uri: '/api/users/admin.json' })
-      .reply(404)
+      .reply(404);
     return agent
       .post('/api/auth/login')
       .send(user)
       .catch(error => {
-        throw error
-      })
-  })
+        throw error;
+      });
+  });
 
   afterEach(done => {
-    agent.close(done)
-    nock.cleanAll()
-  })
+    agent.close(done);
+    nock.cleanAll();
+  });
 
   describe('POST', () => {
     it('POSTs search to MarkLogic', done => {
-      const searchResponse = require('./helpers/qtextSearchResponse').henry
+      const searchResponse = require('./helpers/qtextSearchResponse').henry;
       nock(marklogicURL)
         .post('/v1/search', {
           search: {
@@ -68,7 +68,7 @@ describe('/api/search/all', () => {
           pageLength: 10,
           options: 'all'
         })
-        .reply(200, searchResponse)
+        .reply(200, searchResponse);
       const executedQuery = {
         filters: {
           type: 'queryText',
@@ -78,7 +78,7 @@ describe('/api/search/all', () => {
           start: 1,
           pageLength: 10
         }
-      }
+      };
       agent
         .post('/api/search/all')
         .send(executedQuery)
@@ -86,32 +86,32 @@ describe('/api/search/all', () => {
           expect(response.status).to.equal(
             200,
             'Received response: ' + JSON.stringify(response.body)
-          )
+          );
           expect(response.body).to.include.all.keys(
             'results',
             'facets',
             'total',
             'metrics'
-          )
+          );
           expect(response.body.results).to.deep.equal(
             searchResponse.results.map(r => ({
               ...r,
               id: encodeURIComponent(r.uri)
             }))
-          )
-          expect(response.body.facets).to.deep.equal(searchResponse.facets)
-          expect(response.body.total).to.equal(2)
+          );
+          expect(response.body.facets).to.deep.equal(searchResponse.facets);
+          expect(response.body.total).to.equal(2);
           expect(response.body.metrics).to.include({
             'total-time': 'PT0.010867S'
-          })
-          done()
-        })
-    })
+          });
+          done();
+        });
+    });
 
     it('works with an empty request body', done => {
       nock('http://' + mlHost + ':' + mlPort)
         .post(/search/)
-        .reply(200, {})
+        .reply(200, {});
       agent
         .post('/api/search/all')
         .send({})
@@ -119,19 +119,19 @@ describe('/api/search/all', () => {
           expect(nock.isDone()).to.equal(
             true,
             'Pending Nocks: ' + nock.pendingMocks()
-          )
+          );
           expect(response.status).to.equal(
             200,
             'Received response: ' + JSON.stringify(response.body)
-          )
-          done()
+          );
+          done();
         })
-        .catch(done.fail)
-    })
+        .catch(done.fail);
+    });
 
     it('requests the second page', done => {
       const searchResponse = require('./helpers/qtextSearchResponse')
-        .henryPageTwo
+        .henryPageTwo;
       nock('http://' + mlHost + ':' + mlPort)
         .post('/v1/search', {
           search: {
@@ -151,7 +151,7 @@ describe('/api/search/all', () => {
           pageLength: 10,
           options: 'all'
         })
-        .reply(200, searchResponse)
+        .reply(200, searchResponse);
       const executedQuery = {
         filters: {
           type: 'queryText',
@@ -161,7 +161,7 @@ describe('/api/search/all', () => {
           start: 11,
           pageLength: 10
         }
-      }
+      };
       agent
         .post('/api/search/all')
         .send(executedQuery)
@@ -169,10 +169,10 @@ describe('/api/search/all', () => {
           expect(response.status).to.equal(
             200,
             'Received response: ' + JSON.stringify(response.body)
-          )
-          done()
-        })
-    })
+          );
+          done();
+        });
+    });
 
     // it('builds a constraint query', done => {
     //   const searchResponse = require('./helpers/qtextSearchResponse').henry
@@ -246,7 +246,7 @@ describe('/api/search/all', () => {
     xit('handles 400 errors from MarkLogic', done => {
       nock('http://' + mlHost + ':' + mlPort)
         // We don't want to assert on post body in this spec
-        .filteringRequestBody(body => '*')
+        .filteringRequestBody(() => '*')
         .post('/v1/search', '*')
         .query(true) // We don't care about the queryString in this spec
         .reply(400, {
@@ -257,18 +257,18 @@ describe('/api/search/all', () => {
             message:
               'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
           }
-        })
+        });
       agent.post('/api/search/all').end((error, response) => {
-        expect(response.status).to.equal(400)
+        expect(response.status).to.equal(400);
         expect(response.body).to.deep.equal({
           statusCode: 400,
           status: 'Bad Request',
           messageCode: 'XDMP-ELEMRIDXNOTFOUND',
           message:
             'XDMP-ELEMRIDXNOTFOUND: cts:json-property-reference("Gender", ()) -- No  element range index for Gender collation=http://marklogic.com/collation/ coordinate-system=wgs84'
-        })
-        done()
-      })
-    })
-  })
-})
+        });
+        done();
+      });
+    });
+  });
+});

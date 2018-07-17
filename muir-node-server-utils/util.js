@@ -4,13 +4,13 @@ module.exports = exports = {
   asArray: function asArray() {
     var args;
 
-    if ( arguments.length === 1) {
-      if (Array.isArray( arguments[0] )) {
+    if (arguments.length === 1) {
+      if (Array.isArray(arguments[0])) {
         args = arguments[0];
-      } else if ( arguments[0] === null || arguments[0] === undefined ) {
+      } else if (arguments[0] === null || arguments[0] === undefined) {
         args = [];
       } else {
-        args = [ arguments[0] ];
+        args = [arguments[0]];
       }
     } else {
       // TODO: compact array?
@@ -43,7 +43,11 @@ module.exports = exports = {
       nextSource = Object(nextSource);
 
       var keysArray = Object.keys(Object(nextSource));
-      for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+      for (
+        var nextIndex = 0, len = keysArray.length;
+        nextIndex < len;
+        nextIndex++
+      ) {
         var nextKey = keysArray[nextIndex];
         var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
         // istanbul ignore else

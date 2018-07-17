@@ -1,9 +1,0 @@
-{
-  "env": {
-    "node": true
-  },
-  "extends": "standard",
-  "rules": {
-    "space-before-function-paren": ["error", "ignore"]
-  }
-}

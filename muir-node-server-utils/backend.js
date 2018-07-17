@@ -1,34 +1,37 @@
-
 const options = require('../muir-node-server-utils/options')();
 
 const http = require('http');
 // const https = require('https');
 //const fs = require('fs');
 
-var ca = '';
+// var ca = '';
 var httpClient = null;
 // if (options.mlCertificate) {
 //   console.log('Loading ML Certificate ' + options.mlCertificate)
 //   ca = fs.readFileSync(options.mlCertificate)
 //   httpClient = https
 // } else {
-  httpClient = http;
+httpClient = http;
 // }
 
 var backend = (function() {
-
   //// Helper function to make backend calls
   // invokes callback when backend call finishes
   // browserResponse is optional, backendResponse is piped into it if provided
   // otherwise data is returned as Buffer via callback
-  var callBackend = function (browserRequest, backendOptions, callback, browserResponse) {
-    backendOptions.hostname = backendOptions.hostname || options.mlHost
-    backendOptions.port = backendOptions.port || options.mlRestPort
+  var callBackend = function(
+    browserRequest,
+    backendOptions,
+    callback,
+    browserResponse
+  ) {
+    backendOptions.hostname = backendOptions.hostname || options.mlHost;
+    backendOptions.port = backendOptions.port || options.mlRestPort;
 
     var body = backendOptions.body;
     delete backendOptions.body;
     if (body) {
-      delete backendOptions.headers['content-length']
+      delete backendOptions.headers['content-length'];
     }
 
     // append unencoded JSON params to request path
@@ -36,18 +39,23 @@ var backend = (function() {
       var params = [];
 
       Object.keys(backendOptions.params).forEach(function(key) {
-        var value = backendOptions.params[key]
+        var value = backendOptions.params[key];
         if (Array.isArray(value)) {
           value.forEach(function(val) {
-            params.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
-          })
+            params.push(
+              encodeURIComponent(key) + '=' + encodeURIComponent(val)
+            );
+          });
         } else if (value !== undefined && value !== null) {
-          params.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+          params.push(
+            encodeURIComponent(key) + '=' + encodeURIComponent(value)
+          );
         }
       });
 
       var path = backendOptions.path;
-      backendOptions.path = path + ( (path.indexOf('?') > -1) ? '&' : '?' ) + params.join('&');
+      backendOptions.path =
+        path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
 
       delete backendOptions.params;
     }
@@ -59,75 +67,72 @@ var backend = (function() {
     // }
 
     // make actual backend call
-    var backendRequest = httpClient.request(
-      backendOptions,
-      function(backendResponse) {
-        var data = []
+    var backendRequest = httpClient.request(backendOptions, function(
+      backendResponse
+    ) {
+      var data = [];
 
-        if (browserResponse) {
-          // proxy status to server response
-          browserResponse.status(backendResponse.statusCode)
+      if (browserResponse) {
+        // proxy status to server response
+        browserResponse.status(backendResponse.statusCode);
 
-          // proxy all headers to server response
-          for (var header in backendResponse.headers) {
-            // except auth challenge headers
-            if (header !== 'www-authenticate') {
-              browserResponse.header(header, backendResponse.headers[header])
-            }
+        // proxy all headers to server response
+        for (var header in backendResponse.headers) {
+          // except auth challenge headers
+          if (header !== 'www-authenticate') {
+            browserResponse.header(header, backendResponse.headers[header]);
           }
         }
-
-        backendResponse.on('data', function(chunk) {
-          if (browserResponse) {
-            // proxy data to server response
-            browserResponse.write(chunk)
-          } else {
-            // or gather to pass back to callback
-            data.push(chunk)
-          }
-        })
-
-        backendResponse.on('end', function(chunk) {
-          if (browserResponse) {
-            // close server response for proxying convenience
-            browserResponse.end()
-          }
-
-          // notify upstream, passing back data (if not streamed into server response yet)
-          if (callback) {
-            callback(backendResponse, Buffer.concat(data))
-          }
-        })
       }
-    )
+
+      backendResponse.on('data', function(chunk) {
+        if (browserResponse) {
+          // proxy data to server response
+          browserResponse.write(chunk);
+        } else {
+          // or gather to pass back to callback
+          data.push(chunk);
+        }
+      });
+
+      backendResponse.on('end', function() {
+        if (browserResponse) {
+          // close server response for proxying convenience
+          browserResponse.end();
+        }
+
+        // notify upstream, passing back data (if not streamed into server response yet)
+        if (callback) {
+          callback(backendResponse, Buffer.concat(data));
+        }
+      });
+    });
 
     // try to clean up in case of untimely responses
     backendRequest.on('socket', function(socket) {
       socket.on('timeout', function() {
-        console.log('Timeout reached, aborting network call..')
-        backendRequest.abort()
-      })
-    })
+        console.log('Timeout reached, aborting network call..');
+        backendRequest.abort();
+      });
+    });
 
     // try to clean up in case of failure
     backendRequest.on('error', function(e) {
       if (browserResponse) {
         console.log('Problem with request: ' + e.message);
-        browserResponse
-        .status(500)
-        .end()
+        browserResponse.status(500).end();
       } else {
-        throw new Error('Network call failed: ' + e.message)
+        throw new Error('Network call failed: ' + e.message);
       }
-    })
+    });
 
     // stream browser request data into backend request
     // note: requires non-parsed body!
     if (body) {
-      backendRequest.write(body)
+      backendRequest.write(body);
       backendRequest.end();
     } else {
-      browserRequest.pipe(backendRequest)
+      browserRequest.pipe(backendRequest);
       browserRequest.on('end', function() {
         backendRequest.end();
       });

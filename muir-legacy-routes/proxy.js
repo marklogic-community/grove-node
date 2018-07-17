@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
-const backend = require('../muir-node-server-utils/backend')
+const backend = require('../muir-node-server-utils/backend');
 //const fs = require('fs')
-const four0four = require('../muir-node-server-utils/404')()
-//const options = require('../muir-node-server-utils/options')()
+const four0four = require('../muir-node-server-utils/404')();
+const options = require('../muir-node-server-utils/options')();
 
-var ca = ''
+var ca = '';
 // FIXME: better handled inside options?
 // if (options.mlCertificate) {
 //   console.log('Loading ML Certificate ' + options.mlCertificate)
@@ -14,13 +14,13 @@ var ca = ''
 
 var provider = (function() {
   var provide = function(config) {
-    var router = require('express').Router()
+    var router = require('express').Router();
 
-    const authProvider = config.authProvider
+    const authProvider = config.authProvider;
     if (!authProvider) {
       throw new Error(
         'whitelistProxyRoute configuration must include an authProvider'
-      )
+      );
     }
 
     config.whitelist.forEach(function(rule) {
@@ -61,9 +61,9 @@ var provider = (function() {
     }
 
     function noCache(req, res, next) {
-      res.append('Cache-Control', 'no-cache, must-revalidate') // HTTP 1.1 - must-revalidate
-      res.append('Pragma', 'no-cache') // HTTP 1.0
-      res.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT') // Date in the past
+      res.append('Cache-Control', 'no-cache, must-revalidate'); // HTTP 1.1 - must-revalidate
+      res.append('Pragma', 'no-cache'); // HTTP 1.0
+      res.append('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
       next();
     }
@@ -76,22 +76,22 @@ var provider = (function() {
         path: path,
         headers: req.headers,
         ca: ca
-      }
+      };
 
-      authProvider
-      .getAuth(req.session, reqOptions)
-      .then(function(authorization) {
-        if (authorization) {
-          reqOptions.headers.authorization = authorization
+      authProvider.getAuth(req.session, reqOptions).then(
+        function(authorization) {
+          if (authorization) {
+            reqOptions.headers.authorization = authorization;
+          }
+
+          // call backend, and pipe clientResponse straight into res
+          backend.call(req, reqOptions, null, res);
+        },
+        function() {
+          // TODO: might return an error too?
+          four0four.unauthorized(req, res);
         }
-
-        // call backend, and pipe clientResponse straight into res
-        backend.call(req, reqOptions, null, res)
-
-      }, function(unauthorized) {
-        // TODO: might return an error too?
-        four0four.unauthorized(req, res)
-      })
+      );
     }
 
     return router;
@@ -100,4 +100,4 @@ var provider = (function() {
   return provide;
 })();
 
-module.exports = provider
+module.exports = provider;

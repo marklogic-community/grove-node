@@ -17,16 +17,16 @@ module.exports = exports = {
    * @return {Object} {@link http://docs.marklogic.com/guide/rest-dev/search#id_69918 combined query}
    */
   combined: function combined(query, qtext, options) {
-    if ( isObject(qtext) && !options ) {
+    if (isObject(qtext) && !options) {
       options = qtext;
       qtext = null;
     }
 
     return {
       search: {
-        query: query && query.query || query,
+        query: (query && query.query) || query,
         qtext: qtext || '',
-        options: options && options.options || options
+        options: (options && options.options) || options
       }
     };
   },
@@ -43,12 +43,15 @@ module.exports = exports = {
    * @return {Object} {@link http://docs.marklogic.com/guide/search-dev/structured-query#id_38268 range-constraint-query}
    */
   rangeConstraint: function rangeConstraint(name, operator, values, options) {
-    if ( !values && !options ) {
+    if (!values && !options) {
       values = operator;
       operator = null;
     }
 
-    if ( operator && ['LT', 'LE', 'GT', 'GE', 'EQ', 'NE'].indexOf(operator) === -1 ) {
+    if (
+      operator &&
+      ['LT', 'LE', 'GT', 'GE', 'EQ', 'NE'].indexOf(operator) === -1
+    ) {
       throw new Error('invalid rangeConstraint query operator: ' + operator);
     }
 
@@ -56,7 +59,7 @@ module.exports = exports = {
       'range-constraint-query': {
         'constraint-name': name,
         'range-operator': operator || 'EQ',
-        'value': asArray(values),
+        value: asArray(values),
         'range-option': asArray(options)
       }
     };
@@ -86,7 +89,7 @@ module.exports = exports = {
     } else {
       values = asArray(values);
       type = typeof values[0];
-      type = ((type === 'string') && 'text') || type;
+      type = (type === 'string' && 'text') || type;
     }
 
     query['value-constraint-query'][type] = values;
@@ -107,7 +110,7 @@ module.exports = exports = {
     return {
       'word-constraint-query': {
         'constraint-name': name,
-        'text': asArray(values)
+        text: asArray(values)
       }
     };
   },
@@ -125,7 +128,7 @@ module.exports = exports = {
     return {
       'collection-constraint-query': {
         'constraint-name': name,
-        'uri': asArray(values)
+        uri: asArray(values)
       }
     };
   },
@@ -145,16 +148,18 @@ module.exports = exports = {
     var constraintName = args.shift();
 
     // horrible hack for when arguments.length === 2 and arguments[1] is an array
-    if ( args.length === 1 && Array.isArray(args[0]) ) {
+    if (args.length === 1 && Array.isArray(args[0])) {
       args = args[0];
     }
 
     // args instanceof Array<Object>
-    var shouldExtend = args.map(
-      function(arg) { return isObject(arg); }
-    ).reduce(
-      function(a, b) { return a && b; }
-    );
+    var shouldExtend = args
+      .map(function(arg) {
+        return isObject(arg);
+      })
+      .reduce(function(a, b) {
+        return a && b;
+      });
 
     var query = {
       'custom-constraint-query': {
@@ -162,8 +167,8 @@ module.exports = exports = {
       }
     };
 
-    if ( shouldExtend ) {
-      while ( args.length ) {
+    if (shouldExtend) {
+      while (args.length) {
         extendObject(query['custom-constraint-query'], args.shift());
       }
     } else {
@@ -248,7 +253,7 @@ module.exports = exports = {
     var constraintName = args.shift();
 
     // horrible hack for when arguments.length === 2 and arguments[1] is an array
-    if ( args.length === 1 && Array.isArray(args[0]) ) {
+    if (args.length === 1 && Array.isArray(args[0])) {
       args = args[0];
     }
 

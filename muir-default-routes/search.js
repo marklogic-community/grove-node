@@ -1,47 +1,41 @@
-'use strict'
+'use strict';
 
 var provider = (function() {
-
-  const express = require('express')
-  const http = require('http')
-  // const https = require('https')
-  const options = require('../muir-node-server-utils/options')()
-  // const queryBuilder = require('marklogic').queryBuilder
-  const backend = require('../muir-node-server-utils/backend')
+  const express = require('express');
+  const backend = require('../muir-node-server-utils/backend');
 
   var provide = function(config) {
+    var router = express.Router();
 
-    var router = express.Router()
-
-    const authProvider = config.authProvider
+    const authProvider = config.authProvider;
     if (!authProvider) {
       throw new Error(
         'defaultSearchRoute configuration must include an authProvider'
-      )
+      );
     }
 
     const processResults = results => {
       results.forEach(result => {
         if (config.makeLabel) {
-          result.label = config.makeLabel(result)
+          result.label = config.makeLabel(result);
         }
         if (config.idConverter && config.idConverter.toId) {
-          result.id = config.idConverter.toId(result.uri)
+          result.id = config.idConverter.toId(result.uri);
         } else {
-          result.id = encodeURIComponent(result.uri)
+          result.id = encodeURIComponent(result.uri);
         }
-      })
+      });
       return results;
-    }
+    };
 
     // TODO: extract out to separate module that could alternatively
     // be run inside MarkLogic itself
     const processSearchResponse = function(searchResponse) {
       if (searchResponse.results) {
-        searchResponse.results = processResults(searchResponse.results)
+        searchResponse.results = processResults(searchResponse.results);
       }
-      return searchResponse
-    }
+      return searchResponse;
+    };
 
     // TODO: extract out to separate module that could alternatively
     // be run inside MarkLogic itself
@@ -49,14 +43,16 @@ var provider = (function() {
       var options = query.options || {};
 
       if (config.extract) {
-        options["extract-document-data"] = {
-          "extract-path": config.extract
-        }
+        options['extract-document-data'] = {
+          'extract-path': config.extract
+        };
       }
 
-      var structuredQuery = {}
+      var structuredQuery = {};
       if (query.filters) {
-        structuredQuery = require('../muir-node-server-utils/filter').buildQuery(query.filters)
+        structuredQuery = require('../muir-node-server-utils/filter').buildQuery(
+          query.filters
+        );
       }
 
       return JSON.stringify({
@@ -64,25 +60,27 @@ var provider = (function() {
           query: structuredQuery,
           options: options
         }
-      })
-    }
+      });
+    };
 
-    const processSearchError = error => error.errorResponse
+    const processSearchError = error => error.errorResponse;
 
     // [GJo] (#31) Moved bodyParsing inside routing, otherwise it might try to parse uploaded binaries as json..
-    router.use(express.urlencoded({
-      extended: true
-    }))
-    router.use(express.json())
+    router.use(
+      express.urlencoded({
+        extended: true
+      })
+    );
+    router.use(express.json());
 
     router.post('/', (req, res) => {
-      const query = req.body
-      const options = query.options || {}
+      const query = req.body;
+      const options = query.options || {};
       const start = options.start || 1;
       const pageLength = options.pageLength || 10;
 
-      delete options.start
-      delete options.pageLength
+      delete options.start;
+      delete options.pageLength;
 
       const reqOptions = {
         method: 'POST',
@@ -91,50 +89,53 @@ var provider = (function() {
           format: 'json',
           start: start,
           pageLength: pageLength,
-          options: (config.namedOptions || 'all')
+          options: config.namedOptions || 'all'
         },
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json'
         }
-      }
-      authProvider.getAuth(req.session, reqOptions).then(
-        auth => {
-          if (auth) {
-            reqOptions.headers.authorization = auth
-          }
-
-          const builtQuery = buildMarklogicQuery(query)
-          reqOptions.body = builtQuery;
-
-          backend.call(req, reqOptions, function(backendResponse, data) {
-            var json = JSON.parse(data.toString());
-            if (backendResponse.statusCode === 200) {
-              res.json(processSearchResponse(json))
-            } else {
-              res
-              .status(backendResponse.statusCode)
-              .json(processSearchError(json))
+      };
+      authProvider
+        .getAuth(req.session, reqOptions)
+        .then(
+          auth => {
+            if (auth) {
+              reqOptions.headers.authorization = auth;
             }
-          })
-        },
-        error => {
-          console.error('error authenticating search:', error)
-          res.status(401).json({
-            message: error
-          })
-        }
-      ).catch(error => {
-        // TODO: DRY up errors and make it standard across plugins
-        console.error(error)
-        res.status(500).json({
-          message: error.message
-        })
-      })
-    })
+
+            const builtQuery = buildMarklogicQuery(query);
+            reqOptions.body = builtQuery;
+
+            backend.call(req, reqOptions, function(backendResponse, data) {
+              var json = JSON.parse(data.toString());
+              if (backendResponse.statusCode === 200) {
+                res.json(processSearchResponse(json));
+              } else {
+                res
+                  .status(backendResponse.statusCode)
+                  .json(processSearchError(json));
+              }
+            });
+          },
+          error => {
+            console.error('error authenticating search:', error);
+            res.status(401).json({
+              message: error
+            });
+          }
+        )
+        .catch(error => {
+          // TODO: DRY up errors and make it standard across plugins
+          console.error(error);
+          res.status(500).json({
+            message: error.message
+          });
+        });
+    });
 
     return router;
-  }
+  };
 
   return provide;
 })();

@@ -1,3 +1,4 @@
+/* eslint no-unused-vars: "off" */
 var provider = (function() {
   'use strict';
 
@@ -25,14 +26,13 @@ var provider = (function() {
     function where() {
       var args = asArray.apply(null, arguments);
       return {
-        'query': {
-          'queries': args
+        query: {
+          queries: args
         }
       };
     }
 
     return {
-
       /**
        * Creates a {@link http://docs.marklogic.com/guide/search-dev/structured-query structured query}
        * from a set of sub-queries
@@ -48,7 +48,7 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         return {
           'and-query': {
-            'queries': args
+            queries: args
           }
         };
       },
@@ -65,7 +65,7 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         return {
           'or-query': {
-            'queries': args
+            queries: args
           }
         };
       },
@@ -132,7 +132,7 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         return {
           'collection-query': {
-            'uri': args
+            uri: args
           }
         };
       },
@@ -151,20 +151,20 @@ var provider = (function() {
         var last = args[args.length - 1];
         var infinite = true;
 
-        if ( last === true || last === false ) {
+        if (last === true || last === false) {
           infinite = last;
           args.pop();
         }
 
         // horrible hack to support an array of URIs
-        if ( args.length === 1 && Array.isArray(args[0]) ) {
+        if (args.length === 1 && Array.isArray(args[0])) {
           args = args[0];
         }
 
         return {
           'directory-query': {
-            'uri': args,
-            'infinite': infinite
+            uri: args,
+            infinite: infinite
           }
         };
       },
@@ -181,7 +181,7 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         return {
           'document-query': {
-            'uri': args
+            uri: args
           }
         };
       },
@@ -212,7 +212,7 @@ var provider = (function() {
       qname: function qname(ns, name) {
         var args = asArray.apply(null, arguments);
 
-        if ( args.length === 1 ) {
+        if (args.length === 1) {
           return { ns: null, name: args[0] };
         } else {
           return { ns: args[0], name: args[1] };
@@ -228,8 +228,8 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         var qname;
 
-        if ( args.length === 1 ) {
-          if ( args[0].ns || args[0].name ) {
+        if (args.length === 1) {
+          if (args[0].ns || args[0].name) {
             qname = args[0];
           } else {
             qname = this.qname(args[0]);
@@ -269,7 +269,7 @@ var provider = (function() {
           'yearMonthDuration'
         ];
 
-        if ( datatypes.indexOf(type) > -1 ) {
+        if (datatypes.indexOf(type) > -1) {
           type = 'xs:' + type;
         } else {
           throw new Error('Unknown datatype: ' + type);
@@ -309,7 +309,7 @@ var provider = (function() {
         var indexedName = args.shift();
 
         // TODO: attribute/field/path
-        if ( !indexedName.element ) {
+        if (!indexedName.element) {
           indexedName = { 'json-property': indexedName };
         }
 
@@ -317,7 +317,7 @@ var provider = (function() {
         var operator = null;
         var values = [];
 
-        if ( datatype && datatype.datatype ) {
+        if (datatype && datatype.datatype) {
           datatype = { type: datatype.datatype, collation: datatype.collation };
           operator = args.shift();
         } else {
@@ -325,7 +325,7 @@ var provider = (function() {
           datatype = null;
         }
 
-        if ( !comparisons[ operator ] ) {
+        if (!comparisons[operator]) {
           Array.prototype.push.apply(values, asArray(operator));
           operator = null;
         }
@@ -333,7 +333,7 @@ var provider = (function() {
         var options = [];
 
         args.forEach(function(arg) {
-          if ( arg['range-option'] ) {
+          if (arg['range-option']) {
             Array.prototype.push.apply(options, asArray(arg['range-option']));
           } else {
             Array.prototype.push.apply(values, asArray(arg));
@@ -344,8 +344,8 @@ var provider = (function() {
 
         var query = {
           'range-query': {
-            'range-operator': comparisons[ operator ] || 'EQ',
-            'value': values,
+            'range-operator': comparisons[operator] || 'EQ',
+            value: values,
             'range-option': options
           }
         };
@@ -378,7 +378,7 @@ var provider = (function() {
         var args = asArray.apply(null, arguments);
         return {
           'term-query': {
-            'text': args
+            text: args
           }
         };
       },
@@ -390,9 +390,9 @@ var provider = (function() {
        */
       ext: extensions
     };
-  }
+  };
 
   return provide;
-}());
+})();
 
 module.exports = provider;
