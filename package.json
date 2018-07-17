@@ -15,7 +15,7 @@
     "www-authenticate": "^0.6.2"
   },
   "engines": {
-    "node": ">=6.11.2"
+    "node": ">=8.3.0"
   },
   "scripts": {
     "lint": "eslint .",
@@ -30,8 +30,9 @@
     "chai": "^4.1.2",
     "chai-http": "^4.0.0",
     "cross-env": "^5.1.6",
-    "eslint": "^4.19.1",
+    "eslint": "^5.1.0",
     "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^5.2.0",
     "nock": "^9.3.2",

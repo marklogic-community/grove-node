@@ -5,13 +5,9 @@
   },
   "extends": [
     "plugin:prettier/recommended",
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:node/recommended"
   ],
-  "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
-    }
-  },
   "rules": {
     "no-console": "off",
     "no-unused-vars": [
