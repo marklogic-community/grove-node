@@ -1,6 +1,6 @@
 {
   "name": "muir-node",
-  "version": "0.7.0",
+  "version": "0.10.0-alpha",
   "dependencies": {
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
