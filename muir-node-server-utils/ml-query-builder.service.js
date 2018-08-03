@@ -344,8 +344,8 @@ var provider = (function() {
 
         var query = {
           'range-query': {
-            'range-operator': comparisons[operator] || 'EQ',
             value: values,
+            'range-operator': comparisons[operator] || 'EQ',
             'range-option': options
           }
         };

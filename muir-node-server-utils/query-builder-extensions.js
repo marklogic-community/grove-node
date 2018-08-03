@@ -58,8 +58,8 @@ module.exports = exports = {
     return {
       'range-constraint-query': {
         'constraint-name': name,
-        'range-operator': operator || 'EQ',
         value: asArray(values),
+        'range-operator': operator || 'EQ',
         'range-option': asArray(options)
       }
     };
