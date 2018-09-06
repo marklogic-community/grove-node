@@ -34,6 +34,12 @@ var backend = (function() {
       delete backendOptions.headers['content-length'];
     }
 
+    // get rid of some headers that throw off ML authentication
+    delete backendOptions.headers['x-forwarded-for'];
+    delete backendOptions.headers['x-forwarded-host'];
+    delete backendOptions.headers['x-forwarded-port'];
+    delete backendOptions.headers['x-forwarded-proto'];
+
     // append unencoded JSON params to request path
     if (backendOptions.params) {
       var params = [];

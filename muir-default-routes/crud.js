@@ -77,7 +77,13 @@ var provider = (function() {
                 );
               }
               // pass through REST-api metadata (props, collections, perms, etc)
-              var data = JSON.parse(metadata);
+              let data = {};
+              // TODO: improve this error handling
+              try {
+                data = JSON.parse(metadata);
+              } catch (e) {
+                console.log(e);
+              }
               // append some more, useful for showing binary files
               data.contentType = contentType;
               data.fileName = uri.split('/').pop();
