@@ -55,7 +55,8 @@ router.use(
     idConverter: idConverter, // default: encodeURIComponent(result.uri)
     // Example for making result labels using name property of person sample-data
     extract: '/name', // default: none
-    makeLabel: result => { // default: none
+    makeLabel: result => {
+      // default: none
       return (
         result.extracted &&
         result.extracted.content[0] &&
@@ -70,9 +71,9 @@ router.use(
   '/crud/' + type,
   routeFactory.defaultCrudRoute({
     authProvider: authProvider,
-    authed: true, // (default)
-    neverCache: true, // (default)
-    directory: '/' + type + '/', // default: /
+    authed: true, // default: true
+    neverCache: true, // default: true
+    directory: '/' + type + '/', // default: '/'
     //extension: 'json',                   // (default)
     contentType: '*/*', // default: application/json
     //temporalCollection: 'uni-temporal',  // default: none
