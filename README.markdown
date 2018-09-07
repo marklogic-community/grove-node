@@ -18,9 +18,13 @@ You can start in a production-style mode with the following command (which does 
 
 ## Configuration
 
-This project is configured via environment variables, roughly following the [recommendations from "The Twelve-Factor App"](https://12factor.net/config). Following established practice in the Vue.js and React communities, among others, we modify those recommendations by allowing configuration groupings for "development", "production" or other custom environments.
+### Endpoints and Routes
+
+See [ConfigureRoutes.markdown](ConfigureRoutes.markdown) in this repository on how to configure endpoints and the routes to them in this application.
 
 ### Environment variables
+
+Much of this project is configured via environment variables, roughly following the [recommendations from "The Twelve-Factor App"](https://12factor.net/config). Following established practice in the Vue and React communities, among others, we modify those recommendations by allowing configuration groupings for "development", "production" or other custom environments.
 
 You can use environment variables to override specific pieces of configuration, or even to provide all the configuration for this MUIR-generated Node middle-tier.
 

@@ -1,19 +1,33 @@
 'use strict';
 
-var router = require('express').Router();
-const factory = require('../../muir-default-routes');
+/*
+ * HELPFUL COMMENTS ALERT
+ *
+ * This file defines Grove routes nested under `/api`.
+ *
+ * You should make this the primary place to configure, install, and
+ * remove middle-tier endpoints for your Grove project.
+ *
+ * We have commented this file to make your job easier.
+*/
 
-// authProvider
-// - come up with an authProvider API
-// can we replace this with middleware (before guarded routes, below unguarded routes)? This will stop it from ever reaching the guarded routes
-// - still have to take into account that ML might not agree with middle-tier that you are authenticated (return a 401) - middle-tier should forward this along OR alert the Node app that authentication is invalid
-// - also need the authenticator to authenticate each ML endpoint called
-// authProvider.getAuthenticator
+// See the Express.js documentation to understand the Router.
+var router = require('express').Router();
+
+// Grove provides default route implementations. They are configurable.
+// We import the routeFactory here and will use it below.
+// TODO: create and link to documentation on muir-default-routes.
+const routeFactory = require('../../muir-default-routes');
+
+// The authProvider is injected into each route.
+// This is so that you can provide a different authProvider if desired.
 const authProvider = require('../../muir-node-server-utils/auth-helper');
 
 // mapping URIs to ids for CRUD in other routes
 // even possibly going so far as to return IDs instead of URIs
 // /dogs/1587 instead of dogs?uri=/somethingUgly
+// It is helpful to share this logic between search and CRUD routes,
+// particularly those referencing the same type.
 const idConverter = {
   toId: function(uri) {
     return encodeURIComponent(uri);
@@ -23,24 +37,26 @@ const idConverter = {
   }
 };
 
+// A minimal authRoute.
 router.use(
   '/auth',
-  factory.defaultAuthRoute({
+  routeFactory.defaultAuthRoute({
     authProvider: authProvider
   })
 );
 
-// Provide routes for pseudo-type 'all'
+// Provide search route for pseudo-type 'all'
 const type = 'all';
 router.use(
   '/search/' + type,
-  factory.defaultSearchRoute({
+  routeFactory.defaultSearchRoute({
     authProvider: authProvider,
-    namedOptions: type,
-    idConverter: idConverter,
+    namedOptions: type, // default: 'all'
+    idConverter: idConverter, // default: encodeURIComponent(result.uri)
     // Example for making result labels using name property of person sample-data
-    extract: '/name',
+    extract: '/name', // default: none
     makeLabel: result => {
+      // default: none
       return (
         result.extracted &&
         result.extracted.content[0] &&
@@ -49,13 +65,15 @@ router.use(
     }
   })
 );
+
+// Provide CRUD route for pseudo-type 'all'
 router.use(
   '/crud/' + type,
-  factory.defaultCrudRoute({
+  routeFactory.defaultCrudRoute({
     authProvider: authProvider,
-    authed: true, // (default)
-    neverCache: true, // (default)
-    directory: '/' + type + '/', // default: /
+    authed: true, // default: true
+    neverCache: true, // default: true
+    directory: '/' + type + '/', // default: '/'
     //extension: 'json',                   // (default)
     contentType: '*/*', // default: application/json
     //temporalCollection: 'uni-temporal',  // default: none
@@ -73,6 +91,11 @@ router.use(
   })
 );
 
+/*
+ * Your additional routes here. Or modify the above. Or delete them. :-)
+ */
+
+// For requests not matching any of the above, return a 404.
 var four0four = require('../../muir-node-server-utils/404')();
 router.get('/*', four0four.notFound);
 
