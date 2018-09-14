@@ -20,8 +20,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "npm run lint && mocha --exit spec",
-    "test:watch": "npm run lint && mocha spec --exit --watch",
+    "test": "npm run lint && mocha --exit --recursive",
+    "test:watch": "npm run lint && mocha --exit --watch --recursive",
     "start": "cross-env NODE_ENV=development nodemon node-app.js",
     "start:prod": "node node-app.js"
   },

@@ -42,6 +42,7 @@ describe('/api/search/all', () => {
   });
 
   afterEach(done => {
+    delete require.cache[require.resolve('../node-app')]; // delete from cache
     agent.close(done);
     nock.cleanAll();
   });
@@ -83,6 +84,10 @@ describe('/api/search/all', () => {
         .post('/api/search/all')
         .send(executedQuery)
         .then(response => {
+          expect(nock.isDone()).to.equal(
+            true,
+            'Pending Nocks: ' + nock.pendingMocks()
+          );
           expect(response.status).to.equal(
             200,
             'Received response: ' + JSON.stringify(response.body)
@@ -259,6 +264,10 @@ describe('/api/search/all', () => {
           }
         });
       agent.post('/api/search/all').end((error, response) => {
+        expect(nock.isDone()).to.equal(
+          true,
+          'Pending Nocks: ' + nock.pendingMocks()
+        );
         expect(response.status).to.equal(400);
         expect(response.body).to.deep.equal({
           statusCode: 400,
