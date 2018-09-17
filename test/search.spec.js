@@ -1,18 +1,12 @@
 'use strict';
 
-// TODO: move to test.json
-process.env.NODE_ENV = 'test';
-process.env.MUIR_APP_PORT = 61234;
-const mlPort = '51234';
-process.env.MUIR_ML_REST_PORT = mlPort;
-const mlHost = 'localhost';
-process.env.MUIR_ML_HOST = mlHost;
-const marklogicURL = 'http://' + mlHost + ':' + mlPort;
-
 const chai = require('chai');
 const expect = chai.expect;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
+
+const setup = require('./helpers/setup');
+const marklogicURL = setup.marklogicURL;
 
 const nock = require('nock');
 
@@ -114,7 +108,7 @@ describe('/api/search/all', () => {
     });
 
     it('works with an empty request body', done => {
-      nock('http://' + mlHost + ':' + mlPort)
+      nock(marklogicURL)
         .post(/search/)
         .reply(200, {});
       agent
@@ -137,7 +131,7 @@ describe('/api/search/all', () => {
     it('requests the second page', done => {
       const searchResponse = require('./helpers/qtextSearchResponse')
         .henryPageTwo;
-      nock('http://' + mlHost + ':' + mlPort)
+      nock(marklogicURL)
         .post('/v1/search', {
           search: {
             query: {
@@ -249,7 +243,7 @@ describe('/api/search/all', () => {
     // })
 
     xit('handles 400 errors from MarkLogic', done => {
-      nock('http://' + mlHost + ':' + mlPort)
+      nock(marklogicURL)
         // We don't want to assert on post body in this spec
         .filteringRequestBody(() => '*')
         .post('/v1/search', '*')

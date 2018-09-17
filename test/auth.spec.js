@@ -1,7 +1,3 @@
-// TODO: move to test.json
-process.env.NODE_ENV = 'test';
-process.env.MUIR_APP_PORT = 61234;
-
 const chai = require('chai');
 const expect = chai.expect;
 const chaiHttp = require('chai-http');
