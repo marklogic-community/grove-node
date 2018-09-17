@@ -108,9 +108,15 @@ var provider = (function() {
     }
 
     // GET Crud paths take an extra suffix as 'view' parameter
-    router.get('/:id/:view', function(req, res) {
+    router.get('/:id/:view?', function(req, res) {
       const id = req.params.id;
-      const view = req.params.view || 'raw';
+      const view = req.params.view || '_default';
+
+      // reply with 406 if client doesn't Accept mimes matching expected Content-Type
+      if (!req.accepts(acceptTypes)) {
+        four0four.notAcceptable(req, res, acceptTypes);
+        return;
+      }
 
       if (config.views[view] && config.views[view].call) {
         config.views[view].call(req, res, config, id, view);
@@ -125,7 +131,10 @@ var provider = (function() {
           category: config.views[view]
             ? config.views[view].category
             : undefined,
-          format: config.views[view] ? config.views[view].format : 'json'
+          format:
+            config.views[view] && config.views[view].format
+              ? config.views[view].format
+              : 'json'
         };
 
         docsBackendCall(req, res, config, req.method, uri, params, function(
@@ -151,9 +160,8 @@ var provider = (function() {
       }
     });
 
-    const allowedMethods = ['DELETE', 'GET', 'POST', 'PUT'];
+    const allowedMethods = ['DELETE', 'POST', 'PUT'];
     // Create -> POST
-    // Read   -> GET
     // Update -> PUT
     // Delete -> DELETE
 
@@ -167,12 +175,6 @@ var provider = (function() {
       // reply with 415 if body doesn't match expected Content-Type
       if (expectBody(req) && !req.is(contentType)) {
         four0four.unsupportedMediaType(req, res, [contentType]);
-        return;
-      }
-
-      // reply with 406 if client doesn't Accept mimes matching expected Content-Type
-      if (expectResponse(req) && !req.accepts(acceptTypes)) {
-        four0four.notAcceptable(req, res, acceptTypes);
         return;
       }
 
@@ -265,10 +267,6 @@ var provider = (function() {
 
   function expectBody(req) {
     return ['POST', 'PUT'].indexOf(req.method) > -1;
-  }
-
-  function expectResponse(req) {
-    return req.method === 'GET';
   }
 
   function noCache(response) {

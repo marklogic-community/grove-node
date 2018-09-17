@@ -16,6 +16,10 @@ const marklogicURL = setup.marklogicURL;
 // const mockRes = sinonExpressMock.mockRes;
 const nock = require('nock');
 
+const minAuthProvider = {
+  isAuthenticated: (req, res, next) => next(),
+  getAuth: () => Promise.resolve()
+};
 let crudProvider;
 
 describe('defaultCrudRoute', () => {
@@ -29,7 +33,7 @@ describe('defaultCrudRoute', () => {
     );
   });
 
-  describe('after route configuration', () => {
+  describe('with CRUD server', () => {
     let app;
     beforeEach(() => {
       app = express();
@@ -40,21 +44,67 @@ describe('defaultCrudRoute', () => {
       nock.cleanAll();
     });
 
-    it('works with a minimal authProvider', done => {
+    it('performs a simple READ', done => {
       nock(marklogicURL)
         .get('/v1/documents')
         .query({ uri: 'id1', format: 'json' })
         .reply(200);
       const crud = crudProvider({
-        authProvider: {
-          isAuthenticated: (req, res, next) => next(),
-          getAuth: () => Promise.resolve()
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/id1')
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('allows config of default view', done => {
+      nock(marklogicURL)
+        .get('/v1/documents')
+        .query({ uri: 'id1', format: 'json', transform: 'default' })
+        .reply(200);
+      const crud = crudProvider({
+        authProvider: minAuthProvider,
+        views: {
+          _default: {
+            transform: 'default'
+          }
         }
       });
       app.use(crud);
       chai
         .request(app)
-        .get('/id1/view1')
+        .get('/id1')
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('allows different view to be specified', done => {
+      nock(marklogicURL)
+        .get('/v1/documents')
+        .query({ uri: 'id1', format: 'json', transform: 'view2' })
+        .reply(200);
+      const crud = crudProvider({
+        authProvider: minAuthProvider,
+        views: {
+          _default: {
+            transform: 'default'
+          },
+          view2: {
+            transform: 'view2'
+          }
+        }
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/id1/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
