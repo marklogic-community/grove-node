@@ -80,7 +80,15 @@ router.use(
     collections: ['data', 'type/' + type], // default: none
     idConverter: idConverter, // default: encode/decodeUriComponent
     views: {
-      // default: none
+      // By default, no views are configured.
+      // The client can access different views when performing a READ
+      // by adding a view name after the id, as in:
+      // '/api/crud/all/someID/indent'
+      //
+      // Supported view configuration options include `transform`,
+      // `category`, `format` (which defaults to 'json'),
+      // `call` (a function to override the middle-tiers READ logic,
+      // which receives req, res, config, id, and the viewName as arguments)
       'to-json': {
         transform: 'to-json'
       },
