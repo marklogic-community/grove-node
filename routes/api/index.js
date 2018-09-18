@@ -80,7 +80,16 @@ router.use(
     collections: ['data', 'type/' + type], // default: none
     idConverter: idConverter, // default: encode/decodeUriComponent
     views: {
-      // By default, no views are configured.
+      // By default, a single `metadata` view is configured.
+      // This metadata view returns metadata including contentType,
+      // fileName, format, and size of the entity. It is particularly
+      // useful for binaries.
+      //
+      // There is also an implicit `_default` view, which is invoked
+      // when the crud endpoint is called with only an id (not followed by
+      // a view name). You can change the behavior of this implicit view
+      // by configuring a view named `_default`.
+      //
       // The client can access different views when performing a READ
       // by adding a view name after the id, as in:
       // '/api/crud/all/someID/indent'

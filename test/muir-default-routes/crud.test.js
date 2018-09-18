@@ -11,6 +11,18 @@ const marklogicURL = setup.marklogicURL;
 
 const nock = require('nock');
 
+const mockMLDocumentGet = (overrides = {}) => {
+  const reply = overrides.reply || {};
+  nock(marklogicURL)
+    .get('/v1/documents')
+    .query(
+      typeof overrides.query === 'function'
+        ? overrides.query
+        : { uri: 'id1', format: 'json', ...overrides.query }
+    )
+    .reply(reply.statusCode || 200, reply.body, reply.headers);
+};
+
 const minAuthProvider = {
   isAuthenticated: (req, res, next) => next(),
   getAuth: () => Promise.resolve()
@@ -35,10 +47,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('performs a simple READ', done => {
-      nock(marklogicURL)
-        .get('/v1/documents')
-        .query({ uri: 'id1', format: 'json' })
-        .reply(200);
+      mockMLDocumentGet();
       const crud = crudProvider({
         authProvider: minAuthProvider
       });
@@ -53,10 +62,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows config of default view transform', done => {
-      nock(marklogicURL)
-        .get('/v1/documents')
-        .query({ uri: 'id1', format: 'json', transform: 'default' })
-        .reply(200);
+      mockMLDocumentGet({ query: { transform: 'default' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -75,11 +81,42 @@ describe('defaultCrudRoute', () => {
         });
     });
 
+    it('contains a `metadata` view by default', done => {
+      // the metadata view does a double-pass to get content-type
+      mockMLDocumentGet({
+        query: query => query.uri === 'id1',
+        reply: {
+          headers: {
+            'content-type': 'application/pdf',
+            'content-length': '100',
+            'vnd.marklogic.document-format': 'pdf'
+          }
+        }
+      });
+      mockMLDocumentGet({
+        query: { category: 'metadata' },
+        reply: { body: {} }
+      });
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/id1/metadata')
+        .then(response => {
+          expect(response).to.have.status(200);
+          expect(response.body.contentType).to.equal('application/pdf');
+          expect(response.body.fileName).to.equal('id1');
+          expect(response.body.size).to.equal('100');
+          expect(response.body.format).to.equal('pdf');
+          expect(response.body.uri).to.equal('id1');
+          done();
+        });
+    });
+
     it('allows different view transform to be specified', done => {
-      nock(marklogicURL)
-        .get('/v1/documents')
-        .query({ uri: 'id1', format: 'json', transform: 'view2' })
-        .reply(200);
+      mockMLDocumentGet({ query: { transform: 'view2' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -102,10 +139,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows view category to be specified', done => {
-      nock(marklogicURL)
-        .get('/v1/documents')
-        .query({ uri: 'id1', format: 'json', category: 'category2' })
-        .reply(200);
+      mockMLDocumentGet({ query: { category: 'category2' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -125,10 +159,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows view format to be overridden', done => {
-      nock(marklogicURL)
-        .get('/v1/documents')
-        .query({ uri: 'id1', format: 'xml' })
-        .reply(200);
+      mockMLDocumentGet({ query: { format: 'xml' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {

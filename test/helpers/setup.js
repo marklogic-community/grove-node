@@ -14,8 +14,15 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  expect(nock.isDone()).to.equal(true, 'Pending Nocks: ' + nock.pendingMocks());
-  nock.cleanAll();
+  try {
+    expect(nock.isDone()).to.equal(
+      true,
+      'Pending Nocks: ' + nock.pendingMocks()
+    );
+  } catch (error) {
+    nock.cleanAll();
+    throw error;
+  }
 });
 
 module.exports = {
