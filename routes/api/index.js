@@ -96,6 +96,7 @@ router.use(
       //
       // Supported view configuration options include `transform`,
       // `category`, `format` (which defaults to 'json'),
+      // `acceptTypes` (which specifies which types a client must 'Accept'),
       // `call` (a function to override the middle-tiers READ logic,
       // which receives req, res, config, id, and the viewName as arguments)
       'to-json': {

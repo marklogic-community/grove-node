@@ -110,31 +110,25 @@ var provider = (function() {
     // GET Crud paths take an extra suffix as 'view' parameter
     router.get('/:id/:view?', function(req, res) {
       const id = req.params.id;
-      const view = req.params.view || '_default';
+      const viewName = req.params.view || '_default';
+      const view = config.views[viewName] || {};
 
       // reply with 406 if client doesn't Accept mimes matching expected Content-Type
-      if (!req.accepts(acceptTypes)) {
+      if (!req.accepts(view.acceptTypes || acceptTypes)) {
         four0four.notAcceptable(req, res, acceptTypes);
         return;
       }
 
-      if (config.views[view] && config.views[view].call) {
-        config.views[view].call(req, res, config, id, view);
+      if (view.call) {
+        view.call(req, res, config, id, viewName);
       } else {
         const uri = idConverter.toUri(id);
 
         var params = {
           uri: uri,
-          transform: config.views[view]
-            ? config.views[view].transform
-            : undefined,
-          category: config.views[view]
-            ? config.views[view].category
-            : undefined,
-          format:
-            config.views[view] && config.views[view].format
-              ? config.views[view].format
-              : 'json'
+          transform: view.transform,
+          category: view.category,
+          format: view.format || 'json'
         };
 
         docsBackendCall(req, res, config, req.method, uri, params, function(

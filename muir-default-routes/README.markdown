@@ -91,6 +91,6 @@ Supported configuration includes:
 
 - contentType: Defaults to 'application/json'.
 
-- views: Defaults to none (though a 'metadata' view is automatically included). Should be an object with a view name as a key. Values can either be a call function (which overrides the included READ logic and receives req, res, config, id, and the viewName) or objects specifying a transform, a category, and/or a format. Views are accessed with a URL like `/:id/:view`. See the muir-core-api for details.
+- views: Defaults to none (though a 'metadata' view is automatically included). Should be an object with a view name as a key. Values of the config object can be a `call` function (which overrides the included READ logic and receives req, res, config, id, and the viewName), a `transform`, a `category`, `acceptTypes` (which specifies which types a client must 'Accept'), and/or a `format`. Views are accessed with a URL like `/:id/:view`. See the muir-core-api for details.
  
   When no view is specified, an implicit `\_default` view is used, which can be modified by the user, if they pass a configuration for a view with that `\_default` name.

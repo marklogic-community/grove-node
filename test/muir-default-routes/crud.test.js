@@ -177,6 +177,43 @@ describe('defaultCrudRoute', () => {
           done();
         });
     });
+
+    it('errors if request does not accept json', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/id1')
+        .set('Accept', 'application/pdf')
+        .then(response => {
+          expect(response).to.have.status(406);
+          done();
+        });
+    });
+
+    it('allows different acceptTypes to be sent', done => {
+      mockMLDocumentGet();
+      const crud = crudProvider({
+        authProvider: minAuthProvider,
+        views: {
+          _default: {
+            acceptTypes: ['image/png']
+          }
+        }
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/id1')
+        .set('accept', 'image/png')
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
     it('allows overriding of `call`', done => {
       let customCallInvoked = false;
       let customCallCalledWithId, customCallCalledWithView;
