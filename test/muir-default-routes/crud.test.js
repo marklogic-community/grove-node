@@ -55,6 +55,7 @@ describe('defaultCrudRoute', () => {
       chai
         .request(app)
         .get('/id1')
+        .set('Accept', '*/*')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -193,13 +194,13 @@ describe('defaultCrudRoute', () => {
         });
     });
 
-    it('allows different acceptTypes to be sent', done => {
+    it('allows view-specific contentType', done => {
       mockMLDocumentGet();
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
           _default: {
-            acceptTypes: ['image/png']
+            contentType: 'image/png'
           }
         }
       });

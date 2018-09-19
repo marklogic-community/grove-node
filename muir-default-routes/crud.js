@@ -99,7 +99,6 @@ var provider = (function() {
     };
 
     var contentType = config.contentType || 'application/json';
-    var acceptTypes = [contentType, contentType.replace(/[/].*$/, '/*'), '*/*'];
 
     // by default all CRUD calls are shielded by authentication
     var authed = config.authed !== undefined ? config.authed : true;
@@ -114,8 +113,8 @@ var provider = (function() {
       const view = config.views[viewName] || {};
 
       // reply with 406 if client doesn't Accept mimes matching expected Content-Type
-      if (!req.accepts(view.acceptTypes || acceptTypes)) {
-        four0four.notAcceptable(req, res, acceptTypes);
+      if (!req.accepts(view.contentType || contentType)) {
+        four0four.notAcceptable(req, res, [contentType]);
         return;
       }
 
