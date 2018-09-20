@@ -10,37 +10,40 @@ const marklogicURL = setup.marklogicURL;
 
 const nock = require('nock');
 
+const login = (url, agent) => {
+  const user = { username: 'admin', password: 'admin' };
+  nock(url)
+    .head('/v1/ping')
+    .reply(401, null, {
+      'www-authenticate':
+        'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
+    });
+  nock(url)
+    .get('/v1/documents')
+    .query({ uri: '/api/users/admin.json' })
+    .reply(404);
+  return agent
+    .post('/api/auth/login')
+    .send(user)
+    .catch(error => {
+      throw error;
+    });
+};
+
 describe('/api/search/all', () => {
   let agent;
-  beforeEach(() => {
-    delete require.cache[require.resolve('../../node-app')]; // delete from cache
-    const server = require('../../node-app');
-    agent = chai.request.agent(server);
-    const user = { username: 'admin', password: 'admin' };
-    nock(marklogicURL)
-      .head('/v1/ping')
-      .reply(401, null, {
-        'www-authenticate':
-          'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
-      });
-    nock(marklogicURL)
-      .get('/v1/documents')
-      .query({ uri: '/api/users/admin.json' })
-      .reply(404);
-    return agent
-      .post('/api/auth/login')
-      .send(user)
-      .catch(error => {
-        throw error;
-      });
-  });
 
   afterEach(done => {
-    delete require.cache[require.resolve('../../node-app')]; // delete from cache
     agent.close(done);
   });
 
-  describe('POST', () => {
+  describe('with http', () => {
+    beforeEach(() => {
+      const server = require('../../node-app');
+      agent = chai.request.agent(server);
+      return login(marklogicURL, agent);
+    });
+
     it('POSTs search to MarkLogic', done => {
       const searchResponse = require('../helpers/qtextSearchResponse').henry;
       nock(marklogicURL)
@@ -259,6 +262,82 @@ describe('/api/search/all', () => {
         });
         done();
       });
+    });
+  });
+
+  describe('with https', () => {
+    let marklogicHttpsURL;
+    beforeEach(() => {
+      process.env.GROVE_USE_SSL_IN_BACKEND = true;
+      marklogicHttpsURL = marklogicURL.replace('http', 'https');
+      const server = require('../../node-app');
+      agent = chai.request.agent(server);
+      return login(marklogicHttpsURL, agent);
+    });
+
+    afterEach(() => {
+      process.env.GROVE_USE_SSL_IN_BACKEND = false;
+    });
+
+    it('POSTs search to MarkLogic', done => {
+      const searchResponse = require('../helpers/qtextSearchResponse').henry;
+      nock(marklogicHttpsURL)
+        .post('/v1/search', {
+          search: {
+            query: {
+              qtext: 'henry'
+            },
+            // TODO: options like this maybe should come from client,
+            // or at least host Express app
+            options: {
+              'extract-document-data': { 'extract-path': '/name' }
+            }
+          }
+        })
+        .query({
+          format: 'json',
+          start: 1,
+          pageLength: 10,
+          options: 'all'
+        })
+        .reply(200, searchResponse);
+      const executedQuery = {
+        filters: {
+          type: 'queryText',
+          value: 'henry'
+        },
+        options: {
+          start: 1,
+          pageLength: 10
+        }
+      };
+      agent
+        .post('/api/search/all')
+        .send(executedQuery)
+        .then(response => {
+          expect(response.status).to.equal(
+            200,
+            'Received response: ' + JSON.stringify(response.body)
+          );
+          expect(response.body).to.include.all.keys(
+            'results',
+            'facets',
+            'total',
+            'metrics'
+          );
+          expect(response.body.results).to.deep.equal(
+            searchResponse.results.map(r => ({
+              ...r,
+              id: encodeURIComponent(r.uri)
+            }))
+          );
+          expect(response.body.facets).to.deep.equal(searchResponse.facets);
+          expect(response.body.total).to.equal(2);
+          expect(response.body.metrics).to.include({
+            'total-time': 'PT0.010867S'
+          });
+          done();
+        });
     });
   });
 });

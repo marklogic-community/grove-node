@@ -1,7 +1,7 @@
 'use strict';
 
 var options = require('./options')();
-// var https = require('https');
+var https = require('https');
 var http = require('http');
 var q = require('q');
 var wwwAuthenticate = require('www-authenticate');
@@ -10,14 +10,14 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
 var httpClient = http;
-// if (options.mlCertificate) {
-//   console.log('ML Certificate = "' + options.mlCertificate + '"')
-//   console.log('Will use https client.')
-//   httpClient = https
-// } else {
-//   console.log('ML Certificate = "' + options.mlCertificate + '"')
-//   console.log('Will use http client.')
-// }
+if (options.useSSLInBackend) {
+  //   console.log('ML Certificate = "' + options.mlCertificate + '"')
+  console.log('Will use https client to communicate with MarkLogic.');
+  httpClient = https;
+} else {
+  // console.log('ML Certificate = "' + options.mlCertificate + '"')
+  console.log('Will use http client to communicate with MarkLogic.');
+}
 
 var defaultOptions = {
   authHost: options.mlHost,
@@ -289,7 +289,7 @@ function getAuthorization(session, reqMethod, reqPath, authOptions) {
     challengeReq.on('error', function challengeReqError(error) {
       console.error(
         '\nReceived the following error when trying to connect to MarkLogic: ' +
-          error.message
+          error.stack
       );
       if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
         console.error(
