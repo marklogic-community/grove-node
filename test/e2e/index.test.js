@@ -8,8 +8,8 @@ chai.use(chaiHttp);
 describe('/', () => {
   let server;
   beforeEach(() => {
-    delete require.cache[require.resolve('../node-app')]; // delete from cache
-    server = require('../node-app');
+    delete require.cache[require.resolve('../../node-app')]; // delete from cache
+    server = require('../../node-app');
   });
 
   it('returns a 404 for GET', () => {

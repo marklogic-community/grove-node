@@ -5,7 +5,7 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 
-const setup = require('./helpers/setup');
+const setup = require('../helpers/setup');
 const marklogicURL = setup.marklogicURL;
 
 const nock = require('nock');
@@ -13,8 +13,8 @@ const nock = require('nock');
 describe('/api/search/all', () => {
   let agent;
   beforeEach(() => {
-    delete require.cache[require.resolve('../node-app')]; // delete from cache
-    const server = require('../node-app');
+    delete require.cache[require.resolve('../../node-app')]; // delete from cache
+    const server = require('../../node-app');
     agent = chai.request.agent(server);
     const user = { username: 'admin', password: 'admin' };
     nock(marklogicURL)
@@ -36,13 +36,13 @@ describe('/api/search/all', () => {
   });
 
   afterEach(done => {
-    delete require.cache[require.resolve('../node-app')]; // delete from cache
+    delete require.cache[require.resolve('../../node-app')]; // delete from cache
     agent.close(done);
   });
 
   describe('POST', () => {
     it('POSTs search to MarkLogic', done => {
-      const searchResponse = require('./helpers/qtextSearchResponse').henry;
+      const searchResponse = require('../helpers/qtextSearchResponse').henry;
       nock(marklogicURL)
         .post('/v1/search', {
           search: {
@@ -120,7 +120,7 @@ describe('/api/search/all', () => {
     });
 
     it('requests the second page', done => {
-      const searchResponse = require('./helpers/qtextSearchResponse')
+      const searchResponse = require('../helpers/qtextSearchResponse')
         .henryPageTwo;
       nock(marklogicURL)
         .post('/v1/search', {
