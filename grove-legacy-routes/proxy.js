@@ -54,7 +54,7 @@ var provider = (function() {
 
     function update(req, res, next) {
       if (options.disallowUpdates) {
-        return res.status(403).send('Forbidden');
+        return four0four.forbidden(req, res);
       }
 
       next();
