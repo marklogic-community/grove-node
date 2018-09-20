@@ -266,10 +266,9 @@ describe('/api/search/all', () => {
   });
 
   describe('with https', () => {
-    let marklogicHttpsURL;
+    const marklogicHttpsURL = marklogicURL.replace('http', 'https');
     beforeEach(() => {
       process.env.GROVE_USE_SSL_IN_BACKEND = true;
-      marklogicHttpsURL = marklogicURL.replace('http', 'https');
       const server = require('../../node-app');
       agent = chai.request.agent(server);
       return login(marklogicHttpsURL, agent);

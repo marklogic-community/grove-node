@@ -14,12 +14,15 @@ beforeEach(() => {
 
   // This clears the Node cache of all middle-tier files, so tests
   // do not pollute each other and initialization logic can happen
-  // on each test. We exclude test files and node_modules
-  // (Excluding node_modules is a major performance boost. It is good to
-  // cache those.)
-  for (let k in require.cache) {
-    if (!k.includes('node_modules') && !k.includes('/test/')) {
-      delete require.cache[k];
+  // on each test. We exclude test files and node_modules.
+  // (Keeping node_modules cached is a major performance boost.)
+  for (let modulePath in require.cache) {
+    const topDir = __dirname.replace(/test\/helpers$/, '');
+    if (
+      !modulePath.includes(topDir + 'node_modules') &&
+      !modulePath.includes(topDir + 'test')
+    ) {
+      delete require.cache[modulePath];
     }
   }
 });
