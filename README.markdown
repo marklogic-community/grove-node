@@ -65,3 +65,7 @@ Upon generation, this application should already have a `.env` file, which has a
     GROVE_APP_NAME=killer-demo
 
 For more advanced usage and information, please see the [documentation for the dotenv project](https://github.com/motdotla/dotenv).
+
+### Enabling HTTPS
+
+[See HTTPS.markdown in this repository.](HTTPS.markdown)
