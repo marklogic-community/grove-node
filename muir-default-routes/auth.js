@@ -174,7 +174,23 @@ var provider = (function() {
             }
 
             // call backend, and pipe clientResponse straight into res
-            backend.call(req, reqOptions, null, res);
+            backend.call(req, reqOptions, function(backendResponse, data) {
+              for (var header in backendResponse.headers) {
+                // copy all others except auth challenge headers
+                if (header !== 'www-authenticate') {
+                  res.header(header, backendResponse.headers[header]);
+                }
+              }
+              if (backendResponse.statusCode === 404) {
+                // return empty response with 204 in case profile not found
+                res.status(204);
+              } else {
+                // otherwise pass through
+                res.status(backendResponse.statusCode);
+                res.write(data);
+              }
+              res.end();
+            });
           },
           function() {
             // TODO: might return an error too?
