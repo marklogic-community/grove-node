@@ -26,11 +26,8 @@ var filter = (function() {
     var queries = arr.map(function(item) {
       if (item.not) {
         // negated
-        return constraint(
-          filter.constraintType,
-          filter.constraint,
-          'NE',
-          item.not
+        return queryBuilder.not(
+          constraint(filter.constraintType, filter.constraint, 'EQ', item.not)
         );
       } else {
         // atomic value
