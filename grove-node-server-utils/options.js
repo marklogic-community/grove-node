@@ -40,21 +40,21 @@ var availableOptions = {
     variable: 'GROVE_APP_USERS_ONLY',
     coerce: 'boolean'
   },
-  useSSLInBackend: {
+  httpsEnabledInBackend: {
     default: false,
-    variable: 'GROVE_USE_SSL_IN_BACKEND',
+    variable: 'GROVE_HTTPS_ENABLED_IN_BACKEND',
     coerce: 'boolean'
   },
-  useSSLInMiddleTier: {
+  useHTTPSInMiddleTier: {
     default: false,
-    variable: 'GROVE_USE_SSL_IN_MIDDLE_TIER',
+    variable: 'GROVE_ENABLE_HTTPS_IN_MIDDLETIER',
     coerce: 'boolean'
   },
   middleTierSSLCertificate: {
-    variable: 'GROVE_MIDDLE_TIER_SSL_CERT'
+    variable: 'GROVE_MIDDLETIER_SSLCERT'
   },
   middleTierSSLKey: {
-    variable: 'GROVE_MIDDLE_TIER_SSL_KEY'
+    variable: 'GROVE_MIDDLETIER_SSLKEY'
   }
 };
 

@@ -57,12 +57,12 @@ var provider = (function() {
     app.use(four0four.notFound);
 
     let server;
-    if (options.useSSLInMiddleTier) {
+    if (options.useHTTPSInMiddleTier) {
       // Docs on how to create self signed certificates
       // https://devcenter.heroku.com/articles/ssl-certificate-self#prerequisites
       if (!options.middleTierSSLCertificate || !options.middleTierSSLKey) {
         throw new Error(
-          'When using SSL, you must set GROVE_MIDDLE_TIER_SSL_CERT to point to your SSL certification and GROVE_MIDDLE_TIER_SSL_KEY to point to your SSL private key.'
+          'When using HTTPS, you must set GROVE_MIDDLETIER_SSLCERT to point to your SSL certification and GROVE_MIDDLE_TIER_SSL_KEY to point to your SSL private key.'
         );
       }
       console.log('Starting the server in HTTPS');

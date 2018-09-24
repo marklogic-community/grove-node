@@ -10,7 +10,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
 var httpClient = http;
-if (options.useSSLInBackend) {
+if (options.httpsEnabledInBackend) {
   //   console.log('ML Certificate = "' + options.mlCertificate + '"')
   console.log('Will use https client to communicate with MarkLogic.');
   httpClient = https;

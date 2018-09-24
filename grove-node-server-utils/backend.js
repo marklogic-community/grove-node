@@ -6,7 +6,7 @@ const https = require('https');
 
 // var ca = '';
 var httpClient = null;
-if (options.useSSLInBackend) {
+if (options.httpsEnabledInBackend) {
   //   console.log('Loading ML Certificate ' + options.mlCertificate)
   //   ca = fs.readFileSync(options.mlCertificate)
   httpClient = https;

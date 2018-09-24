@@ -12,7 +12,7 @@ With regard to https and the Grove Node middle-tier, it is important to distingu
    
 2. Set the following environment variable. The preferred way to do this is in `.env` files as described in [the README](README.markdown), but other methods can be used where appropriate.
 
-    GROVE_USE_SSL_IN_BACKEND=true
+    GROVE_HTTPS_ENABLED_IN_BACKEND=true
 
 3. Start Grove Node with that environment variable set.
 
@@ -41,14 +41,14 @@ TODO: set up way to trust MarkLogic- or self-signed certificates. See HTTPS.mdow
 
 4. Set the necessary environment variables. The preferred way to do this is in `.env` files as described in [the README](README.markdown), but other methods can be used where appropriate.
 
-  1. Set `GROVE_USE_SSL_IN_MIDDLE_TIER` to true.
+  1. Set `GROVE_ENABLE_HTTPS_IN_MIDDLETIER` to true.
 
-  2. Set `GROVE_MIDDLE_TIER_SSL_CERT` to the relative or absolute path of the server certificate.
+  2. Set `GROVE_MIDDLETIER_SSLCERT` to the relative or absolute path of the server certificate.
 
-    `GROVE_MIDDLE_TIER_SSL_CERT=server.crt`
+    `GROVE_MIDDLETIER_SSLCERT=server.crt`
 
-  3. Set `GROVE_MIDDLE_TIER_SSL_KEY` to the relative or absolute path of the server key.
+  3. Set `GROVE_MIDDLETIER_SSLKEY` to the relative or absolute path of the server key.
 
-    `GROVE_MIDDLE_TIER_SSL_KEY=server.key`
+    `GROVE_MIDDLETIER_SSLKEY=server.key`
 
 5. Start Grove Node with those environment variables set.

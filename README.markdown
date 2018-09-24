@@ -37,10 +37,10 @@ You can find the environment variables this application looks for in `utils/opti
 - `GROVE_ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
 - `GROVE_APP_USERS_ONLY`: An optional setting, instructing this middle-tier application not to authorize any users whose usernames do not being with `GROVE_APP_NAME`. This is particularly helpful in a situation where the backend MarkLogic instance has many users, and you do not wish to allow those other users (including administrators) to log into this application. During auth calls, this application may inform the front-end of this setting.
 - `GROVE_DISALLOW_UPDATES`: An optional setting, instructing this middle-tier application not to allow any user to update data. During auth calls, this application may inform the front-end of this setting.
-- `GROVE_USE_SSL_IN_BACKEND`: An optional setting, defaulting to false, instructing this middle-tier to use SSL when communicating with MarkLogic.
-- `GROVE_USE_SSL_IN_MIDDLE_TIER`: An optional setting, defaulting to false, instructing this middle-tier to run in https mode. When this is set to true, the following environment variables must also be set:
-  - `GROVE_MIDDLE_TIER_SSL_CERT`: A relative or absolute path pointing to the middle-tier SSL certificate.
-  - `GROVE_MIDDLE_TIER_SSL_KEY`: A relative or absolute path point to the middle-tier SSL private key. **Note that you should not check the private key itself into version control.**
+- `GROVE_HTTPS_ENABLED_IN_BACKEND`: An optional setting, defaulting to false, instructing this middle-tier to use SSL when communicating with MarkLogic.
+- `GROVE_ENABLE_HTTPS_IN_MIDDLETIER`: An optional setting, defaulting to false, instructing this middle-tier to run in https mode. When this is set to true, the following environment variables must also be set:
+  - `GROVE_MIDDLETIER_SSLCERT`: A relative or absolute path pointing to the middle-tier SSL certificate.
+  - `GROVE_MIDDLETIER_SSLKEY`: A relative or absolute path point to the middle-tier SSL private key. **Note that you should not check the private key itself into version control.**
 
 ### `.env` Configuration files
 
