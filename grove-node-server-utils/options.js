@@ -8,36 +8,36 @@ var availableOptions = {
     variable: 'NODE_ENV'
   },
   appName: {
-    default: 'muir-app',
-    variable: 'MUIR_APP_NAME'
+    default: 'grove-app',
+    variable: 'GROVE_APP_NAME'
   },
   sessionSecret: {
     default: 'D5sktFU2flpH&fPzf6Sw',
-    variable: 'MUIR_SESSION_SECRET',
+    variable: 'GROVE_SESSION_SECRET',
     secret: true
   },
   appPort: {
     default: 9003,
-    variable: 'MUIR_APP_PORT',
+    variable: 'GROVE_APP_PORT',
     coerce: 'port'
   },
   mlHost: {
     default: 'localhost',
-    variable: 'MUIR_ML_HOST'
+    variable: 'GROVE_ML_HOST'
   },
   mlRestPort: {
     default: 8063,
-    variable: 'MUIR_ML_REST_PORT',
+    variable: 'GROVE_ML_REST_PORT',
     coerce: 'port'
   },
   disallowUpdates: {
     default: false,
-    variable: 'MUIR_DISALLOW_UPDATES',
+    variable: 'GROVE_DISALLOW_UPDATES',
     coerce: 'boolean'
   },
   appUsersOnly: {
     default: false,
-    variable: 'MUIR_APP_USERS_ONLY',
+    variable: 'GROVE_APP_USERS_ONLY',
     coerce: 'boolean'
   }
 };

@@ -1,13 +1,13 @@
 'use strict';
 
-const four0four = require('../muir-node-server-utils/404')();
-var options = require('../muir-node-server-utils/options')();
+const four0four = require('../grove-node-server-utils/404')();
+var options = require('../grove-node-server-utils/options')();
 var environment = options.env;
 
 const express = require('express');
 var router = express.Router();
 
-const authProvider = require('../muir-node-server-utils/auth-helper');
+const authProvider = require('../grove-node-server-utils/auth-helper');
 const enableLegacyProxy = true; // TODO: expose this as an env option
 
 router.use('/api', require('./api'));
@@ -15,7 +15,7 @@ router.use('/api', require('./api'));
 if (enableLegacyProxy) {
   router.use(
     '/v1',
-    require('../muir-legacy-routes').whitelistProxyRoute({
+    require('../grove-legacy-routes').whitelistProxyRoute({
       authProvider: authProvider,
       whitelist: [
         {

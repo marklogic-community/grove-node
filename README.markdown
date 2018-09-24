@@ -1,6 +1,6 @@
-# ML-UI-Resources (MUIR) Node Server
+# Grove Node.js Middle-tier
 
-This contains the Node implementation of a ML-UI-Resources (MUIR) middle-tier. It is currently the default middle-tier for that project.
+This contains the Node.js implementation of a Grove Middle-Tier. It is currently the default middle-tier for that project.
 
 ## Running
 
@@ -26,17 +26,17 @@ See [ConfigureRoutes.markdown](ConfigureRoutes.markdown) in this repository on h
 
 Much of this project is configured via environment variables, roughly following the [recommendations from "The Twelve-Factor App"](https://12factor.net/config). Following established practice in the Vue and React communities, among others, we modify those recommendations by allowing configuration groupings for "development", "production" or other custom environments.
 
-You can use environment variables to override specific pieces of configuration, or even to provide all the configuration for this MUIR-generated Node middle-tier.
+You can use environment variables to override specific pieces of configuration, or even to provide all the configuration for this Grove-generated Node middle-tier.
 
 You can find the environment variables this application looks for in `utils/options.js`. Those environment variables currently include:
 
-- `MUIR_APP_NAME`: The name of this MUIR application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication. It may also be used, for example, to establish which usernames are app-specific usernames. This can be used in conjunction with the `MUIR_APP_USERS_ONLY` setting to restrict the MarkLogic users considered valid by this middle-tier.
-- `MUIR_SESSION_SECRET`: The [session secret for this application's Express session](https://github.com/expressjs/session#secret). For security, it is advisable to set a different secret in each of your deployments and to keep it out of version control (see section on .env\*.local files for one strategy).
-- `MUIR_APP_PORT`: The port this middle-tier will listen on.
-- `MUIR_ML_HOST`: The host on which the MarkLogic REST server with which this server will communicate is available.
-- `MUIR_ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
-- `MUIR_APP_USERS_ONLY`: An optional setting, instructing this middle-tier application not to authorize any users whose usernames do not being with `MUIR_APP_NAME`. This is particularly helpful in a situation where the backend MarkLogic instance has many users, and you do not wish to allow those other users (including administrators) to log into this application. During auth calls, this application may inform the front-end of this setting.
-- `MUIR_DISALLOW_UPDATES`: An optional setting, instructing this middle-tier application not to allow any user to update data. During auth calls, this application may inform the front-end of this setting.
+- `GROVE_APP_NAME`: The name of this Grove application. It is used to set cookies and is provided to the middle-tier as server metadata during authentication. It may also be used, for example, to establish which usernames are app-specific usernames. This can be used in conjunction with the `GROVE_APP_USERS_ONLY` setting to restrict the MarkLogic users considered valid by this middle-tier.
+- `GROVE_SESSION_SECRET`: The [session secret for this application's Express session](https://github.com/expressjs/session#secret). For security, it is advisable to set a different secret in each of your deployments and to keep it out of version control (see section on .env\*.local files for one strategy).
+- `GROVE_APP_PORT`: The port this middle-tier will listen on.
+- `GROVE_ML_HOST`: The host on which the MarkLogic REST server with which this server will communicate is available.
+- `GROVE_ML_REST_PORT`: The port on which the MarkLogic REST server with which this server will communicate is available.
+- `GROVE_APP_USERS_ONLY`: An optional setting, instructing this middle-tier application not to authorize any users whose usernames do not being with `GROVE_APP_NAME`. This is particularly helpful in a situation where the backend MarkLogic instance has many users, and you do not wish to allow those other users (including administrators) to log into this application. During auth calls, this application may inform the front-end of this setting.
+- `GROVE_DISALLOW_UPDATES`: An optional setting, instructing this middle-tier application not to allow any user to update data. During auth calls, this application may inform the front-end of this setting.
 
 ### `.env` Configuration files
 
@@ -53,11 +53,11 @@ The following files in the root of this project's source code are valid. The exi
 - `.env.{app-environment}`: Settings loaded only in a specific app-environment. This depends on the NODE_ENV. For example, `npm start` will load `.env.development` while `npm test` will load `.env.test`. `npm run build` will run in production by default and use `.env.production`
 - `.env.{app-environment}.local`: Settings loaded only in a specific app-environment and ignored by git.
 
-You will find the allowable options in `utils/options.js`. You are advised to use the `muir config` command-line tool to update those, rather than changing them yourself. This allows any MUIR-configured UI to stay in sync.
+You will find the allowable options in `utils/options.js`. You are advised to use the `grove config` command-line tool to update those, rather than changing them yourself. This allows any Grove-configured UI to stay in sync.
 
-Upon generation, this application should already have a `.env` file, which as a simple `KEY=value` syntax:
+Upon generation, this application should already have a `.env` file, which has a simple `KEY=value` syntax:
 
     FOO=bar
-    MUIR_APP_NAME=killer-demo
+    GROVE_APP_NAME=killer-demo
 
 For more advanced usage and information, please see the [documentation for the dotenv project](https://github.com/motdotla/dotenv).

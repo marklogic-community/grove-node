@@ -293,9 +293,9 @@ function getAuthorization(session, reqMethod, reqPath, authOptions) {
       );
       if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
         console.error(
-          'Please ensure that MarkLogic is running on the host specified by MUIR_ML_HOST (currently "' +
+          'Please ensure that MarkLogic is running on the host specified by GROVE_ML_HOST (currently "' +
             options.mlHost +
-            '") and the port specified by MUIR_ML_REST_PORT (currently "' +
+            '") and the port specified by GROVE_ML_REST_PORT (currently "' +
             options.mlRestPort +
             '"). See the README for more information.'
         );

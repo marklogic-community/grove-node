@@ -25,7 +25,7 @@ router.use(
 );
 ```
 
-The defaultAuthRoute accepts a single configuration entry: authProvider. The authProvider must have three functions: `getAuth()`, `handleLocalAuth()`, and `clearAuthenticator()`. See muir-node-server-utils for details on the default authProvider.
+The defaultAuthRoute accepts a single configuration entry: authProvider. The authProvider must have three functions: `getAuth()`, `handleLocalAuth()`, and `clearAuthenticator()`. See grove-node-server-utils for details on the default authProvider.
 
 ### defaultSearchRoute
 
@@ -71,7 +71,7 @@ Supported configuration includes:
 
 Grove supports typed CRUD, like for search. This example sets up a pseudo-type of 'all', staying close to basic document search using the MarkLogic document API.
 
-See [muir-node's `routes/api/index.js`](../routes/api/index.js) for an example.
+See [grove-node's `routes/api/index.js`](../routes/api/index.js) for an example.
 
 Supported configuration includes:
 
@@ -91,6 +91,6 @@ Supported configuration includes:
 
 - contentType: Defaults to 'application/json'.
 
-- views: Defaults to none (though a 'metadata' view is automatically included). Should be an object with a view name as a key. Values of the config object can be a `call` function (which overrides the included READ logic and receives req, res, config, id, and the viewName), a `transform`, a `category`, `contentType` (the mimetype that will be sent to the browser, which defaults to the top-level contentType for the route), and/or a MarkLogic `format` ("json" or "xml"). Views are accessed with a URL like `/:id/:view`. See the muir-core-api for details.
- 
+- views: Defaults to none (though a 'metadata' view is automatically included). Should be an object with a view name as a key. Values of the config object can be a `call` function (which overrides the included READ logic and receives req, res, config, id, and the viewName), a `transform`, a `category`, `contentType` (the mimetype that will be sent to the browser, which defaults to the top-level contentType for the route), and/or a MarkLogic `format` ("json" or "xml"). Views are accessed with a URL like `/:id/:view`. See the grove-core-api for details.
+
   When no view is specified, an implicit `\_default` view is used, which can be modified by the user, if they pass a configuration for a view with that `\_default` name.

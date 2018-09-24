@@ -2,7 +2,7 @@
 
 var provider = (function() {
   const express = require('express');
-  const backend = require('../muir-node-server-utils/backend');
+  const backend = require('../grove-node-server-utils/backend');
 
   var provide = function(config) {
     var router = express.Router();
@@ -50,7 +50,7 @@ var provider = (function() {
 
       var structuredQuery = {};
       if (query.filters) {
-        structuredQuery = require('../muir-node-server-utils/filter').buildQuery(
+        structuredQuery = require('../grove-node-server-utils/filter').buildQuery(
           query.filters
         );
       }

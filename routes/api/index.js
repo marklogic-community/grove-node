@@ -16,12 +16,12 @@ var router = require('express').Router();
 
 // Grove provides default route implementations. They are configurable.
 // We import the routeFactory here and will use it below.
-// TODO: create and link to documentation on muir-default-routes.
-const routeFactory = require('../../muir-default-routes');
+// TODO: create and link to documentation on grove-default-routes.
+const routeFactory = require('../../grove-default-routes');
 
 // The authProvider is injected into each route.
 // This is so that you can provide a different authProvider if desired.
-const authProvider = require('../../muir-node-server-utils/auth-helper');
+const authProvider = require('../../grove-node-server-utils/auth-helper');
 
 // mapping URIs to ids for CRUD in other routes
 // even possibly going so far as to return IDs instead of URIs
@@ -115,7 +115,7 @@ router.use(
  */
 
 // For requests not matching any of the above, return a 404.
-var four0four = require('../../muir-node-server-utils/404')();
+var four0four = require('../../grove-node-server-utils/404')();
 router.get('/*', four0four.notFound);
 
 module.exports = router;

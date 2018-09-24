@@ -11,12 +11,12 @@ var provider = (function() {
     var logger = require('morgan');
     app.use(logger('dev'));
 
-    var four0four = require('../muir-node-server-utils/404')();
+    var four0four = require('../grove-node-server-utils/404')();
     var http = require('http');
     // var https = require('https');
     var passport = require('passport');
-    var authHelper = require('../muir-node-server-utils/auth-helper');
-    var options = require('../muir-node-server-utils/options')();
+    var authHelper = require('../grove-node-server-utils/auth-helper');
+    var options = require('../grove-node-server-utils/options')();
     var port = options.appPort;
 
     authHelper.init(); // FIXME: is this thread-safe? what if we spin up two listeners in one script?

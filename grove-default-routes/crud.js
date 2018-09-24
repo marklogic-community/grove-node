@@ -1,10 +1,10 @@
 'use strict';
 
 var provider = (function() {
-  const backend = require('../muir-node-server-utils/backend');
+  const backend = require('../grove-node-server-utils/backend');
   //const fs = require('fs')
-  const four0four = require('../muir-node-server-utils/404')();
-  //const options = require('../muir-node-server-utils/options')()
+  const four0four = require('../grove-node-server-utils/404')();
+  //const options = require('../grove-node-server-utils/options')()
 
   var ca = '';
   // FIXME: better handled inside options?

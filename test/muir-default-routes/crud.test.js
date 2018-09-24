@@ -31,7 +31,7 @@ let crudProvider;
 
 describe('defaultCrudRoute', () => {
   beforeEach(() => {
-    crudProvider = require('../../muir-default-routes/crud.js');
+    crudProvider = require('../../grove-default-routes/crud.js');
   });
 
   it('requires an authProvider', () => {

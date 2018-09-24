@@ -8,10 +8,10 @@ process.on('unhandledRejection', err => {
 });
 
 // Read environment variables
-require('./muir-node-server-utils/readEnv').readEnv();
+require('./grove-node-server-utils/readEnv').readEnv();
 
 var routes = require('./routes');
-var server = require('./muir-node-server').defaultNodeServer({
+var server = require('./grove-node-server').defaultNodeServer({
   routes: routes
 });
 
