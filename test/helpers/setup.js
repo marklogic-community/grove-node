@@ -6,7 +6,6 @@ const mlPort = '51234';
 const mlHost = '127.0.0.1';
 
 beforeEach(() => {
-  // TODO: move to test.json
   process.env.NODE_ENV = 'test';
   process.env.GROVE_APP_PORT = 61234;
   process.env.GROVE_ML_REST_PORT = mlPort;
