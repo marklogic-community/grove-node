@@ -12,6 +12,19 @@ You can start in a production-style mode with the following command (which does 
 
     npm start:prod
 
+You probably want to set NODE_ENV to `production`: 
+
+    NODE_ENV=production npm start:prod
+
+Note that this Node middle-tier is configured to serve static UI assets, which
+it expects to find in '../ui/build' by default. You can configure the path by
+setting the GROVE_UI_BUILD_PATH environment variable (see "Configuration"
+below). This is helpful for production-like deployments. **However, it is
+better to use a reverse proxy like Nginx or HAProxy for this purpose in
+production, for performance reasons.**
+
+See the comment in `routes/index.js` if you wish to stop serving static assets or change the way they are served.
+ 
 ## Run the tests
 
     npm test
@@ -40,7 +53,8 @@ You can find the environment variables this application looks for in `utils/opti
 - `GROVE_HTTPS_ENABLED_IN_BACKEND`: An optional setting, defaulting to false, instructing this middle-tier to use SSL when communicating with MarkLogic.
 - `GROVE_ENABLE_HTTPS_IN_MIDDLETIER`: An optional setting, defaulting to false, instructing this middle-tier to run in https mode. When this is set to true, the following environment variables must also be set:
   - `GROVE_MIDDLETIER_SSLCERT`: A relative or absolute path pointing to the middle-tier SSL certificate.
-  - `GROVE_MIDDLETIER_SSLKEY`: A relative or absolute path point to the middle-tier SSL private key. **Note that you should not check the private key itself into version control.**
+  - `GROVE_MIDDLETIER_SSLKEY`: A relative or absolute path pointing to the middle-tier SSL private key. **Note that you should not check the private key itself into version control.**
+- `GROVE_UI_BUILD_PATH`: A relative or absolute path pointing to the directory containing static UI files. This directory should, at a minimum, contain an `index.html` file, though of course it will likely also have javascript, CSS, images, etc. Note that a relative path is relative to this middle-tier directory.
 
 ### `.env` Configuration files
 

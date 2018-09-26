@@ -1,11 +1,10 @@
 'use strict';
 
-const four0four = require('../grove-node-server-utils/404')();
-var options = require('../grove-node-server-utils/options')();
-var environment = options.env;
+const options = require('../grove-node-server-utils/options')();
 
 const express = require('express');
 var router = express.Router();
+const path = require('path');
 
 const authProvider = require('../grove-node-server-utils/auth-helper');
 const enableLegacyProxy = true; // TODO: expose this as an env option
@@ -70,33 +69,19 @@ if (enableLegacyProxy) {
   );
 }
 
+// This sets up this middle-tier to serve static assets found in the
+// directory specified by GROVE_UI_BUILD_PATH, defaulting to `../ui/build`.
+//
+// If you will not be using this middle-tier to serve such assets (for
+// example, if you are following the best practice of using a reverse proxy
+// like Nginx or HAProxy to serve them instead), you can remove these lines.
+const staticUIPath = path.resolve(options.staticUIDirectory);
+router.use(express.static(staticUIPath));
+router.get('/*', (req, res) => res.sendFile(staticUIPath + '/index.html'));
+
 // error handling
 router.use(function(error, req, res, next) {
   res.status(500).json({ message: error.toString() });
 });
-
-switch (environment) {
-  case 'prod':
-  case 'dev':
-    console.log('** DIST **');
-    router.use(express.static('../dist/'));
-    // Any invalid calls for templateUrls are under app/* and should return 404
-    router.use('/app/*', function(req, res, next) {
-      four0four.send404(req, res);
-    });
-    // Any deep link calls should return index.html
-    router.use('/*', express.static('../dist/index.html'));
-    break;
-  default:
-    console.log('** UI **');
-    router.use(express.static('../ui/'));
-    // Any invalid calls for templateUrls are under app/* and should return 404
-    router.use('/app/*', function(req, res, next) {
-      four0four.send404(req, res);
-    });
-    // Any deep link calls should return index.html
-    router.use('/*', express.static('../ui/index.html'));
-    break;
-}
 
 module.exports = router;
