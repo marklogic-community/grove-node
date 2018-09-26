@@ -39,6 +39,22 @@ var availableOptions = {
     default: false,
     variable: 'GROVE_APP_USERS_ONLY',
     coerce: 'boolean'
+  },
+  httpsEnabledInBackend: {
+    default: false,
+    variable: 'GROVE_HTTPS_ENABLED_IN_BACKEND',
+    coerce: 'boolean'
+  },
+  useHTTPSInMiddleTier: {
+    default: false,
+    variable: 'GROVE_ENABLE_HTTPS_IN_MIDDLETIER',
+    coerce: 'boolean'
+  },
+  middleTierSSLCertificate: {
+    variable: 'GROVE_MIDDLETIER_SSLCERT'
+  },
+  middleTierSSLKey: {
+    variable: 'GROVE_MIDDLETIER_SSLKEY'
   }
 };
 
@@ -107,10 +123,4 @@ module.exports = function() {
     warnIfOptionsNotSpecified();
   }
   return options;
-  // if (options.httpsStrict) {
-  //   console.info('Self signed certificates not allowed.')
-  // } else {
-  //   console.warn('Allowing self signed certificates. Not advisable on production.')
-  //   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  // }
 };

@@ -6,7 +6,6 @@ chai.use(chaiHttp);
 describe('auth integration tests', () => {
   let server;
   beforeEach(() => {
-    delete require.cache[require.resolve('../../node-app')]; // delete from cache
     server = require('../../node-app');
   });
 

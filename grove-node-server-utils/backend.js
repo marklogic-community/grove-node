@@ -1,18 +1,18 @@
 const options = require('../grove-node-server-utils/options')();
 
 const http = require('http');
-// const https = require('https');
+const https = require('https');
 //const fs = require('fs');
 
 // var ca = '';
 var httpClient = null;
-// if (options.mlCertificate) {
-//   console.log('Loading ML Certificate ' + options.mlCertificate)
-//   ca = fs.readFileSync(options.mlCertificate)
-//   httpClient = https
-// } else {
-httpClient = http;
-// }
+if (options.httpsEnabledInBackend) {
+  //   console.log('Loading ML Certificate ' + options.mlCertificate)
+  //   ca = fs.readFileSync(options.mlCertificate)
+  httpClient = https;
+} else {
+  httpClient = http;
+}
 
 var backend = (function() {
   //// Helper function to make backend calls
@@ -128,7 +128,7 @@ var backend = (function() {
         console.log('Problem with request: ' + e.message);
         browserResponse.status(500).end();
       } else {
-        throw new Error('Network call failed: ' + e.message);
+        return new Error('Network call failed: ' + e.message);
       }
     });
 
