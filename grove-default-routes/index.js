@@ -1,22 +1,27 @@
 'use strict';
 
-var factory = (function() {
-  var defaultAuthRoute = function(config) {
+const factory = (function() {
+  const defaultAuthRoute = function(config) {
     return require('./auth')(config);
   };
 
-  var defaultCrudRoute = function(config) {
+  const defaultCrudRoute = function(config) {
     return require('./crud')(config);
   };
 
-  var defaultSearchRoute = function(config) {
+  const defaultSearchRoute = function(config) {
     return require('./search')(config);
+  };
+
+  const defaultStaticRoute = function(config) {
+    return require('./static')(config);
   };
 
   return {
     defaultAuthRoute: defaultAuthRoute,
     defaultCrudRoute: defaultCrudRoute,
-    defaultSearchRoute: defaultSearchRoute
+    defaultSearchRoute: defaultSearchRoute,
+    defaultStaticRoute: defaultStaticRoute
   };
 })();
 

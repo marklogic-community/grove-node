@@ -1,10 +1,7 @@
 'use strict';
 
-const options = require('../grove-node-server-utils/options')();
-
 const express = require('express');
 var router = express.Router();
-const path = require('path');
 
 const authProvider = require('../grove-node-server-utils/auth-helper');
 const enableLegacyProxy = true; // TODO: expose this as an env option
@@ -75,9 +72,7 @@ if (enableLegacyProxy) {
 // If you will not be using this middle-tier to serve such assets (for
 // example, if you are following the best practice of using a reverse proxy
 // like Nginx or HAProxy to serve them instead), you can remove these lines.
-const staticUIPath = path.resolve(options.staticUIDirectory);
-router.use(express.static(staticUIPath));
-router.get('/*', (req, res) => res.sendFile(staticUIPath + '/index.html'));
+router.use(require('../grove-default-routes').defaultStaticRoute());
 
 // error handling
 router.use(function(error, req, res, next) {

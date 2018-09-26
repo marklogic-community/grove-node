@@ -94,3 +94,7 @@ Supported configuration includes:
 - views: Defaults to none (though a 'metadata' view is automatically included). Should be an object with a view name as a key. Values of the config object can be a `call` function (which overrides the included READ logic and receives req, res, config, id, and the viewName), a `transform`, a `category`, `contentType` (the mimetype that will be sent to the browser, which defaults to the top-level contentType for the route), and/or a MarkLogic `format` ("json" or "xml"). Views are accessed with a URL like `/:id/:view`. See the grove-core-api for details.
 
   When no view is specified, an implicit `\_default` view is used, which can be modified by the user, if they pass a configuration for a view with that `\_default` name.
+
+### defaultStaticRoute
+
+This is a simple route encapsulating logic for serving the UI as a set of static assets. It does not currently accept configuration, other than setting the `GROVE_UI_BUILD_PATH` environment variable.
