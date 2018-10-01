@@ -1,8 +1,9 @@
 'use strict';
 
 const express = require('express');
-var router = express.Router();
+const router = express.Router();
 
+const options = require('../grove-node-server-utils/options')();
 const authProvider = require('../grove-node-server-utils/auth-helper');
 const enableLegacyProxy = true; // TODO: expose this as an env option
 
@@ -67,12 +68,18 @@ if (enableLegacyProxy) {
 }
 
 // This sets up this middle-tier to serve static assets found in the
-// directory specified by GROVE_UI_BUILD_PATH, defaulting to `../ui/build`.
+// directory specified by GROVE_UI_BUILD_PATH (if that is set).
 //
-// If you will not be using this middle-tier to serve such assets (for
+// If you will never use this middle-tier to serve such assets (for
 // example, if you are following the best practice of using a reverse proxy
 // like Nginx or HAProxy to serve them instead), you can remove these lines.
-router.use(require('../grove-default-routes').defaultStaticRoute());
+if (options.staticUIDirectory) {
+  router.use(
+    require('../grove-default-routes').defaultStaticRoute({
+      staticUIDirectory: options.staticUIDirectory
+    })
+  );
+}
 
 // error handling
 router.use(function(error, req, res, next) {

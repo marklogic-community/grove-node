@@ -27,9 +27,9 @@ const minAuthProvider = {
   isAuthenticated: (req, res, next) => next(),
   getAuth: () => Promise.resolve()
 };
-let crudProvider;
 
 describe('defaultCrudRoute', () => {
+  let crudProvider;
   beforeEach(() => {
     crudProvider = require('../../grove-default-routes/crud.js');
   });

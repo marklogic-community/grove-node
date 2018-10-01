@@ -57,8 +57,7 @@ var availableOptions = {
     variable: 'GROVE_MIDDLETIER_SSLKEY'
   },
   staticUIDirectory: {
-    variable: 'GROVE_UI_BUILD_PATH',
-    default: '../ui/build'
+    variable: 'GROVE_UI_BUILD_PATH'
   }
 };
 

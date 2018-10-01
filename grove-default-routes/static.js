@@ -4,12 +4,17 @@ const provider = (function() {
   const express = require('express');
   const path = require('path');
   const fs = require('fs');
-  const options = require('../grove-node-server-utils/options')();
 
-  const provide = function() {
+  const provide = function(config) {
+    if (!config.staticUIDirectory) {
+      throw new Error(
+        'defaultStaticRoute configuration must include a staticUIDirectory'
+      );
+    }
+
     const router = express.Router();
 
-    const staticUIPath = path.resolve(options.staticUIDirectory);
+    const staticUIPath = path.resolve(config.staticUIDirectory);
     if (fs.existsSync(staticUIPath + '/index.html')) {
       router.use(express.static(staticUIPath));
       router.get('/*', (req, res) =>
