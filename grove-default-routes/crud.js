@@ -15,14 +15,14 @@ var provider = (function() {
 
   // Note: config should not reveal any implementation details
   var provide = function(config) {
-    var router = require('express').Router();
-
     const authProvider = config.authProvider;
     if (!authProvider) {
       throw new Error(
         'defaultCrudRoute configuration must include an authProvider'
       );
     }
+
+    const router = require('express').Router();
 
     var idConverter = config.idConverter || {
       toId: function(uri) {
