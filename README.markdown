@@ -84,3 +84,20 @@ For more advanced usage and information, please see the [documentation for the d
 ### Enabling HTTPS
 
 [See HTTPS.markdown in this repository.](HTTPS.markdown)
+
+## Docker
+
+The grove-app middle tier can be run as a Docker container.  To build the docker container for the latest release, execute the following commands from the project root directory.  
+
+    docker build -t gumball/grove-node:<version number>
+
+Once the docker image has been built, then you want to tag this image as the latest version.  
+
+    docker tag gumball/grove-node:<version number> gumball/grove-node:latest .
+
+Finally, it needs to be pushed into the private organization, Gumball, hosted in Docker Hub.
+
+    docker push gumball/grove-node:<versionNumber>
+    docker push gumball/grove-node:latest
+
+See Patrick McElwee or Scott Stafford for access to the gumball organization in Docker Hub.  
