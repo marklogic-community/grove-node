@@ -42,11 +42,9 @@ var provider = (function() {
     const buildMarklogicQuery = function(query) {
       var options = query.options || {};
 
-      if (config.extract) {
-        options['extract-document-data'] = {
-          'extract-path': config.extract
-        };
-      }
+      // Combine the provided query options with any options defined in the
+      // config object.  WARNING: May override saved search options.
+      options = { ...options, ...config.options };
 
       var structuredQuery = {};
       if (query.filters) {

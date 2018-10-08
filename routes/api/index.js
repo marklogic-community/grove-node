@@ -52,9 +52,16 @@ router.use(
   routeFactory.defaultSearchRoute({
     authProvider: authProvider,
     namedOptions: type, // default: 'all'
+    options: {
+      // Add JSON search options here.
+      // WARNING: This will override the saved search options referenced by 'namedOptions' above.
+      // Example for making result labels using name property of person sample-data
+      // default: none
+      'extract-document-data': {
+        'extract-path': ['/name']
+      }
+    },
     idConverter: idConverter, // default: encodeURIComponent(result.uri)
-    // Example for making result labels using name property of person sample-data
-    extract: '/name', // default: none
     makeLabel: result => {
       // default: none
       return (
