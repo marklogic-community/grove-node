@@ -75,6 +75,14 @@ if (enableLegacyProxy) {
         //   endpoint: '/resources/*', // NOTE: allows get on all extensions
         //   methods: ['get'],
         //   authed: true
+        // },
+        // {
+        //   endpoint: '/resources/*', // NOTE: this is for put, post, delete
+        //   // which fall through after the 'get' above
+        //   // CAUTION: exposes all REST extensions, even future ones
+        //   methods: ['all'],
+        //   authed: true,
+        //   update: true
         // }
       ]
     })
