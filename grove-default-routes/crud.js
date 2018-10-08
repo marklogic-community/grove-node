@@ -70,6 +70,7 @@ var provider = (function() {
                   res.header(header, backendResponse.headers[header]);
                 }
               }
+              // TODO: document this download flag
               if ('' + req.query.download === 'true') {
                 res.header(
                   'content-disposition',

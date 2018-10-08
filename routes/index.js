@@ -9,6 +9,18 @@ const enableLegacyProxy = true; // TODO: expose this as an env option
 
 router.use('/api', require('./api'));
 
+// This is a legacy proxy to the MarkLogic REST API.
+// Best practice is to create endpoints in this middle-tier and to
+// avoid directly calling MarkLogic APIs from the UI.
+// But sometimes, particularly for demos and PoCs, it is helpful
+// to punch through the middle-tier.
+//
+// A minimum of proxies are setup by default, and we will eventually
+// replace those with Grove middle-tier endpoints.
+//
+// Further down in this file, you will find more examples
+// of other proxies that can be setup.
+
 if (enableLegacyProxy) {
   router.use(
     '/v1',
@@ -16,52 +28,62 @@ if (enableLegacyProxy) {
       authProvider: authProvider,
       whitelist: [
         {
-          endpoint: '/config/query/*',
-          methods: ['get'],
-          authed: true
-        },
-        {
-          endpoint: '/graphs/sparql',
-          methods: ['get', 'post'],
-          authed: true
-        },
-        {
-          endpoint: '/search',
-          methods: ['get', 'post'],
-          authed: true
-        },
-        {
           endpoint: '/suggest',
           methods: ['get', 'post'],
           authed: true
         },
+        // Follow this pattern for other REST extensions
         {
-          endpoint: '/values/*',
-          methods: ['get', 'post'],
-          authed: true
-        },
-        {
-          endpoint: '/documents',
+          endpoint: '/resources/extsimilar',
           methods: ['get'],
           authed: true
-        },
-        {
-          endpoint: '/documents',
-          methods: ['all'],
-          authed: true,
-          update: true
-        },
-        {
-          endpoint: '/resources/*',
-          methods: ['get'],
-          authed: true
-        },
-        {
-          endpoint: '/resources/*',
-          methods: ['all'],
-          authed: true,
-          update: true
         }
+        // TODO: move this to visjs documentation for visjs-graph
+        // Other possibilities:
+        // {
+        //   endpoint: '/config/query/*',
+        //   methods: ['get'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/graphs/sparql',
+        //   methods: ['get', 'post'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/search',
+        //   methods: ['get', 'post'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/values/*',
+        //   methods: ['get', 'post'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/documents',
+        //   methods: ['get'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/documents',
+        //   methods: ['all'],
+        //   authed: true,
+        //   update: true
+        // },
+        // {
+        //   endpoint: '/resources/*', // NOTE: allows get on all extensions
+        //   methods: ['get'],
+        //   authed: true
+        // },
+        // {
+        //   endpoint: '/resources/*', // NOTE: this is for put, post, delete
+        //   // which fall through after the 'get' above
+        //   // CAUTION: exposes all REST extensions, even future ones
+        //   methods: ['all'],
+        //   authed: true,
+        //   update: true
+        // }
       ]
     })
   );
