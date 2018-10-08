@@ -72,10 +72,9 @@ if (enableLegacyProxy) {
         //   update: true
         // },
         // {
-        //   endpoint: '/resources/*', // NOTE: wide open! Careful
-        //   methods: ['all'],
-        //   authed: true,
-        //   update: true
+        //   endpoint: '/resources/*', // NOTE: allows get on all extensions
+        //   methods: ['get'],
+        //   authed: true
         // }
       ]
     })
