@@ -84,3 +84,11 @@ For more advanced usage and information, please see the [documentation for the d
 ### Enabling HTTPS
 
 [See HTTPS.markdown in this repository.](HTTPS.markdown)
+
+## Dockerfile
+
+This repository contains a `Dockerfile`, which can be used to build a Docker image for a container running this middle-tier.
+
+To build an image, execute the following commands from this directory.  
+
+    docker build -t <docker-repo>/<image-name>:<version-number>
