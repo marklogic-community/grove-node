@@ -52,11 +52,7 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            // TODO: options like this maybe should come from client,
-            // or at least host Express app
-            options: {
-              'extract-document-data': { 'extract-path': '/name' }
-            }
+            options: {}
           }
         })
         .query({
@@ -131,11 +127,7 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            // TODO: options like this maybe should come from client,
-            // or at least host Express app
-            options: {
-              'extract-document-data': { 'extract-path': '/name' }
-            }
+            options: {}
           }
         })
         .query({
@@ -286,11 +278,7 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            // TODO: options like this maybe should come from client,
-            // or at least host Express app
-            options: {
-              'extract-document-data': { 'extract-path': '/name' }
-            }
+            options: {}
           }
         })
         .query({
