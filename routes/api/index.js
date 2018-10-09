@@ -54,12 +54,12 @@ router.use(
     namedOptions: type, // default: 'all'
     options: {
       // Add JSON search options here.
+      // default: none
       // WARNING: This will override the saved search options referenced by 'namedOptions' above.
       // Example for making result labels using name property of person sample-data
-      // default: none
-      'extract-document-data': {
-        'extract-path': ['/name']
-      }
+      // 'extract-document-data': {
+      //   'extract-path': ['/name']
+      // }
     },
     idConverter: idConverter, // default: encodeURIComponent(result.uri)
     makeLabel: result => {
