@@ -18,7 +18,7 @@ const mockMLDocumentGet = (overrides = {}) => {
     .query(
       typeof overrides.query === 'function'
         ? overrides.query
-        : { uri: 'id1', format: 'json', ...overrides.query }
+        : { uri: '/all/id1', format: 'json', ...overrides.query }
     )
     .reply(reply.statusCode || 200, reply.body, reply.headers);
 };
@@ -54,7 +54,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1')
+        .get('/%2Fall%2Fid1')
         .set('Accept', '*/*')
         .then(response => {
           expect(response).to.have.status(200);
@@ -75,7 +75,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1')
+        .get('/%2Fall%2Fid1')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -85,7 +85,7 @@ describe('defaultCrudRoute', () => {
     it('contains a `metadata` view by default', done => {
       // the metadata view does a double-pass to get content-type
       mockMLDocumentGet({
-        query: query => query.uri === 'id1',
+        query: query => query.uri === '/all/id1',
         reply: {
           headers: {
             'content-type': 'application/pdf',
@@ -104,14 +104,14 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1/metadata')
+        .get('/%2Fall%2Fid1/metadata')
         .then(response => {
           expect(response).to.have.status(200);
           expect(response.body.contentType).to.equal('application/pdf');
           expect(response.body.fileName).to.equal('id1');
           expect(response.body.size).to.equal('100');
           expect(response.body.format).to.equal('pdf');
-          expect(response.body.uri).to.equal('id1');
+          expect(response.body.uri).to.equal('/all/id1');
           done();
         });
     });
@@ -132,7 +132,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1/view2')
+        .get('/%2Fall%2Fid1/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -152,7 +152,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1/view2')
+        .get('/%2Fall%2Fid1/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -172,7 +172,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1/view2')
+        .get('/%2Fall%2Fid1/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -186,7 +186,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1')
+        .get('/%2Fall%2Fid1')
         .set('Accept', 'application/pdf')
         .then(response => {
           expect(response).to.have.status(406);
@@ -207,7 +207,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1')
+        .get('/%2Fall%2Fid1')
         .set('accept', 'image/png')
         .then(response => {
           expect(response).to.have.status(200);
@@ -234,10 +234,10 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/id1')
+        .get('/%2Fall%2Fid1')
         .then(() => {
           expect(customCallInvoked).to.equal(true);
-          expect(customCallCalledWithId).to.equal('id1');
+          expect(customCallCalledWithId).to.equal('/all/id1');
           expect(customCallCalledWithView).to.equal('_default');
           done();
         });
