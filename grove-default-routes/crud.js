@@ -159,7 +159,7 @@ var provider = (function() {
     // Update -> PUT
     // Delete -> DELETE
 
-    router.use('/', function(req, res) {
+    router.all('/:id?', function(req, res) {
       // reply with 405 if a non-allowed method is used
       if (allowedMethods.indexOf(req.method) < 0) {
         four0four.methodNotAllowed(req, res, allowedMethods);
@@ -173,10 +173,7 @@ var provider = (function() {
       }
 
       // assume whatever comes after / is id
-      const uri =
-        req.path.length > 1
-          ? idConverter.toUri(req.path.substring(1))
-          : undefined;
+      const uri = req.params.id ? idConverter.toUri(req.params.id) : undefined;
 
       var params = {};
 
