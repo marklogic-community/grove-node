@@ -263,6 +263,67 @@ describe('defaultCrudRoute', () => {
         });
     });
 
+    it('allows create with id', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'PUT',
+        query: query => query.uri === uri
+      });
+      chai
+        .request(app)
+        .post('/' + encodedId)
+        .set('Content-Type', 'application/json')
+        .send({ hello: 'world' })
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('allows create without id', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'POST',
+        query: () => true
+      });
+      chai
+        .request(app)
+        .post('/')
+        .set('Content-Type', 'application/json')
+        .send({ hello: 'world' })
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('reports errors in create without id', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'POST',
+        query: () => true,
+        reply: { statusCode: 500 }
+      });
+      chai
+        .request(app)
+        .post('/')
+        .set('Content-Type', 'application/json')
+        .send({ hello: 'world' })
+        .then(response => {
+          expect(response).to.have.status(500);
+          done();
+        });
+    });
+
     it('allows edit', done => {
       const crud = crudProvider({
         authProvider: minAuthProvider
