@@ -11,14 +11,18 @@ const marklogicURL = setup.marklogicURL;
 
 const nock = require('nock');
 
-const mockMLDocumentGet = (overrides = {}) => {
+const uri = '/all/id1%20.json';
+const id = '%2Fall%2Fid1%2520.json';
+const encodedId = '%252Fall%252Fid1%252520.json';
+
+const mockMLDocument = (overrides = {}) => {
   const reply = overrides.reply || {};
   nock(marklogicURL)
-    .get('/v1/documents')
+    .intercept('/v1/documents', overrides.verb || 'GET')
     .query(
       typeof overrides.query === 'function'
         ? overrides.query
-        : { uri: '/all/id1', format: 'json', ...overrides.query }
+        : { uri, format: 'json', ...overrides.query }
     )
     .reply(reply.statusCode || 200, reply.body, reply.headers);
 };
@@ -47,14 +51,14 @@ describe('defaultCrudRoute', () => {
     });
 
     it('performs a simple READ', done => {
-      mockMLDocumentGet();
+      mockMLDocument();
       const crud = crudProvider({
         authProvider: minAuthProvider
       });
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1')
+        .get('/' + encodedId)
         .set('Accept', '*/*')
         .then(response => {
           expect(response).to.have.status(200);
@@ -62,8 +66,24 @@ describe('defaultCrudRoute', () => {
         });
     });
 
+    it('reports if a document is not found', done => {
+      mockMLDocument({ reply: { statusCode: 404 } });
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      chai
+        .request(app)
+        .get('/' + encodedId)
+        .set('Accept', '*/*')
+        .then(response => {
+          expect(response).to.have.status(404);
+          done();
+        });
+    });
+
     it('allows config of default view transform', done => {
-      mockMLDocumentGet({ query: { transform: 'default' } });
+      mockMLDocument({ query: { transform: 'default' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -75,7 +95,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1')
+        .get('/' + encodedId)
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -84,8 +104,8 @@ describe('defaultCrudRoute', () => {
 
     it('contains a `metadata` view by default', done => {
       // the metadata view does a double-pass to get content-type
-      mockMLDocumentGet({
-        query: query => query.uri === '/all/id1',
+      mockMLDocument({
+        query: query => query.uri === uri,
         reply: {
           headers: {
             'content-type': 'application/pdf',
@@ -94,7 +114,7 @@ describe('defaultCrudRoute', () => {
           }
         }
       });
-      mockMLDocumentGet({
+      mockMLDocument({
         query: { category: 'metadata' },
         reply: { body: {} }
       });
@@ -104,20 +124,20 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1/metadata')
+        .get('/' + encodedId + '/metadata')
         .then(response => {
           expect(response).to.have.status(200);
           expect(response.body.contentType).to.equal('application/pdf');
-          expect(response.body.fileName).to.equal('id1');
+          expect(response.body.fileName).to.equal('id1%20.json');
           expect(response.body.size).to.equal('100');
           expect(response.body.format).to.equal('pdf');
-          expect(response.body.uri).to.equal('/all/id1');
+          expect(response.body.uri).to.equal(uri);
           done();
         });
     });
 
     it('allows different view transform to be specified', done => {
-      mockMLDocumentGet({ query: { transform: 'view2' } });
+      mockMLDocument({ query: { transform: 'view2' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -132,7 +152,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1/view2')
+        .get('/' + encodedId + '/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -140,7 +160,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows view category to be specified', done => {
-      mockMLDocumentGet({ query: { category: 'category2' } });
+      mockMLDocument({ query: { category: 'category2' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -152,7 +172,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1/view2')
+        .get('/' + encodedId + '/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -160,7 +180,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows view format to be overridden', done => {
-      mockMLDocumentGet({ query: { format: 'xml' } });
+      mockMLDocument({ query: { format: 'xml' } });
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -172,7 +192,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1/view2')
+        .get('/' + encodedId + '/view2')
         .then(response => {
           expect(response).to.have.status(200);
           done();
@@ -186,7 +206,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1')
+        .get('/' + encodedId)
         .set('Accept', 'application/pdf')
         .then(response => {
           expect(response).to.have.status(406);
@@ -195,7 +215,7 @@ describe('defaultCrudRoute', () => {
     });
 
     it('allows view-specific contentType', done => {
-      mockMLDocumentGet();
+      mockMLDocument();
       const crud = crudProvider({
         authProvider: minAuthProvider,
         views: {
@@ -207,7 +227,7 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1')
+        .get('/' + encodedId)
         .set('accept', 'image/png')
         .then(response => {
           expect(response).to.have.status(200);
@@ -234,11 +254,89 @@ describe('defaultCrudRoute', () => {
       app.use(crud);
       chai
         .request(app)
-        .get('/%2Fall%2Fid1')
+        .get('/' + encodedId)
         .then(() => {
           expect(customCallInvoked).to.equal(true);
-          expect(customCallCalledWithId).to.equal('/all/id1');
+          expect(customCallCalledWithId).to.equal(id);
           expect(customCallCalledWithView).to.equal('_default');
+          done();
+        });
+    });
+
+    it('allows edit', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'PUT',
+        query: query => query.uri === uri
+      });
+      chai
+        .request(app)
+        .put('/' + encodedId)
+        .set('Content-Type', 'application/json')
+        .send({ hello: 'world' })
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('notifies when edit fails', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'PUT',
+        query: query => query.uri === uri,
+        reply: { statusCode: 500 }
+      });
+      chai
+        .request(app)
+        .put('/%252Fall%252Fid1%252520.json')
+        .set('Content-Type', 'application/json')
+        .send({ hello: 'world' })
+        .then(response => {
+          expect(response).to.have.status(500);
+          done();
+        });
+    });
+
+    it('allows delete', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'DELETE',
+        query: query => query.uri === uri
+      });
+      chai
+        .request(app)
+        .delete('/' + encodedId)
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('notifies when delete fails', done => {
+      const crud = crudProvider({
+        authProvider: minAuthProvider
+      });
+      app.use(crud);
+      mockMLDocument({
+        verb: 'DELETE',
+        query: query => query.uri === uri,
+        reply: { statusCode: 500 }
+      });
+      chai
+        .request(app)
+        .delete('/%252Fall%252Fid1%252520.json')
+        .then(response => {
+          expect(response).to.have.status(500);
           done();
         });
     });
