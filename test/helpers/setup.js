@@ -3,9 +3,11 @@ const nock = require('nock');
 const expect = require('chai').expect;
 
 const mlPort = '51234';
-const mlHost = '127.0.0.1';
+const mlHost = 'marklogic';
 
 beforeEach(() => {
+  nock.disableNetConnect();
+  nock.enableNetConnect('127.0.0.1');
   process.env.NODE_ENV = 'test';
   process.env.GROVE_APP_PORT = 61234;
   process.env.GROVE_ML_REST_PORT = mlPort;
