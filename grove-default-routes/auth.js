@@ -83,7 +83,7 @@ var provider = (function() {
 
     // Anything except GET /status is denied with a 405
     router.use('/status', function(req, res) {
-      four0four.methodNotAllowed(req, res, ['POST']);
+      four0four.methodNotAllowed(req, res, ['GET']);
     });
 
     router.post('/login', function(req, res, next) {
@@ -106,7 +106,12 @@ var provider = (function() {
         data.push(chunk);
       });
       req.on('end', function() {
-        req.body = JSON.parse(Buffer.concat(data).toString());
+        // expect JSON, but don't crash if it's something else..
+        try {
+          req.body = JSON.parse(Buffer.concat(data).toString());
+        } catch (e) {
+          req.body = Buffer.concat(data).toString();
+        }
 
         // reply with 400 if username or password is missing
         var username = req.body.username;
@@ -251,6 +256,9 @@ var provider = (function() {
         );
       }
     });
+
+    // For requests not matching any of the above, return a 404.
+    router.use('', four0four.notFound);
 
     return router;
   };

@@ -14,6 +14,20 @@ const routeFactory = require('grove-default-routes');
 
 ## Provided Routes and How to Use Them
 
+### defaultPingRoute
+
+```javascript
+router.use(
+  '/ping',
+  routeFactory.defaultPingRoute({
+    name: 'grove-node',
+    version: '0.10.0-beta'
+  })
+);
+```
+
+The `defaultPingRoute` accepts two configuration entries: `name`, and `version`. The `name` is an optional name of the middle-tier implementation. The `version` is an optional (semver-compliant) version number of the middle-tier implementation.
+
 ### defaultAuthRoute
 
 ```javascript

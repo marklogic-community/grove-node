@@ -3,6 +3,7 @@
 var provider = (function() {
   const express = require('express');
   const backend = require('../grove-node-server-utils/backend');
+  const four0four = require('../grove-node-server-utils/404')();
 
   var provide = function(config) {
     var router = express.Router();
@@ -117,20 +118,24 @@ var provider = (function() {
             });
           },
           error => {
-            console.error('error authenticating search:', error);
+          // TODO: use four0four
+          console.error('error authenticating search:', error);
             res.status(401).json({
               message: error
             });
           }
         )
         .catch(error => {
-          // TODO: DRY up errors and make it standard across plugins
+          // TODO: use four0four
           console.error(error);
           res.status(500).json({
             message: error.message
           });
         });
     });
+
+    // For requests not matching any of the above, return a 404.
+    router.use('', four0four.notFound);
 
     return router;
   };

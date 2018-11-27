@@ -37,7 +37,16 @@ const idConverter = {
   }
 };
 
-// A minimal authRoute.
+// The default pingRoute.
+router.use(
+  '/ping',
+  routeFactory.defaultPingRoute({
+    name: 'grove-node',
+    version: '0.10.0-beta' // TODO: read from package.json? Inject on release?
+  })
+);
+
+// The default authRoute.
 router.use(
   '/auth',
   routeFactory.defaultAuthRoute({
@@ -122,7 +131,7 @@ router.use(
  */
 
 // For requests not matching any of the above, return a 404.
-var four0four = require('../../grove-node-server-utils/404')();
-router.get('/*', four0four.notFound);
+const four0four = require('../../grove-node-server-utils/404')();
+router.use('', four0four.notFound);
 
 module.exports = router;
