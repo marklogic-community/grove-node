@@ -118,8 +118,8 @@ var provider = (function() {
             });
           },
           error => {
-          // TODO: use four0four
-          console.error('error authenticating search:', error);
+            // TODO: use four0four
+            console.error('error authenticating search:', error);
             res.status(401).json({
               message: error
             });

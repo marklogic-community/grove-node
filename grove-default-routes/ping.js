@@ -15,6 +15,11 @@ var provider = (function() {
       });
     });
 
+    // Anything except GET / is denied with a 405
+    router.use('/', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['GET']);
+    });
+
     // For requests not matching any of the above, return a 404.
     router.use('', four0four.notFound);
 
