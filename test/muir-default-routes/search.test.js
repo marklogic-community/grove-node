@@ -31,17 +31,65 @@ describe('defaultSearchRoute', () => {
     });
 
     it('works for empty search', done => {
-      nock(marklogicURL)
-        .post('/v1/search')
-        .query(() => true)
-        .reply(200, {});
       const search = searchProvider({
         authProvider: minAuthProvider
       });
       app.use(search);
+      nock(marklogicURL)
+        .post('/v1/search')
+        .query(() => true)
+        .reply(200, {});
       chai
         .request(app)
         .post('/', {})
+        .then(response => {
+          expect(response).to.have.status(200);
+          done();
+        });
+    });
+
+    it('correctly parses a geospatial constraint filter', done => {
+      const search = searchProvider({
+        authProvider: minAuthProvider
+      });
+      const myBox = {
+        north: 100,
+        south: 0,
+        west: 150,
+        east: -150
+      };
+      // TODO: if we allow execution to be configurable with a func, we could
+      // eliminate the network mocking ('nock'-ing)
+      nock(marklogicURL)
+        .post('/v1/search', {
+          search: {
+            query: {
+              'geospatial-constraint-query': {
+                'constraint-name': 'Location',
+                box: [myBox],
+                point: [],
+                circle: [],
+                polygon: []
+              }
+            },
+            options: {}
+          }
+        })
+        .query(() => true)
+        .reply(200, {});
+      app.use(search);
+      chai
+        .request(app)
+        .post('/')
+        .send({
+          filters: {
+            type: 'selection',
+            constraintType: 'geospatial',
+            constraint: 'Location',
+            mode: 'and',
+            value: [myBox]
+          }
+        })
         .then(response => {
           expect(response).to.have.status(200);
           done();
