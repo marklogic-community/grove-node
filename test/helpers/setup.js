@@ -41,5 +41,9 @@ afterEach(() => {
 });
 
 module.exports = {
-  marklogicURL: 'http://' + mlHost + ':' + mlPort
+  marklogicURL: 'http://' + mlHost + ':' + mlPort,
+  minAuthProvider: {
+    isAuthenticated: (req, res, next) => next(),
+    getAuth: () => Promise.resolve()
+  }
 };
