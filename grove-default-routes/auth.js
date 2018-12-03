@@ -13,8 +13,6 @@ var provider = (function() {
   //   ca = fs.readFileSync(options.mlCertificate)
   // }
 
-  const acceptJsonTypes = ['application/json', 'application/*', '*/*'];
-
   var provide = function(config) {
     var router = require('express').Router();
 
@@ -27,8 +25,8 @@ var provider = (function() {
 
     router.get('/status', function(req, res) {
       // reply with 406 if client doesn't accept JSON
-      if (!req.accepts(acceptJsonTypes)) {
-        four0four.notAcceptable(req, res, acceptJsonTypes);
+      if (!req.accepts('application/json')) {
+        four0four.notAcceptable(req, res, ['application/json']);
         return;
       }
 
@@ -88,8 +86,8 @@ var provider = (function() {
       }
 
       // reply with 406 if client doesn't accept JSON
-      if (!req.accepts(acceptJsonTypes)) {
-        four0four.notAcceptable(req, res, acceptJsonTypes);
+      if (!req.accepts('application/json')) {
+        four0four.notAcceptable(req, res, ['application/json']);
         return;
       }
 
@@ -144,8 +142,8 @@ var provider = (function() {
 
     router.get('/profile', function(req, res) {
       // reply with 406 if client doesn't accept JSON
-      if (!req.accepts(acceptJsonTypes)) {
-        four0four.notAcceptable(req, res, acceptJsonTypes);
+      if (!req.accepts('application/json')) {
+        four0four.notAcceptable(req, res, ['application/json']);
         return;
       }
 
