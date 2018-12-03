@@ -159,74 +159,68 @@ describe('/api/search/all', () => {
         });
     });
 
-    // it('builds a constraint query', done => {
-    //   const searchResponse = require('./helpers/qtextSearchResponse').henry
-    //   nock('http://' + mlHost + ':' + mlPort)
-    //     .post('/v1/search', {
-    //       search: {
-    //         qtext: 'henry',
-    //         options: {
-    //           'extract-document-data': { 'extract-path': '/name' }
-    //         }
-    //         query: {
-    //           queries: [
-    //             {
-    //               'and-query': {
-    //                 queries: [
-    //                   {
-    //                     'range-query': {
-    //                       'json-property': 'Gender',
-    //                       value: ['F'],
-    //                       'range-operator': 'EQ'
-    //                     }
-    //                   }
-    //                 ]
-    //               }
-    //             }
-    //           ]
-    //         }
-    //       }
-    //     })
-    //     .query({
-    //       format: 'json',
-    //       pageLength: 10,
-    //       start: 1,
-    //       options: 'all'
-    //     })
-    //     .reply(200, searchResponse)
-    //   const executedQuery = {
-    //     queryText: 'henry',
-    //     page: 1,
-    //     pageLength: 10,
-    //     constraints: {
-    //       Gender: { and: [{ name: 'F' }] }
-    //     }
-    //   }
-    //   agent
-    //     .post('/api/search')
-    //     .send(executedQuery)
-    //     .end((error, response) => {
-    //       expect(error).to.not.exist
-    //       expect(response.status).to.equal(200)
-    //       expect(response.body).to.deep.equal({
-    //         query: {
-    //           queryText: 'henry',
-    //           pageLength: 10,
-    //           // convert start to page, our front-end abstraction
-    //           page: 1
-    //         },
-    //         response: {
-    //           metadata: {
-    //             executionTime: 0.010867,
-    //             total: 2
-    //           },
-    //           results: searchResponse.results,
-    //           facets: searchResponse.facets
-    //         }
-    //       })
-    //       done()
-    //     })
-    // })
+    it('builds a constraint plus qtext query', done => {
+      const searchResponse = require('../helpers/qtextSearchResponse').henry;
+      nock(marklogicURL)
+        .post('/v1/search', {
+          search: {
+            query: {
+              'and-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'Gender',
+                      value: ['F'],
+                      'range-operator': 'EQ',
+                      'range-option': []
+                    }
+                  },
+                  {
+                    qtext: 'henry'
+                  }
+                ]
+              }
+            },
+            options: {}
+          }
+        })
+        .query({
+          format: 'json',
+          pageLength: 10,
+          start: 1,
+          options: 'all'
+        })
+        .reply(200, searchResponse);
+      const executedQuery = {
+        start: 1,
+        pageLength: 10,
+        filters: {
+          and: [
+            {
+              constraint: 'Gender',
+              constraintType: 'range',
+              type: 'selection',
+              mode: 'and',
+              value: ['F']
+            },
+            {
+              type: 'queryText',
+              value: 'henry'
+            }
+          ]
+        }
+      };
+      agent
+        .post('/api/search/all')
+        .send(executedQuery)
+        .then(response => {
+          expect(response.status).to.equal(
+            200,
+            'Received response: ' + JSON.stringify(response.body)
+          );
+          done();
+        });
+    });
 
     xit('handles 400 errors from MarkLogic', done => {
       nock(marklogicURL)

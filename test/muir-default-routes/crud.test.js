@@ -27,10 +27,7 @@ const mockMLDocument = (overrides = {}) => {
     .reply(reply.statusCode || 200, reply.body, reply.headers);
 };
 
-const minAuthProvider = {
-  isAuthenticated: (req, res, next) => next(),
-  getAuth: () => Promise.resolve()
-};
+const minAuthProvider = setup.minAuthProvider;
 
 describe('defaultCrudRoute', () => {
   let crudProvider;
