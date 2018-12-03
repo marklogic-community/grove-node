@@ -38,7 +38,8 @@ var provider = (function() {
         var passportUser = req.session.passport.user;
         var path = '/v1/documents';
         var params = {
-          uri: '/api/users/' + passportUser.username + '.json'
+          uri: '/api/users/' + passportUser.username + '.json',
+          format: 'json'
         };
         var reqOptions = {
           path: path,

@@ -3,6 +3,10 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 
+const setup = require('../helpers/setup');
+const marklogicURL = setup.marklogicURL;
+const login = setup.login;
+
 describe('auth integration tests', () => {
   let server;
   beforeEach(() => {
@@ -20,5 +24,67 @@ describe('auth integration tests', () => {
           'Received response: ' + JSON.stringify(response.body)
         );
       });
+  });
+
+  describe('after login', () => {
+    let agent;
+
+    beforeEach(() => {
+      agent = chai.request.agent(server);
+      return login(marklogicURL, agent);
+    });
+
+    afterEach(done => {
+      agent.close(done);
+    });
+
+    it('reports that user without profile is authenticated', done => {
+      setup.mockMLDocument({
+        query: { uri: '/api/users/admin.json' },
+        reply: { statusCode: 404 }
+      });
+      agent.get('/api/auth/status').then(response => {
+        expect(response.status).to.equal(200);
+        expect(response.body).to.deep.include({
+          authenticated: true,
+          username: 'admin',
+          profile: {}
+        });
+        done();
+      });
+    });
+
+    it('reports that user with profile is authenticated', done => {
+      const userProfile = {
+        username: 'admin',
+        emails: ['admin@example.com']
+      };
+      setup.mockMLDocument({
+        query: { uri: '/api/users/admin.json' },
+        reply: { body: { user: userProfile } }
+      });
+      agent.get('/api/auth/status').then(response => {
+        expect(response.status).to.equal(200);
+        expect(response.body).to.deep.include({
+          authenticated: true,
+          username: 'admin',
+          profile: userProfile
+        });
+        done();
+      });
+    });
+
+    xit('handles the case where authentication expired in MarkLogic', done => {
+      // nock(marklogicURL)
+      //   .head('/v1/ping')
+      //   .reply(401, null, {
+      //     'www-authenticate':
+      //       'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
+      //   });
+      agent.get('/api/auth/status').then(response => {
+        expect(response.status).to.equal(200);
+        done();
+      });
+    });
   });
 });

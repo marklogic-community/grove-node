@@ -7,25 +7,11 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 
 const setup = require('../helpers/setup');
-const marklogicURL = setup.marklogicURL;
-
-const nock = require('nock');
+const mockMLDocument = setup.mockMLDocument;
 
 const uri = '/all/id1%20.json';
 const id = '%2Fall%2Fid1%2520.json';
 const encodedId = '%252Fall%252Fid1%252520.json';
-
-const mockMLDocument = (overrides = {}) => {
-  const reply = overrides.reply || {};
-  nock(marklogicURL)
-    .intercept('/v1/documents', overrides.verb || 'GET')
-    .query(
-      typeof overrides.query === 'function'
-        ? overrides.query
-        : { uri, format: 'json', ...overrides.query }
-    )
-    .reply(reply.statusCode || 200, reply.body, reply.headers);
-};
 
 const minAuthProvider = setup.minAuthProvider;
 

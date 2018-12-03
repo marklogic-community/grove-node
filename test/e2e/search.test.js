@@ -7,28 +7,9 @@ chai.use(chaiHttp);
 
 const setup = require('../helpers/setup');
 const marklogicURL = setup.marklogicURL;
+const login = setup.login;
 
 const nock = require('nock');
-
-const login = (url, agent) => {
-  const user = { username: 'admin', password: 'admin' };
-  nock(url)
-    .head('/v1/ping')
-    .reply(401, null, {
-      'www-authenticate':
-        'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
-    });
-  nock(url)
-    .get('/v1/documents')
-    .query({ uri: '/api/users/admin.json' })
-    .reply(404);
-  return agent
-    .post('/api/auth/login')
-    .send(user)
-    .catch(error => {
-      throw error;
-    });
-};
 
 describe('/api/search/all', () => {
   let agent;

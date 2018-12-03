@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 
 const mlPort = '51234';
 const mlHost = 'marklogic';
+const marklogicURL = 'http://' + mlHost + ':' + mlPort;
 
 beforeEach(() => {
   nock.disableNetConnect();
@@ -40,10 +41,44 @@ afterEach(() => {
   }
 });
 
+const mockMLDocument = (overrides = {}) => {
+  const reply = overrides.reply || {};
+  nock(marklogicURL)
+    .intercept('/v1/documents', overrides.verb || 'GET')
+    .query(
+      typeof overrides.query === 'function'
+        ? overrides.query
+        : { uri: '/all/id1%20.json', format: 'json', ...overrides.query }
+    )
+    .reply(reply.statusCode || 200, reply.body, reply.headers);
+};
+
+const login = (url, agent) => {
+  const user = { username: 'admin', password: 'admin' };
+  nock(url)
+    .head('/v1/ping')
+    .reply(401, null, {
+      'www-authenticate':
+        'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
+    });
+  nock(url)
+    .get('/v1/documents')
+    .query({ uri: '/api/users/admin.json' })
+    .reply(404);
+  return agent
+    .post('/api/auth/login')
+    .send(user)
+    .catch(error => {
+      throw error;
+    });
+};
+
 module.exports = {
   marklogicURL: 'http://' + mlHost + ':' + mlPort,
   minAuthProvider: {
     isAuthenticated: (req, res, next) => next(),
     getAuth: () => Promise.resolve()
-  }
+  },
+  login,
+  mockMLDocument
 };
