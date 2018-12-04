@@ -55,15 +55,22 @@ var provider = (function() {
             }
 
             backend.call(req, reqOptions, function(backendResponse, data) {
+              if (backendResponse.statusCode === 401) {
+                req.logout();
+                authProvider.clearAuthenticator(req.session);
+              }
+
               if (backendResponse.statusCode === 200) {
                 var json = JSON.parse(data.toString());
                 sendAuthStatus(res, true, passportUser.username, json.user);
+                return;
               } else if (backendResponse.statusCode === 404) {
                 // no profile yet for user
                 sendAuthStatus(res, true, passportUser.username, null);
-              } else {
-                sendAuthStatus(res, false);
+                return;
               }
+
+              sendAuthStatus(res, false);
             });
           },
           function() {

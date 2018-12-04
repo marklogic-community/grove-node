@@ -73,18 +73,5 @@ describe('auth integration tests', () => {
         done();
       });
     });
-
-    xit('handles the case where authentication expired in MarkLogic', done => {
-      // nock(marklogicURL)
-      //   .head('/v1/ping')
-      //   .reply(401, null, {
-      //     'www-authenticate':
-      //       'Digest realm="public", qop="auth", nonce="36375f8ae29508:J/s57T1IOCeLl5pNumdHNA==", opaque="d0bbf52b5da95b60"'
-      //   });
-      agent.get('/api/auth/status').then(response => {
-        expect(response.status).to.equal(200);
-        done();
-      });
-    });
   });
 });
