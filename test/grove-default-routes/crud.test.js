@@ -8,12 +8,11 @@ chai.use(chaiHttp);
 
 const setup = require('../helpers/setup');
 const mockMLDocument = setup.mockMLDocument;
+const minAuthProvider = setup.minAuthProvider;
 
 const uri = '/all/id1%20.json';
 const id = '%2Fall%2Fid1%2520.json';
 const encodedId = '%252Fall%252Fid1%252520.json';
-
-const minAuthProvider = setup.minAuthProvider;
 
 describe('defaultCrudRoute', () => {
   let crudProvider;

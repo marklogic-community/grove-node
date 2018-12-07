@@ -34,7 +34,6 @@ var extendObject = util.extendObject;
  */
 const geospatialValues = function() {
   var shapes = asArray.apply(null, arguments);
-  console.log('shapes:', shapes); // eslint-disable-line
 
   var points = [];
   var boxes = [];
