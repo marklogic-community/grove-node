@@ -1,6 +1,6 @@
 {
   "name": "grove-node",
-  "version": "0.10.0-beta",
+  "version": "1.0.0-rc.1",
   "dependencies": {
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
