@@ -19,7 +19,10 @@ var filter = (function() {
   };
 
   var selectionDefaultHandler = function(filter) {
-    var arr = filter.value;
+    let arr = filter.value;
+    if (!arr) {
+      return {};
+    }
     if (!Array.isArray(arr)) {
       arr = [arr];
     }
