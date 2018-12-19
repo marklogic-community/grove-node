@@ -11,7 +11,7 @@ describe('filter.js', () => {
     });
   });
 
-  it('works for various geospatial types, anded together', () => {
+  describe('geospatial', () => {
     const box = {
       north: 100,
       south: 0,
@@ -33,113 +33,57 @@ describe('filter.js', () => {
       mode: 'and',
       value: [box, point, circle, polygon]
     };
-    expect(buildQuery(filter)).to.deep.equal({
-      'and-query': {
-        queries: [
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [box],
-              point: [],
-              circle: [],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [point],
-              circle: [],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [],
-              circle: [circle],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [],
-              circle: [],
-              polygon: [polygon]
-            }
+    const expectedQueries = {
+      queries: [
+        {
+          'geospatial-constraint-query': {
+            'constraint-name': 'Location',
+            box: [box],
+            point: [],
+            circle: [],
+            polygon: []
           }
-        ]
-      }
+        },
+        {
+          'geospatial-constraint-query': {
+            'constraint-name': 'Location',
+            box: [],
+            point: [point],
+            circle: [],
+            polygon: []
+          }
+        },
+        {
+          'geospatial-constraint-query': {
+            'constraint-name': 'Location',
+            box: [],
+            point: [],
+            circle: [circle],
+            polygon: []
+          }
+        },
+        {
+          'geospatial-constraint-query': {
+            'constraint-name': 'Location',
+            box: [],
+            point: [],
+            circle: [],
+            polygon: [polygon]
+          }
+        }
+      ]
+    };
+    it('works for various geospatial types, anded together', () => {
+      expect(buildQuery(filter)).to.deep.equal({
+        'and-query': expectedQueries
+      });
     });
-  });
 
-  it('works for various geospatial types, "or"ed together', () => {
-    const box = {
-      north: 100,
-      south: 0,
-      west: 150,
-      east: -150
-    };
-    const point = { latitude: 0, longitude: 100 };
-    const circle = {
-      radius: 100,
-      point: { latitude: 100, longitude: 0 }
-    };
-    const polygon = {
-      point: [{ latitude: 0, longitude: 100 }, { latitude: 100, longitude: 0 }]
-    };
-    const filter = {
-      type: 'selection',
-      constraintType: 'geospatial',
-      constraint: 'Location',
-      mode: 'or',
-      value: [box, point, circle, polygon]
-    };
-    expect(buildQuery(filter)).to.deep.equal({
-      'or-query': {
-        queries: [
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [box],
-              point: [],
-              circle: [],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [point],
-              circle: [],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [],
-              circle: [circle],
-              polygon: []
-            }
-          },
-          {
-            'geospatial-constraint-query': {
-              'constraint-name': 'Location',
-              box: [],
-              point: [],
-              circle: [],
-              polygon: [polygon]
-            }
-          }
-        ]
-      }
+    it('works for various geospatial types, "or"ed together', () => {
+      filter.mode = 'or';
+      expect(buildQuery(filter)).to.deep.equal({
+        'or-query': expectedQueries
+      });
     });
   });
 });
