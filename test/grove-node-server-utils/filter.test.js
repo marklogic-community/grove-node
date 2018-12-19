@@ -11,6 +11,42 @@ describe('filter.js', () => {
     });
   });
 
+  describe('range', () => {
+    it('works with simple example', () => {
+      expect(
+        buildQuery({
+          type: 'range',
+          constraint: 'age',
+          value: {
+            ge: 21,
+            lt: 30
+          }
+        })
+      ).to.deep.equal({
+        'and-query': {
+          queries: [
+            {
+              'range-constraint-query': {
+                'constraint-name': 'age',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: [21]
+              }
+            },
+            {
+              'range-constraint-query': {
+                'constraint-name': 'age',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: [30]
+              }
+            }
+          ]
+        }
+      });
+    });
+  });
+
   describe('geospatial', () => {
     const box = {
       north: 100,
