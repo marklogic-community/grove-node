@@ -22,7 +22,7 @@ var provider = (function() {
    * supporting various constraint queries, operator state query components,
    * and combined queries.
    */
-  var provide = function(config) {
+  var provide = function() {
     function where() {
       var args = asArray.apply(null, arguments);
       return {

@@ -5,65 +5,65 @@ var asArray = util.asArray;
 var isObject = util.isObject;
 var extendObject = util.extendObject;
 
-/**
- * Helper method: builds an object of `points`, `boxes`, `circles`, and `polygons`,
- * used by {@link MLQueryBuilder.ext.geospatialConstraint}, for use with
- * {@link MLQueryBuilder.ext.customConstraint}
- *
- * examples:
- *
- *   ```
- *   qb.ext.geospatialConstraint('name',
- *     { latitude: 1, longitude: 2 },
- *     { south: 1, west: 2, north: 3, east: 4 }
- *   );
- *   ```
- *
- *   ```
- *   qb.ext.customConstraint('name', qb.ext.geospatialValues(
- *     { latitude: 1, longitude: 2 },
- *     { south: 1, west: 2, north: 3, east: 4 }
- *   ));
- *   ```
- *
- * @memberof! MLQueryBuilder
- * @method ext.geospatialValues
- *
- * @param {...Object} values - the geospatial values to parse
- * @return {Object} parsed geospatial values
- */
-const geospatialValues = function() {
-  var shapes = asArray.apply(null, arguments);
-
-  var points = [];
-  var boxes = [];
-  var circles = [];
-  var polygons = [];
-  var shape;
-
-  for (var i = 0; i < shapes.length; i++) {
-    shape = shapes[i];
-
-    if (shape.latitude || shape.latitude === 0) {
-      points.push(shape);
-    } else if (shape.south || shape.south === 0) {
-      boxes.push(shape);
-    } else if (shape.radius) {
-      circles.push(shape);
-    } else if (shape.point) {
-      polygons.push(shape);
-    }
-  }
-
-  return {
-    point: points,
-    box: boxes,
-    circle: circles,
-    polygon: polygons
-  };
-};
-
 module.exports = exports = {
+  /**
+   * Helper method: builds an object of `points`, `boxes`, `circles`, and `polygons`,
+   * used by {@link MLQueryBuilder.ext.geospatialConstraint}, for use with
+   * {@link MLQueryBuilder.ext.customConstraint}
+   *
+   * examples:
+   *
+   *   ```
+   *   qb.ext.geospatialConstraint('name',
+   *     { latitude: 1, longitude: 2 },
+   *     { south: 1, west: 2, north: 3, east: 4 }
+   *   );
+   *   ```
+   *
+   *   ```
+   *   qb.ext.customConstraint('name', qb.ext.geospatialValues(
+   *     { latitude: 1, longitude: 2 },
+   *     { south: 1, west: 2, north: 3, east: 4 }
+   *   ));
+   *   ```
+   *
+   * @memberof! MLQueryBuilder
+   * @method ext.geospatialValues
+   *
+   * @param {...Object} values - the geospatial values to parse
+   * @return {Object} parsed geospatial values
+   */
+  geospatialValues: function geospatialValues() {
+    var shapes = asArray.apply(null, arguments);
+
+    var points = [];
+    var boxes = [];
+    var circles = [];
+    var polygons = [];
+    var shape;
+
+    for (var i = 0; i < shapes.length; i++) {
+      shape = shapes[i];
+
+      if (shape.latitude || shape.latitude === 0) {
+        points.push(shape);
+      } else if (shape.south || shape.south === 0) {
+        boxes.push(shape);
+      } else if (shape.radius) {
+        circles.push(shape);
+      } else if (shape.point) {
+        polygons.push(shape);
+      }
+    }
+
+    return {
+      point: points,
+      box: boxes,
+      circle: circles,
+      polygon: polygons
+    };
+  },
+
   /**
    * Builds a {@link http://docs.marklogic.com/guide/rest-dev/search#id_69918 combined query}
    * @memberof! MLQueryBuilder
@@ -257,7 +257,7 @@ module.exports = exports = {
       args = args[0];
     }
 
-    var geoValues = geospatialValues(args);
+    var geoValues = this.geospatialValues(args);
     var query = {
       'geospatial-constraint-query': {
         'constraint-name': constraintName
@@ -293,7 +293,7 @@ module.exports = exports = {
       case 'collection':
         return this.collectionConstraint;
       case 'geospatial':
-        return this.geospatialConstraint;
+        return this.geospatialConstraint.bind(this);
       default:
         return this.rangeConstraint;
     }
