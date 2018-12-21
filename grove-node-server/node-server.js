@@ -54,7 +54,7 @@ var provider = (function() {
 
     app.use(config.routes); // FIXME: check for routes, and throw error if not
 
-    app.use(four0four.notFound);
+    app.use(four0four.apiNotFound);
 
     let server;
     if (options.useHTTPSInMiddleTier) {

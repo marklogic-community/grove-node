@@ -22,7 +22,7 @@ const provider = (function() {
         res.sendFile(staticUIPath + '/index.html')
       );
       // For requests not matching any of the above, return a 404.
-      router.use('', four0four.notFound);
+      router.use('', four0four.docNotFound);
     } else {
       console.warn(
         'There is no index.html located at the GROVE_UI_BUILD_PATH: ' +

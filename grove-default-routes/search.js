@@ -140,7 +140,7 @@ var provider = (function() {
     });
 
     // For requests not matching any of the above, return a 404.
-    router.use('', four0four.notFound);
+    router.use('', four0four.apiNotFound);
 
     return router;
   };

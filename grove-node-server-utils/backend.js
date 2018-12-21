@@ -30,7 +30,7 @@ var backend = (function() {
 
     var body = backendOptions.body;
     delete backendOptions.body;
-    if (body) {
+    if (body !== undefined && body !== null) {
       delete backendOptions.headers['content-length'];
     }
 
@@ -134,7 +134,7 @@ var backend = (function() {
 
     // stream browser request data into backend request
     // note: requires non-parsed body!
-    if (body) {
+    if (body !== undefined && body !== null) {
       backendRequest.write(body);
       backendRequest.end();
     } else {

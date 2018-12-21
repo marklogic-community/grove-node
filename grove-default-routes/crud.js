@@ -39,7 +39,7 @@ var provider = (function() {
         const uri = idConverter.toUri(id);
 
         // Double-pass backend call required to get a (fairly) reliable content-type as well as metadata
-        docsBackendCall(req, res, config, 'GET', uri, {}, function(
+        docsBackendCall(req, res, config, 'GET', uri, {}, '', function(
           backendResponse
         ) {
           const contentType = backendResponse.headers['content-type'].split(
@@ -59,6 +59,7 @@ var provider = (function() {
               category: 'metadata',
               format: 'json'
             },
+            null,
             function(backendResponse, metadata) {
               res.status(backendResponse.statusCode);
               for (var header in backendResponse.headers) {
@@ -107,6 +108,11 @@ var provider = (function() {
       router.use(authProvider.isAuthenticated);
     }
 
+    // HEAD not allowed
+    router.head('*', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['DELETE', 'GET', 'POST', 'PUT']);
+    });
+
     // GET Crud paths take an extra suffix as 'view' parameter
     router.get('/:id/:view?', function(req, res) {
       const id = req.params.id;
@@ -131,26 +137,32 @@ var provider = (function() {
           format: view.format || 'json'
         };
 
-        docsBackendCall(req, res, config, req.method, uri, params, function(
-          backendResponse,
-          data
-        ) {
-          res.status(backendResponse.statusCode);
-          for (var header in backendResponse.headers) {
-            // copy all others except auth challenge headers
-            if (header !== 'www-authenticate') {
-              res.header(header, backendResponse.headers[header]);
+        docsBackendCall(
+          req,
+          res,
+          config,
+          req.method,
+          uri,
+          params,
+          null,
+          function(backendResponse, data) {
+            res.status(backendResponse.statusCode);
+            for (var header in backendResponse.headers) {
+              // copy all others except auth challenge headers
+              if (header !== 'www-authenticate') {
+                res.header(header, backendResponse.headers[header]);
+              }
             }
+            if ('' + req.query.download === 'true') {
+              res.header(
+                'content-disposition',
+                'attachment; filename=' + uri.split('/').pop()
+              );
+            }
+            res.write(data);
+            res.end();
           }
-          if ('' + req.query.download === 'true') {
-            res.header(
-              'content-disposition',
-              'attachment; filename=' + uri.split('/').pop()
-            );
-          }
-          res.write(data);
-          res.end();
-        });
+        );
       }
     });
 
@@ -190,42 +202,114 @@ var provider = (function() {
       // temporal applies to all methods, if specified (null is ignored)
       params['temporal-collection'] = config.temporalCollection;
 
-      docsBackendCall(req, res, config, req.method, uri, params, function(
-        backendResponse,
-        data
-      ) {
-        res.status(backendResponse.statusCode);
-        for (var header in backendResponse.headers) {
-          // rewrite location
-          if (header === 'location') {
-            res.header(
-              header,
-              idConverter.toId(backendResponse.headers[header].substring(18))
-            );
-
-            // copy all others except auth challenge headers
-          } else if (header !== 'www-authenticate') {
-            res.header(header, backendResponse.headers[header]);
+      // explicitly check presence when making changes
+      if (['POST', 'DELETE', 'PUT'].indexOf(req.method) > -1) {
+        docsBackendCall(req, res, config, 'HEAD', uri, {}, '', function(
+          backendResponse
+        ) {
+          // must exist for update or delete
+          if (
+            ['POST', 'DELETE'].indexOf(req.method) > -1 &&
+            backendResponse.statusCode === 404
+          ) {
+            four0four.docNotFound(req, res);
           }
-        }
-        if ('' + req.query.download === 'true') {
-          res.header(
-            'content-disposition',
-            'attachment; filename=' + uri.split('/').pop()
-          );
-        }
-        res.write(data);
-        res.end();
-      });
+          //  must NOT exist for create
+          else if (req.method === 'PUT' && backendResponse.statusCode === 200) {
+            four0four.conflict(req, res);
+          } else {
+            docsBackendCall(
+              req,
+              res,
+              config,
+              req.method,
+              uri,
+              params,
+              null,
+              function(backendResponse, data) {
+                res.status(backendResponse.statusCode);
+                for (var header in backendResponse.headers) {
+                  // rewrite location
+                  if (header === 'location') {
+                    res.header(
+                      header,
+                      idConverter.toId(
+                        backendResponse.headers[header].substring(18)
+                      )
+                    );
+
+                    // copy all others except auth challenge headers
+                  } else if (header !== 'www-authenticate') {
+                    res.header(header, backendResponse.headers[header]);
+                  }
+                }
+                if ('' + req.query.download === 'true') {
+                  res.header(
+                    'content-disposition',
+                    'attachment; filename=' + uri.split('/').pop()
+                  );
+                }
+                res.write(data);
+                res.end();
+              }
+            );
+          }
+        });
+      } else {
+        docsBackendCall(
+          req,
+          res,
+          config,
+          req.method,
+          uri,
+          params,
+          null,
+          function(backendResponse, data) {
+            res.status(backendResponse.statusCode);
+            for (var header in backendResponse.headers) {
+              // rewrite location
+              if (header === 'location') {
+                res.header(
+                  header,
+                  idConverter.toId(
+                    backendResponse.headers[header].substring(18)
+                  )
+                );
+
+                // copy all others except auth challenge headers
+              } else if (header !== 'www-authenticate') {
+                res.header(header, backendResponse.headers[header]);
+              }
+            }
+            if ('' + req.query.download === 'true') {
+              res.header(
+                'content-disposition',
+                'attachment; filename=' + uri.split('/').pop()
+              );
+            }
+            res.write(data);
+            res.end();
+          }
+        );
+      }
     });
 
     // For requests not matching any of the above, return a 404.
-    router.use('', four0four.notFound); // TODO: reachable?
+    router.use('', four0four.apiNotFound); // TODO: reachable?
 
     return router;
   };
 
-  function docsBackendCall(req, res, config, method, uri, params, callback) {
+  function docsBackendCall(
+    req,
+    res,
+    config,
+    method,
+    uri,
+    params,
+    body,
+    callback
+  ) {
     var path = '/v1/documents';
     params.uri = uri;
 
@@ -234,7 +318,8 @@ var provider = (function() {
       path: path,
       params: params,
       headers: req.headers,
-      ca: ca
+      ca: ca,
+      body: body
     };
 
     config.authProvider.getAuth(req.session, backendOptions).then(
@@ -245,11 +330,11 @@ var provider = (function() {
 
         var neverCache =
           config.neverCache !== undefined ? config.neverCache : true;
-        if (neverCache || req.method !== 'GET') {
+        if (neverCache || method !== 'GET') {
           noCache(res);
         }
 
-        // call backend, and pipe clientResponse straight into res
+        // call backend, and invoke callback with response
         backend.call(req, backendOptions, callback);
       },
       function() {

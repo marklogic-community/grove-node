@@ -132,6 +132,6 @@ router.use(
 
 // For requests not matching any of the above, return a 404.
 const four0four = require('../../grove-node-server-utils/404')();
-router.use('', four0four.notFound);
+router.use('', four0four.apiNotFound);
 
 module.exports = router;
