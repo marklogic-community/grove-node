@@ -11,9 +11,64 @@ describe('filter.js', () => {
     });
   });
 
+  describe('queryText', () => {
+    it('works', () => {
+      const filter = {
+        type: 'queryText',
+        value: 'foo AND bar'
+      };
+      expect(buildQuery(filter)).to.deep.equal({
+        qtext: 'foo AND bar'
+      });
+    });
+  });
+
   describe('selection', () => {
-    it('works with simple example', () => {
-      // TODO
+    it('works with simple example including a negation', () => {
+      const filter = {
+        type: 'selection',
+        constraint: 'classification',
+        mode: 'or',
+        value: [
+          {
+            not: 'mammal'
+          },
+          'platypus',
+          'kangaroo'
+        ]
+      };
+      expect(buildQuery(filter)).to.deep.equal({
+        'or-query': {
+          queries: [
+            {
+              'not-query': {
+                'range-constraint-query': {
+                  'constraint-name': 'classification',
+                  'range-operator': 'EQ',
+                  'range-option': [],
+                  value: ['mammal']
+                }
+              }
+            },
+            {
+              'range-constraint-query': {
+                'constraint-name': 'classification',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: ['platypus']
+              }
+            },
+            {
+              'range-constraint-query': {
+                'constraint-name': 'classification',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: ['kangaroo']
+              }
+            }
+          ]
+        }
+      });
     });
 
     describe('geospatial', () => {
@@ -168,6 +223,382 @@ describe('filter.js', () => {
                 'range-operator': 'EQ',
                 'range-option': [],
                 value: [30]
+              }
+            }
+          ]
+        }
+      });
+    });
+
+    xit('works with all other operators', () => {
+      // TODO: gt, le, eq, ne
+    });
+  });
+
+  describe('combined filters', () => {
+    it('works for "and"', () => {
+      const andFilter = {
+        and: [
+          {
+            type: 'selection',
+            constraint: 'classification',
+            mode: 'or',
+            value: ['kangaroo']
+          },
+          {
+            type: 'range',
+            constraint: 'age',
+            value: {
+              ge: 20,
+              ne: 99
+            }
+          }
+        ]
+      };
+      expect(buildQuery(andFilter)).to.deep.equal({
+        'and-query': {
+          queries: [
+            {
+              'range-constraint-query': {
+                'constraint-name': 'classification',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: ['kangaroo']
+              }
+            },
+            {
+              'and-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [20]
+                    }
+                  },
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [99]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      });
+    });
+
+    it('works for "or"', () => {
+      const orFilter = {
+        or: [
+          {
+            type: 'selection',
+            constraint: 'classification',
+            mode: 'or',
+            value: ['kangaroo']
+          },
+          {
+            type: 'range',
+            constraint: 'age',
+            value: {
+              ge: 20,
+              ne: 99
+            }
+          }
+        ]
+      };
+      expect(buildQuery(orFilter)).to.deep.equal({
+        'or-query': {
+          queries: [
+            {
+              'range-constraint-query': {
+                'constraint-name': 'classification',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: ['kangaroo']
+              }
+            },
+            {
+              'and-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [20]
+                    }
+                  },
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [99]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      });
+    });
+
+    it('works for "not"', () => {
+      const notFilter = {
+        not: {
+          type: 'selection',
+          constraint: 'classification',
+          mode: 'or',
+          value: ['kangaroo']
+        }
+      };
+      expect(buildQuery(notFilter)).to.deep.equal({
+        'not-query': {
+          'range-constraint-query': {
+            'constraint-name': 'classification',
+            'range-operator': 'EQ',
+            'range-option': [],
+            value: ['kangaroo']
+          }
+        }
+      });
+    });
+
+    it('works for near', () => {
+      const nearFilter = {
+        near: {
+          filters: [
+            {
+              type: 'queryText',
+              value: 'Patrick'
+            },
+            {
+              type: 'queryText',
+              value: 'McElwee'
+            }
+          ],
+          distance: 10
+        }
+      };
+      expect(buildQuery(nearFilter)).to.deep.equal({
+        'near-query': {
+          queries: [
+            { qtext: 'Patrick' },
+            { qtext: 'McElwee' },
+            { distance: 10 }
+          ]
+        }
+      });
+    });
+
+    it('works for complicated example', () => {
+      const combinedFilter = {
+        and: [
+          {
+            type: 'queryText',
+            value: 'foo AND bar'
+          },
+          {
+            type: 'selection',
+            constraint: 'firstName',
+            value: [
+              'Geert',
+              {
+                not: 'Patrick'
+              }
+            ],
+            mode: 'and'
+          },
+          {
+            type: 'selection',
+            constraint: 'active',
+            value: true
+          },
+          {
+            type: 'range',
+            constraint: 'age',
+            value: {
+              ge: 20,
+              ne: 99
+            }
+          },
+          {
+            type: 'selection',
+            constraint: 'eyeColor',
+            value: ['blue', 'brown'],
+            mode: 'or'
+          },
+          {
+            or: [
+              {
+                type: 'selection',
+                constraint: 'occupationCategory',
+                value: 'software'
+              },
+              {
+                and: [
+                  {
+                    type: 'selection',
+                    constraint: 'occupationCategory',
+                    value: 'IT'
+                  },
+                  {
+                    not: {
+                      or: ['marketing', 'support']
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            near: {
+              filters: [
+                {
+                  type: 'queryText',
+                  value: 'Patrick'
+                },
+                {
+                  type: 'queryText',
+                  value: 'McElwee'
+                }
+              ],
+              distance: 10
+            }
+          }
+        ]
+      };
+      expect(buildQuery(combinedFilter)).to.deep.equal({
+        'and-query': {
+          queries: [
+            {
+              qtext: 'foo AND bar'
+            },
+            {
+              'and-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'firstName',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: ['Geert']
+                    }
+                  },
+                  {
+                    'not-query': {
+                      'range-constraint-query': {
+                        'constraint-name': 'firstName',
+                        'range-operator': 'EQ',
+                        'range-option': [],
+                        value: ['Patrick']
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              'range-constraint-query': {
+                'constraint-name': 'active',
+                'range-operator': 'EQ',
+                'range-option': [],
+                value: [true]
+              }
+            },
+            {
+              'and-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [20]
+                    }
+                  },
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'age',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: [99]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              'or-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'eyeColor',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: ['blue']
+                    }
+                  },
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'eyeColor',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: ['brown']
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              'or-query': {
+                queries: [
+                  {
+                    'range-constraint-query': {
+                      'constraint-name': 'occupationCategory',
+                      'range-operator': 'EQ',
+                      'range-option': [],
+                      value: ['software']
+                    }
+                  },
+                  {
+                    'and-query': {
+                      queries: [
+                        {
+                          'range-constraint-query': {
+                            'constraint-name': 'occupationCategory',
+                            'range-operator': 'EQ',
+                            'range-option': [],
+                            value: ['IT']
+                          }
+                        },
+                        {
+                          'not-query': {
+                            'or-query': {
+                              queries: [{}, {}]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              'near-query': {
+                queries: [
+                  { qtext: 'Patrick' },
+                  { qtext: 'McElwee' },
+                  { distance: 10 }
+                ]
               }
             }
           ]

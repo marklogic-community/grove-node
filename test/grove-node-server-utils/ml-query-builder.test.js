@@ -673,4 +673,11 @@ describe('MLQueryBuilder', function() {
     expect(combined.search.options).to.not.be.undefined;
     expect(combined.search.options['return-query']).to.equal(0);
   });
+
+  it('builds a near query', () => {
+    const query = qb.ext.near();
+    expect(query).to.deep.equal({
+      'near-query': { queries: [] }
+    });
+  });
 });

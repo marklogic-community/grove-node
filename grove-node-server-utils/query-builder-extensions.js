@@ -299,6 +299,12 @@ module.exports = exports = {
     }
   },
 
+  near: function near(queries) {
+    return {
+      'near-query': { queries: asArray(queries) }
+    };
+  },
+
   /**
    * Builds an {@link http://docs.marklogic.com/guide/search-dev/structured-query#id_45570 `operator-state` query component}
    * @memberof! MLQueryBuilder

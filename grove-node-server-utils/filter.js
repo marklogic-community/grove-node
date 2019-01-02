@@ -104,15 +104,17 @@ var filter = (function() {
     } else if (filters.not) {
       return queryBuilder.not(buildQuery(filters.not));
     } else if (filters.near) {
-      arr = filters.near;
+      arr = filters.near.filters;
       if (!Array.isArray(arr)) {
         arr = [arr];
       }
-      return queryBuilder.near(
-        arr.map(function(filter) {
-          return buildQuery(filter);
-        })
-      );
+      const nearQueries = arr.map(function(filter) {
+        return buildQuery(filter);
+      });
+      if (filters.near.distance) {
+        nearQueries.push({ distance: filters.near.distance });
+      }
+      return queryBuilder.ext.near(nearQueries);
     } else {
       var handler = handlers[filters.type || 'selection'];
       if (handler) {
