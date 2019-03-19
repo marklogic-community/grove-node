@@ -53,10 +53,16 @@ router.use(
     authProvider: authProvider,
     namedOptions: type, // default: 'all'
     // options: {
-    //   Add JSON search options here.
-    //   default: none
-    //   WARNING: This will override the saved search options referenced by 'namedOptions' above.
-    //   Example for making result labels using name property of person sample-data
+    // // Add JSON search options here.
+    //
+    // // default: none
+    //
+    // // WARNING: This will override the saved search options referenced by 'namedOptions' above.
+    //
+    // // See https://docs.marklogic.com/guide/search-dev/appendixa for
+    // // details on query options
+    //
+    // // Example for making result labels using name property of person sample-data
     //   'extract-document-data': {
     //     'extract-path': ['/name']
     //   }
