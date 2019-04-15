@@ -1,6 +1,15 @@
 {
   "name": "@marklogic-community/grove-node",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
+  "description": "Node.js implementation of a Grove Middle-Tier for MarkLogic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marklogic-community/grove-node.git"
+  },
+  "keywords": [
+    "Node",
+    "MarkLogic"
+  ],
   "dependencies": {
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
@@ -38,6 +47,11 @@
     "nodemon": "^1.17.5",
     "prettier": "^1.13.7"
   },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/marklogic-community/grove-node/issues"
+  },
+  "homepage": "https://github.com/marklogic-community/grove-node#readme",
   "contributors": [
     {
       "name": "Patrick McElwee",
