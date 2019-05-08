@@ -49,7 +49,7 @@ var filter = (function() {
     var queries = Object.keys(filter.value).map(function(key) {
       // TODO: iterate values in case of and-mode
       return constraint(
-        filter.constraintType,
+        filter.type,
         filter.constraint,
         key.toUpperCase(),
         filter.value[key]
