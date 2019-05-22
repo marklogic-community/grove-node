@@ -285,17 +285,17 @@ module.exports = exports = {
   constraint: function constraint(type) {
     switch (type) {
       case 'value':
-        return this.valueConstraint;
+        return this.valueConstraint.bind(this);
       case 'word':
-        return this.wordConstraint;
+        return this.wordConstraint.bind(this);
       case 'custom':
-        return this.customConstraint;
+        return this.customConstraint.bind(this);
       case 'collection':
-        return this.collectionConstraint;
+        return this.collectionConstraint.bind(this);
       case 'geospatial':
         return this.geospatialConstraint.bind(this);
       default:
-        return this.rangeConstraint;
+        return this.rangeConstraint.bind(this);
     }
   },
 
