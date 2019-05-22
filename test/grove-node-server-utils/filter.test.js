@@ -538,7 +538,10 @@ describe('filter.js', () => {
                   },
                   {
                     not: {
-                      or: ['marketing', 'support']
+                      type: 'selection',
+                      constraint: 'occupationCategory',
+                      mode: 'or',
+                      value: ['marketing', 'support']
                     }
                   }
                 ]
@@ -669,7 +672,24 @@ describe('filter.js', () => {
                         {
                           'not-query': {
                             'or-query': {
-                              queries: [{}, {}]
+                              queries: [
+                                {
+                                  'range-constraint-query': {
+                                    'constraint-name': 'occupationCategory',
+                                    'range-operator': 'EQ',
+                                    'range-option': [],
+                                    value: ['marketing']
+                                  }
+                                },
+                                {
+                                  'range-constraint-query': {
+                                    'constraint-name': 'occupationCategory',
+                                    'range-operator': 'EQ',
+                                    'range-option': [],
+                                    value: ['support']
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
