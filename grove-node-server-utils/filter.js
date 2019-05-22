@@ -20,7 +20,7 @@ var filter = (function() {
 
   var selectionDefaultHandler = function(filter) {
     let arr = filter.value;
-    if (!arr) {
+    if (arr === undefined) {
       return {};
     }
     if (!Array.isArray(arr)) {

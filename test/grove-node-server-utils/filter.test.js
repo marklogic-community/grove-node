@@ -71,6 +71,55 @@ describe('filter.js', () => {
       });
     });
 
+    it('works for non-array, single value', () => {
+      const filter = {
+        type: 'selection',
+        constraint: 'classification',
+        mode: 'and',
+        value: 'kangaroo'
+      };
+      expect(buildQuery(filter)).to.deep.equal({
+        'range-constraint-query': {
+          'constraint-name': 'classification',
+          'range-operator': 'EQ',
+          'range-option': [],
+          value: ['kangaroo']
+        }
+      });
+    });
+
+    it('works for empty string value', () => {
+      const filter = {
+        type: 'selection',
+        constraint: 'classification',
+        mode: 'and',
+        value: ''
+      };
+      expect(buildQuery(filter)).to.deep.equal({
+        'range-constraint-query': {
+          'constraint-name': 'classification',
+          'range-operator': 'EQ',
+          'range-option': [],
+          value: ['']
+        }
+      });
+
+      const filterWithArray = {
+        type: 'selection',
+        constraint: 'classification',
+        mode: 'and',
+        value: ['']
+      };
+      expect(buildQuery(filterWithArray)).to.deep.equal({
+        'range-constraint-query': {
+          'constraint-name': 'classification',
+          'range-operator': 'EQ',
+          'range-option': [],
+          value: ['']
+        }
+      });
+    });
+
     describe('geospatial', () => {
       const box = {
         north: 100,
@@ -366,6 +415,44 @@ describe('filter.js', () => {
             'range-operator': 'EQ',
             'range-option': [],
             value: ['kangaroo']
+          }
+        }
+      });
+    });
+
+    it('works for not empty string', () => {
+      const notFilter = {
+        not: {
+          type: 'selection',
+          constraint: 'classification',
+          value: ''
+        }
+      };
+      expect(buildQuery(notFilter)).to.deep.equal({
+        'not-query': {
+          'range-constraint-query': {
+            'constraint-name': 'classification',
+            'range-operator': 'EQ',
+            'range-option': [],
+            value: ['']
+          }
+        }
+      });
+
+      const notFilterWithArray = {
+        not: {
+          type: 'selection',
+          constraint: 'classification',
+          value: ['']
+        }
+      };
+      expect(buildQuery(notFilterWithArray)).to.deep.equal({
+        'not-query': {
+          'range-constraint-query': {
+            'constraint-name': 'classification',
+            'range-operator': 'EQ',
+            'range-option': [],
+            value: ['']
           }
         }
       });
