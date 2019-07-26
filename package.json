@@ -1,6 +1,15 @@
 {
-  "name": "grove-node",
-  "version": "1.0.0-rc.1",
+  "name": "@marklogic-community/grove-node",
+  "version": "1.0.0-rc.2",
+  "description": "Node.js implementation of a Grove Middle-Tier for MarkLogic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marklogic-community/grove-node.git"
+  },
+  "keywords": [
+    "Node",
+    "MarkLogic"
+  ],
   "dependencies": {
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
@@ -25,7 +34,6 @@
     "start": "cross-env NODE_ENV=development nodemon node-app.js",
     "start:prod": "node node-app.js"
   },
-  "private": true,
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-http": "^4.0.0",
@@ -38,5 +46,24 @@
     "nock": "^9.3.2",
     "nodemon": "^1.17.5",
     "prettier": "^1.13.7"
-  }
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/marklogic-community/grove-node/issues"
+  },
+  "homepage": "https://github.com/marklogic-community/grove-node#readme",
+  "contributors": [
+    {
+      "name": "Patrick McElwee",
+      "url": "https://github.com/patrickmcelwee"
+    },
+    {
+      "name": "Marianne Myers",
+      "url": "https://github.com/mariannemyers"
+    },
+    {
+      "name": "Geert Josten",
+      "url": "https://github.com/grtjn"
+    }
+  ]
 }
