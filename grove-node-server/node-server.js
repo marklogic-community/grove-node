@@ -7,6 +7,7 @@ var provider = (function() {
   var expressSession = require('express-session');
   const { constants } = require('crypto');
   const compression = require('compression');
+  var MemoryStore = require('memorystore')(expressSession);
 
   var provide = function(config) {
     var app = express();
@@ -50,7 +51,12 @@ var provider = (function() {
         name: options.appName,
         secret: options.sessionSecret,
         saveUninitialized: true,
-        resave: true
+        resave: true,
+        rolling: true,
+        cookie: { maxAge: 172800000 }, //expire sessions after 2 days of inactivity
+        store: new MemoryStore({
+          checkPeriod: 86400000 // prune expired entries every 24h
+        })
       })
     );
 
