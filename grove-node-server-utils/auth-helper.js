@@ -27,6 +27,8 @@ var defaultOptions = {
   challengePath: '/v1/ping'
 };
 
+var authenticators = {};
+
 function init() {
   passport.serializeUser(function(user, done) {
     done(null, user);
@@ -135,16 +137,6 @@ function isAuthenticated(req, res, next) {
   }
 }
 
-var authenticators = {};
-
-setInterval(function() {
-  for (var id in authenticators) {
-    if (isExpired(authenticators[id])) {
-      delete authenticators[id];
-    }
-  }
-}, 1000 * 60 * 30);
-
 function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
@@ -197,15 +189,6 @@ function timestampAuthenticator(authenticator) {
   if (authenticator) {
     authenticator.lastAccessed = new Date();
   }
-}
-
-var expirationTime = 1000 * 60 * 60 * 12;
-
-function isExpired(authenticator) {
-  return (
-    authenticator.lastAccessed &&
-    new Date() - authenticator.lastAccessed > expirationTime
-  );
 }
 
 function getAuthenticator(session, user, host, port) {

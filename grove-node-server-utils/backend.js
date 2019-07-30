@@ -35,6 +35,7 @@ var backend = (function() {
     }
 
     // get rid of some headers that throw off ML authentication
+    delete backendOptions.headers.host;
     delete backendOptions.headers['x-forwarded-for'];
     delete backendOptions.headers['x-forwarded-host'];
     delete backendOptions.headers['x-forwarded-port'];
