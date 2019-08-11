@@ -6,6 +6,7 @@ var provider = (function() {
   var helmet = require('helmet');
   var expressSession = require('express-session');
   const { constants } = require('crypto');
+  const compression = require('compression');
 
   var provide = function(config) {
     var app = express();
@@ -21,6 +22,9 @@ var provider = (function() {
     var port = options.appPort;
 
     authHelper.init(); // FIXME: is this thread-safe? what if we spin up two listeners in one script?
+
+    // compress all responses
+    app.use(compression());
 
     // Making this middle-tier slightly more secure: https://www.npmjs.com/package/helmet#how-it-works
     app.use(
