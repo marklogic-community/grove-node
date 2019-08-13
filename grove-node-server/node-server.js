@@ -5,6 +5,7 @@ var provider = (function() {
   var express = require('express');
   var helmet = require('helmet');
   var expressSession = require('express-session');
+  const { constants } = require('crypto');
 
   var provide = function(config) {
     var app = express();
@@ -73,6 +74,7 @@ var provider = (function() {
         'utf8'
       );
       var credentials = {
+        secureOptions: constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1,
         key: privateKey,
         cert: certificate
       };
