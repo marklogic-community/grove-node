@@ -41,7 +41,8 @@ const idConverter = {
 router.use(
   '/auth',
   routeFactory.defaultAuthRoute({
-    authProvider: authProvider
+    authProvider: authProvider,
+    neverCache: true
   })
 );
 
