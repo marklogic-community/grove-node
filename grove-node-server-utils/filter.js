@@ -4,7 +4,7 @@ const queryBuilder = require('./ml-query-builder.service.js')({});
 var filter = (function() {
   var queryTextDefaultHandler = function(filter) {
     var q;
-    if (filter.constraint !== undefined) {
+    if (filter.constraint !== undefined && filter.constraint !== null) {
       // note: the value will not be 'parsed' in this case, unless the constraint takes care of it
       q = constraint(
         filter.constraintType,
@@ -24,7 +24,7 @@ var filter = (function() {
       arr = [arr];
     }
     var queries = arr.map(function(item) {
-      if (item.not !== undefined) {
+      if (item.not !== undefined && item.not !== null) {
         // negated
         return queryBuilder.not(
           constraint(filter.constraintType, filter.constraint, 'EQ', item.not)
@@ -78,7 +78,7 @@ var filter = (function() {
 
   var buildQuery = function(filters) {
     let arr;
-    if (filters.and !== undefined) {
+    if (filters.and !== undefined && filter.and !== null) {
       arr = filters.and;
       if (!Array.isArray(arr)) {
         arr = [arr];
@@ -88,7 +88,7 @@ var filter = (function() {
           return buildQuery(filter);
         })
       );
-    } else if (filters.or !== undefined) {
+    } else if (filters.or !== undefined && filter.or !== null) {
       arr = filters.or;
       if (!Array.isArray(arr)) {
         arr = [arr];
@@ -98,9 +98,9 @@ var filter = (function() {
           return buildQuery(filter);
         })
       );
-    } else if (filters.not !== undefined) {
+    } else if (filters.not !== undefined && filter.not !== null) {
       return queryBuilder.not(buildQuery(filters.not));
-    } else if (filters.near !== undefined) {
+    } else if (filters.near !== undefined && filter.near !== null) {
       arr = filters.near;
       if (!Array.isArray(arr)) {
         arr = [arr];
