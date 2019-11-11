@@ -129,6 +129,9 @@ var filter = (function() {
 
   function constraint(type, name, operator, value) {
     type = type || 'range';
+    if (type.startsWith('xs:')) {
+      type = 'range';
+    }
     var c = queryBuilder.ext.constraint(type);
     if (type === 'range') {
       return c(name, operator, value);
