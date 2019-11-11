@@ -25,7 +25,9 @@ var provider = (function() {
     authHelper.init(); // FIXME: is this thread-safe? what if we spin up two listeners in one script?
 
     // compress all responses
-    app.use(compression());
+    if (options.compressResponses) {
+      app.use(compression());
+    }
 
     // Making this middle-tier slightly more secure: https://www.npmjs.com/package/helmet#how-it-works
     app.use(

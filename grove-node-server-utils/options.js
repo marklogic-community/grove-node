@@ -58,6 +58,10 @@ var availableOptions = {
   },
   staticUIDirectory: {
     variable: 'GROVE_UI_BUILD_PATH'
+  },
+  compressResponses: {
+    variable: 'GROVE_COMPRESS_RESPONSES',
+    default: true
   }
 };
 

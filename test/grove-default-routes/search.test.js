@@ -74,7 +74,10 @@ describe('defaultSearchRoute', () => {
                 polygon: []
               }
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query(() => true)
@@ -140,7 +143,10 @@ describe('defaultSearchRoute', () => {
                 ]
               }
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query(() => true)
