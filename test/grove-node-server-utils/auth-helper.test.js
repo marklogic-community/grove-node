@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 describe('provided auth-helper', () => {
   let authProvider;
   beforeEach(() => {
-    authProvider = require('../../muir-node-server-utils/auth-helper');
+    authProvider = require('../../grove-node-server-utils/auth-helper');
   });
 
   describe('isAuthenticated', () => {

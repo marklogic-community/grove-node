@@ -33,7 +33,10 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query({
@@ -108,7 +111,10 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query({
@@ -162,7 +168,10 @@ describe('/api/search/all', () => {
                 ]
               }
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query({
@@ -253,7 +262,10 @@ describe('/api/search/all', () => {
             query: {
               qtext: 'henry'
             },
-            options: {}
+            options: {
+              'return-facets': true,
+              'return-results': true
+            }
           }
         })
         .query({
