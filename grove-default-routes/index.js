@@ -17,11 +17,16 @@ const factory = (function() {
     return require('./static')(config);
   };
 
+  const defaultExtensionRoute = function(config) {
+    return require('./ext')(config);
+  };
+
   return {
     defaultAuthRoute: defaultAuthRoute,
     defaultCrudRoute: defaultCrudRoute,
     defaultSearchRoute: defaultSearchRoute,
-    defaultStaticRoute: defaultStaticRoute
+    defaultStaticRoute: defaultStaticRoute,
+    defaultExtensionRoute: defaultExtensionRoute
   };
 })();
 
