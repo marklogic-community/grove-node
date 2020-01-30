@@ -37,6 +37,15 @@ const idConverter = {
   }
 };
 
+// Ping route
+router.use(
+  '/ping',
+  routeFactory.defaultPingRoute({
+    authProvider: authProvider,
+    authed: false
+  })
+);
+
 // A minimal authRoute.
 router.use(
   '/auth',
