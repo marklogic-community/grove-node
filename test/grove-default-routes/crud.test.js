@@ -256,7 +256,7 @@ describe('defaultCrudRoute', () => {
       });
       chai
         .request(app)
-        .post('/' + encodedId)
+        .put('/' + encodedId)
         .set('Content-Type', 'application/json')
         .send({ hello: 'world' })
         .then(response => {
