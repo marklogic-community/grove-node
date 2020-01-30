@@ -32,59 +32,66 @@ var provider = (function() {
       router.use(authProvider.isAuthenticated);
     }
 
-    router.all('/:action', function(req, res) {
+    router.all('/:action', function(req, res, next) {
       var method = req.method;
       const actionName = req.params.action;
       const action = config.actions[actionName];
 
-      // reply with 405 if a non-allowed method is used
-      let methods = allowedActionMethods(action);
-      if (methods.indexOf(method) < 0) {
-        four0four.methodNotAllowed(req, res, methods);
-        return;
-      }
+      // only respond if an action is actually defined
+      if (action) {
+        // reply with 405 if a non-allowed method is used
+        let methods = allowedActionMethods(action);
+        if (methods.indexOf(method) < 0) {
+          four0four.methodNotAllowed(req, res, methods);
+          return;
+        }
 
-      // reply with 415 if body doesn't match expected Content-Type
-      let cType = action ? action.contentType : contentType;
-      if (expectBody(method) && !req.is(cType)) {
-        four0four.unsupportedMediaType(req, res, [cType]);
-        return;
-      }
+        // reply with 415 if body doesn't match expected Content-Type
+        let cType = action ? action.contentType : contentType;
+        if (expectBody(method) && !req.is(cType)) {
+          four0four.unsupportedMediaType(req, res, [cType]);
+          return;
+        }
 
-      var data = [];
-      req.on('data', function(chunk) {
-        data.push(chunk);
-      });
-      req.on('end', function() {
-        var body = Buffer.concat(data).toString();
-        var params = req.params;
+        var data = [];
+        req.on('data', function(chunk) {
+          data.push(chunk);
+        });
+        req.on('end', function() {
+          var body = Buffer.concat(data).toString();
+          var params = req.params;
 
-        var tmp = action[method](body, params, req);
-        method = tmp.method;
-        body = tmp.body;
-        params = tmp.params;
+          var tmp = action[method](body, params, req);
+          method = tmp.method;
+          body = tmp.body;
+          params = tmp.params;
 
-        docsBackendCall(
-          req,
-          res,
-          config,
-          method,
-          action.uri || '/v1/resources/' + action,
-          params,
-          function(backendResponse, data) {
-            res.status(backendResponse.statusCode);
-            for (var header in backendResponse.headers) {
-              // copy all others except auth challenge headers
-              if (header !== 'www-authenticate') {
-                res.header(header, backendResponse.headers[header]);
+          docsBackendCall(
+            req,
+            res,
+            config,
+            method,
+            action.uri || '/v1/resources/' + action,
+            params,
+            function(backendResponse, data) {
+              res.status(backendResponse.statusCode);
+              for (var header in backendResponse.headers) {
+                // copy all others except auth challenge headers
+                if (header !== 'www-authenticate') {
+                  res.header(header, backendResponse.headers[header]);
+                }
               }
-            }
-            res.write(data);
-            res.end();
-          },
-          body
-        );
-      });
+              res.write(data);
+              res.end();
+            },
+            body
+          );
+        });
+      } else {
+        // action not recognized, fall through
+        // TODO: make configurable?
+        next();
+      }
     });
 
     return router;

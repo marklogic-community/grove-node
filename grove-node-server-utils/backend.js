@@ -42,9 +42,13 @@ var backend = (function() {
     delete backendOptions.headers['x-forwarded-proto'];
 
     // append unencoded JSON params to request path
-    if (backendOptions.params) {
-      var params = [];
+    var params = [];
 
+    if (options.mlTargetDbName) {
+      params.push('database=' + options.mlTargetDbName);
+    }
+
+    if (backendOptions.params) {
       Object.keys(backendOptions.params).forEach(function(key) {
         var value = backendOptions.params[key];
         if (Array.isArray(value)) {
@@ -60,12 +64,12 @@ var backend = (function() {
         }
       });
 
-      var path = backendOptions.path;
-      backendOptions.path =
-        path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
-
       delete backendOptions.params;
     }
+
+    var path = backendOptions.path;
+    backendOptions.path =
+      path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
 
     // Debug info
     // console.log(backendOptions)
