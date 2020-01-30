@@ -106,7 +106,12 @@ var provider = (function() {
         data.push(chunk);
       });
       req.on('end', function() {
-        req.body = JSON.parse(Buffer.concat(data).toString());
+        try {
+          req.body = JSON.parse(Buffer.concat(data).toString() || '{}');
+        } catch (e) {
+          console.log(e);
+          req.body = {};
+        }
 
         // reply with 400 if username or password is missing
         var username = req.body.username;
@@ -250,6 +255,10 @@ var provider = (function() {
           }
         );
       }
+    });
+
+    router.use('/profile', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['GET', 'POST']);
     });
 
     return router;

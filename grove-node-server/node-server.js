@@ -67,7 +67,9 @@ var provider = (function() {
 
     app.use(config.routes); // FIXME: check for routes, and throw error if not
 
-    app.use(four0four.notFound);
+    app.use('/*', function(req, res) {
+      four0four.fileNotFound(req, res, req.url);
+    });
 
     let server;
     if (options.useHTTPSInMiddleTier) {

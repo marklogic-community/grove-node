@@ -3,6 +3,7 @@
 var provider = (function() {
   const express = require('express');
   const backend = require('../grove-node-server-utils/backend');
+  const four0four = require('../grove-node-server-utils/404')();
 
   var provide = function(config) {
     var router = express.Router();
@@ -141,6 +142,10 @@ var provider = (function() {
     router.post('/facets', handleSearch(true, false));
     router.post('/results', handleSearch(false, true));
     router.post('/', handleSearch(true, true));
+
+    router.use('/*', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['POST']);
+    });
 
     return router;
   };
