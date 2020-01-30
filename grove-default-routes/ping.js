@@ -117,27 +117,6 @@ var provider = (function() {
     );
   }
 
-  function allowedActionMethods(action) {
-    let methods = [];
-    if (action.GET) {
-      methods.push('GET');
-    }
-    if (action.POST) {
-      methods.push('POST');
-    }
-    if (action.PUT) {
-      methods.push('PUT');
-    }
-    if (action.DELETE) {
-      methods.push('DELETE');
-    }
-    return methods;
-  }
-
-  function expectBody(method) {
-    return ['POST', 'PUT'].indexOf(method) > -1;
-  }
-
   function noCache(response) {
     response.append('Cache-Control', 'no-cache, must-revalidate'); // HTTP 1.1 - must-revalidate
     response.append('Pragma', 'no-cache'); // HTTP 1.0

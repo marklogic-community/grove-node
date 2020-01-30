@@ -175,7 +175,6 @@ var provider = (function() {
     // Update -> PUT with id
     // Delete -> DELETE with id
 
-
     router.post(/^[/]?$/, function(req, res) {
       // reply with 405 if a non-allowed method is used
       if (['POST'].indexOf(req.method) < 0) {
