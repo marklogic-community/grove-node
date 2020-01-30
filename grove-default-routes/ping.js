@@ -49,8 +49,8 @@ var provider = (function() {
             }
             res.json({
               ping: 'pong',
-              name: config.name || options.appName,
-              version: config.version || options.appVersion,
+              name: config.name || options.pingName,
+              version: config.version || options.pingVersion,
               backend: payload.backend
             });
           }
@@ -58,8 +58,8 @@ var provider = (function() {
       } else {
         res.json({
           ping: 'pong',
-          name: config.name || options.appName,
-          version: config.version || options.appVersion
+          name: config.name || options.pingName,
+          version: config.version || options.pingVersion
         });
       }
     });

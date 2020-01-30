@@ -5,10 +5,12 @@ module.exports = function() {
     missingRequired: missingRequired,
     unauthorized: unauthorized,
     forbidden: forbidden,
-    notFound: notFound,
+    apiNotFound: apiNotFound,
+    fileNotFound: fileNotFound,
     methodNotAllowed: methodNotAllowed,
     notAcceptable: notAcceptable,
     unsupportedMediaType: unsupportedMediaType,
+    notImplemented: notImplemented,
     send: send
   };
 
@@ -32,8 +34,24 @@ module.exports = function() {
     send(req, res, 403, 'Forbidden', 'Forbidden');
   }
 
-  function notFound(req, res) {
-    send(req, res, 404, 'Not Found', 'API endpoint not found');
+  function apiNotFound(req, res, endpoint) {
+    send(
+      req,
+      res,
+      404,
+      'Not Found',
+      'API endpoint not found' + (endpoint ? ': ' + endpoint : '')
+    );
+  }
+
+  function fileNotFound(req, res, uri) {
+    send(
+      req,
+      res,
+      404,
+      'Not Found',
+      'File not found' + (uri ? ': ' + uri : '')
+    );
   }
 
   function methodNotAllowed(req, res, methods) {
@@ -66,6 +84,16 @@ module.exports = function() {
       415,
       'Unsupported Media Type',
       'Supported Content-Types: ' + types.join(', ')
+    );
+  }
+
+  function notImplemented(req, res, endpoint) {
+    send(
+      req,
+      res,
+      501,
+      'Not Implemented',
+      'Endpoint not implemented: ' + endpoint
     );
   }
 

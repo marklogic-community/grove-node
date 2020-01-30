@@ -1,5 +1,6 @@
 //const queryBuilder = require('marklogic').queryBuilder
 const queryBuilder = require('./ml-query-builder.service.js')({});
+const util = require('./util.js');
 
 var filter = (function() {
   var queryTextDefaultHandler = function(filter) {
@@ -24,7 +25,7 @@ var filter = (function() {
       arr = [arr];
     }
     var queries = arr.map(function(item) {
-      if (item.not !== undefined && item.not !== null) {
+      if (util.isObject(item) && item.not !== undefined && item.not !== null) {
         // negated
         return queryBuilder.not(
           constraint(filter.constraintType, filter.constraint, 'EQ', item.not)
