@@ -40,14 +40,14 @@ if (enableLegacyProxy) {
           endpoint: '/resources/extsimilar',
           methods: ['get'],
           authed: true
-        }
+        },
         // TODO: move this to visjs documentation for visjs-graph
         // Other possibilities:
-        // {
-        //   endpoint: '/config/query/*',
-        //   methods: ['get'],
-        //   authed: true
-        // },
+        {
+          endpoint: '/config/query/*',
+          methods: ['get'],
+          authed: true
+        }
         // {
         //   endpoint: '/graphs/sparql',
         //   methods: ['get', 'post'],
