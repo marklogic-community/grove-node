@@ -143,7 +143,7 @@ var provider = (function() {
     router.post('/results', handleSearch(false, true));
     router.post('/', handleSearch(true, true));
 
-    router.use('/*', function(req, res) {
+    router.all('/*', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 

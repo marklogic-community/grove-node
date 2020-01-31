@@ -82,7 +82,7 @@ var provider = (function() {
     });
 
     // Anything except GET /status is denied with a 405
-    router.use('/status', function(req, res) {
+    router.all('/status', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -134,7 +134,7 @@ var provider = (function() {
     });
 
     // Anything except POST /login is denied with a 405
-    router.use('/login', function(req, res) {
+    router.all('/login', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -146,7 +146,7 @@ var provider = (function() {
     });
 
     // Anything except POST /logout is denied with a 405
-    router.use('/logout', function(req, res) {
+    router.all('/logout', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -257,7 +257,7 @@ var provider = (function() {
       }
     });
 
-    router.use('/profile', function(req, res) {
+    router.all('/profile', function(req, res) {
       four0four.methodNotAllowed(req, res, ['GET', 'POST']);
     });
 

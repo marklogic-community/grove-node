@@ -43,7 +43,7 @@ var provider = (function() {
             // TODO: improve this error handling
             try {
               payload = JSON.parse(data || '{}');
-              console.log(payload);
+              //console.log(payload);
             } catch (e) {
               console.log(e);
             }
@@ -66,7 +66,7 @@ var provider = (function() {
     router.all('/?', function(req, res) {
       four0four.methodNotAllowed(req, res, ['GET']);
     });
-    router.use('/*', function(req, res) {
+    router.all('/*', function(req, res) {
       four0four.apiNotFound(req, res, req.url);
     });
 
