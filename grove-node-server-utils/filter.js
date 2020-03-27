@@ -67,6 +67,80 @@ var filter = (function() {
     }
   };
 
+  var buildGeoQuery = function(constraints, bounds, limitToIntersect) {
+    if (bounds && bounds.length > 0) {
+      if (limitToIntersect && bounds.length > 1) {
+        return queryBuilder.and(
+          bounds.map(b => {
+            return queryBuilder.or(
+              constraints.map(c => {
+                return constraint(
+                  c.type,
+                  c.name,
+                  'EQ',
+                  c.type === 'custom' ? queryBuilder.ext.geospatialValues(b) : b
+                );
+              })
+            );
+          })
+        );
+      } else {
+        return queryBuilder.or(
+          constraints.map(c => {
+            return constraint(
+              c.type,
+              c.name,
+              'EQ',
+              c.type === 'custom'
+                ? queryBuilder.ext.geospatialValues(bounds)
+                : bounds
+            );
+          })
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+
+  var geoDefaultHandler = function(filter) {
+    if (filter.value) {
+      var geoQuery = filter.value;
+      var mapBounds = geoQuery.mapBounds;
+      if (mapBounds && !Array.isArray(mapBounds)) {
+        mapBounds = [mapBounds];
+      }
+      var drawings = geoQuery.drawings;
+      if (drawings && !Array.isArray(drawings)) {
+        drawings = [geoQuery];
+      }
+      var constraints = geoQuery.constraints;
+
+      var boundsQuery = buildGeoQuery(
+        constraints,
+        mapBounds,
+        geoQuery.limitToIntersect
+      );
+      var drawingsQuery = buildGeoQuery(
+        constraints,
+        drawings,
+        geoQuery.limitToIntersect
+      );
+
+      if (boundsQuery && drawingsQuery) {
+        return queryBuilder.and([boundsQuery, drawingsQuery]);
+      } else if (boundsQuery) {
+        return boundsQuery;
+      } else if (drawingsQuery) {
+        return drawingsQuery;
+      } else {
+        return queryBuilder.and([]);
+      }
+    } else {
+      return queryBuilder.and([]);
+    }
+  };
+
   var registerFilterType = function(type, handler) {
     handlers[type] = handler;
   };
@@ -74,7 +148,8 @@ var filter = (function() {
   var handlers = {
     queryText: queryTextDefaultHandler,
     selection: selectionDefaultHandler,
-    range: rangeDefaultHandler
+    range: rangeDefaultHandler,
+    geo: geoDefaultHandler
   };
 
   var buildQuery = function(filters) {

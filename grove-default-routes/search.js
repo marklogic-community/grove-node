@@ -81,7 +81,8 @@ var provider = (function() {
             format: 'json',
             start: start,
             pageLength: pageLength,
-            options: config.namedOptions || 'all'
+            options: config.namedOptions || 'all',
+            transform: config.transform
           },
           headers: {
             'Content-Type': 'application/json',

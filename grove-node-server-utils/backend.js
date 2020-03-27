@@ -32,6 +32,12 @@ var backend = (function() {
     delete backendOptions.body;
     if (body) {
       delete backendOptions.headers['content-length'];
+
+      if (body instanceof URLSearchParams) {
+        body = body.toString();
+        backendOptions.headers['content-type'] =
+          'application/x-www-form-urlencoded';
+      }
     }
 
     // get rid of some headers that throw off ML authentication
@@ -72,9 +78,9 @@ var backend = (function() {
       path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
 
     // Debug info
-    // console.log(backendOptions)
+    // console.log(backendOptions);
     // if (body) {
-    //   console.log(body)
+    //   console.log(body);
     // }
 
     // make actual backend call
