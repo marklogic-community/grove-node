@@ -314,7 +314,7 @@ function genDigestSecret(username, password, realm) {
 
 function HttpDigestHeader(params, SECRET) {
   /*
-    { 
+    {
         nc: optional,
         cnonce: optional,
         username: username,

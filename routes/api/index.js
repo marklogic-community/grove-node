@@ -65,6 +65,8 @@ types.forEach(type => {
     '/search/' + type + '/',
     routeFactory.defaultExtensionRoute({
       authProvider: authProvider,
+      authed: true, // default: true
+      neverCache: true, // default: true
       actions: {
         config: {
           uri: '/v1/config/query/' + type,
@@ -112,6 +114,7 @@ types.forEach(type => {
           result.extracted.content[0].name
         );
       }
+      // transform: 'extractedToJson'
     })
   );
 

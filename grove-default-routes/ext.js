@@ -47,7 +47,8 @@ var provider = (function() {
         }
 
         // reply with 415 if body doesn't match expected Content-Type
-        let cType = action ? action.contentType : contentType;
+        let cType =
+          action && action.contentType ? action.contentType : contentType;
         if (expectBody(method) && !req.is(cType)) {
           four0four.unsupportedMediaType(req, res, [cType]);
           return;
@@ -84,7 +85,10 @@ var provider = (function() {
               res.write(data);
               res.end();
             },
-            body
+            body,
+            {
+              'content-type': cType
+            }
           );
         });
       } else {
@@ -105,7 +109,8 @@ var provider = (function() {
     uri,
     params,
     callback,
-    body
+    body,
+    headers
   ) {
     var backendOptions = {
       method: method,
@@ -117,6 +122,12 @@ var provider = (function() {
 
     if (body) {
       backendOptions.body = body;
+    }
+
+    if (headers) {
+      Object.keys(headers).forEach(key => {
+        backendOptions.headers[key] = headers[key];
+      });
     }
 
     config.authProvider.getAuth(req.session, backendOptions).then(

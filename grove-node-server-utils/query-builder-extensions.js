@@ -64,6 +64,8 @@ const geospatialValues = function() {
 };
 
 module.exports = exports = {
+  geospatialValues: geospatialValues,
+
   /**
    * Builds a {@link http://docs.marklogic.com/guide/rest-dev/search#id_69918 combined query}
    * @memberof! MLQueryBuilder
@@ -272,6 +274,28 @@ module.exports = exports = {
     return query;
   },
 
+  geoRegionConstraint: function geoRegionConstraint() {
+    var args = asArray.apply(null, arguments);
+
+    var constraintName = args.shift();
+
+    // horrible hack for when arguments.length === 2 and arguments[1] is an array
+    if (args.length === 1 && Array.isArray(args[0])) {
+      args = args[0];
+    }
+
+    var geoValues = geospatialValues(args);
+    var query = {
+      'geo-region-constraint-query': {
+        'constraint-name': constraintName
+      }
+    };
+
+    extendObject(query['geo-region-constraint-query'], geoValues);
+
+    return query;
+  },
+
   /**
    * constraint query function factory
    * @memberof! MLQueryBuilder
@@ -297,6 +321,8 @@ module.exports = exports = {
         return this.collectionConstraint;
       case 'geospatial':
         return this.geospatialConstraint;
+      case 'geo-region':
+        return this.geoRegionConstraint;
       default:
         return this.rangeConstraint;
     }
