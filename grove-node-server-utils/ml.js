@@ -75,7 +75,10 @@ function processParams(params, key) {
       return '';
     }
   } else {
-    throw new Error('invalid type passed to processParams. Expected object or array: ' + params);
+    throw new Error(
+      'invalid type passed to processParams. Expected object or array: ' +
+        params
+    );
   }
   let paramsArray = [];
   for (let entry of entries) {
@@ -90,7 +93,7 @@ function setDefaultOptions(options) {
   const defaults = {
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      Accept: 'application/json'
     },
     params: {}
   };
@@ -108,10 +111,12 @@ function setDefaultOptions(options) {
 ml.document = ml.doc = function(...args) {
   let options, req, res;
   if (typeof args[0] === 'string') {
+    let uri;
     [uri, options, req, res] = args;
     options = setDefaultOptions(options);
     options.params.uri = uri;
   } else if (Array.isArray(args[0])) {
+    let uris;
     [uris, options, req, res] = args;
     options = setDefaultOptions(options);
     options.path = `/v1/documents?${processParams(uris, 'uri')}`;
