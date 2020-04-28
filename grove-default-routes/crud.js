@@ -147,7 +147,7 @@ var provider = (function() {
           uri: uri,
           transform: view ? view.transform : null,
           category: view ? view.category : null,
-          format: view ? view.format : config.format || 'json'
+          format: (view ? view.format : config.format) || 'json'
         };
 
         docsBackendCall(req, res, config, req.method, uri, params, function(
