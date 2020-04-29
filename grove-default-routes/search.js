@@ -54,6 +54,16 @@ var provider = (function() {
         );
       }
 
+      if (options.sort) {
+        structuredQuery['and-query'].queries.push(
+          require('../grove-node-server-utils/query-builder-extensions').operatorState(
+            'sort',
+            options.sort
+          )
+        );
+        delete options.sort;
+      }
+
       return {
         search: {
           query: structuredQuery,
