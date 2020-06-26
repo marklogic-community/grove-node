@@ -70,6 +70,9 @@ var availableOptions = {
   middleTierSSLKey: {
     variable: 'GROVE_MIDDLETIER_SSLKEY'
   },
+  middleTierCA: {
+    variable: 'GROVE_MIDDLETIER_CA'
+  },
   staticUIDirectory: {
     variable: 'GROVE_UI_BUILD_PATH'
   },

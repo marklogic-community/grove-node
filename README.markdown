@@ -55,6 +55,7 @@ You can find the environment variables this application looks for in `utils/opti
 - `GROVE_ENABLE_HTTPS_IN_MIDDLETIER`: An optional setting, defaulting to false, instructing this middle-tier to run in https mode. When this is set to true, the following environment variables must also be set:
   - `GROVE_MIDDLETIER_SSLCERT`: A relative or absolute path pointing to the middle-tier SSL certificate.
   - `GROVE_MIDDLETIER_SSLKEY`: A relative or absolute path pointing to the middle-tier SSL private key. **Note that you should not check the private key itself into version control.**
+  - `GROVE_MIDDLETIER_CA`: (Optional) A relative or absolute path pointing to a custom certificate authority (CA) certificate.
 - `GROVE_UI_BUILD_PATH`: A relative or absolute path pointing to the directory containing static UI files. This directory should, at a minimum, contain an `index.html` file, though of course it will likely also have javascript, CSS, images, etc. Note that a relative path is relative to this middle-tier directory. If this property is not set, the out-of-the-box middle-tier will not attempt to serve static files.
 
 ### `.env` Configuration files

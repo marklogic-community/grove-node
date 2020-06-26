@@ -92,6 +92,9 @@ var provider = (function() {
         key: privateKey,
         cert: certificate
       };
+      if (options.middleTierCA) {
+        credentials.ca = fs.readFileSync(options.middleTierCA, 'utf8');
+      }
       server = https.createServer(credentials, app);
     } else {
       console.log('Starting the server in HTTP');
