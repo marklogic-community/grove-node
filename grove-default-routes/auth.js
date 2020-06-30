@@ -61,7 +61,14 @@ var provider = (function() {
               }
 
               if (backendResponse.statusCode === 200) {
-                var json = JSON.parse(data.toString());
+                var json = {};
+                // TODO: Improve error handling
+                try {
+                  json = JSON.parse(data.toString());
+                } catch (e) {
+                  // MarkLogic is really misbehaving, deny auth.
+                  sendAuthStatus(res, false);
+                }
                 sendAuthStatus(res, true, passportUser.username, json.user);
                 return;
               } else if (backendResponse.statusCode === 404) {

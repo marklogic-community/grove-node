@@ -73,7 +73,14 @@ function init() {
 
               if (response.statusCode === 200) {
                 response.on('data', function(chunk) {
-                  var json = JSON.parse(chunk);
+                  var json = {};
+                  try {
+                    json = JSON.parse(chunk);
+                  } catch (e) {
+                    done(null, false, {
+                      message: 'API error: ' + e
+                    });
+                  }
                   if (json.user !== undefined) {
                     user.profile = json.user;
                   } else {
