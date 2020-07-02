@@ -61,7 +61,14 @@ var provider = (function() {
               }
 
               if (backendResponse.statusCode === 200) {
-                var json = JSON.parse(data.toString());
+                var json = {};
+                // TODO: Improve error handling
+                try {
+                  json = JSON.parse(data.toString());
+                } catch (e) {
+                  // MarkLogic is really misbehaving, deny auth.
+                  sendAuthStatus(res, false);
+                }
                 sendAuthStatus(res, true, passportUser.username, json.user);
                 return;
               } else if (backendResponse.statusCode === 404) {
@@ -82,7 +89,7 @@ var provider = (function() {
     });
 
     // Anything except GET /status is denied with a 405
-    router.use('/status', function(req, res) {
+    router.all('/status', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -106,7 +113,12 @@ var provider = (function() {
         data.push(chunk);
       });
       req.on('end', function() {
-        req.body = JSON.parse(Buffer.concat(data).toString());
+        try {
+          req.body = JSON.parse(Buffer.concat(data).toString() || '{}');
+        } catch (e) {
+          console.log(e);
+          req.body = {};
+        }
 
         // reply with 400 if username or password is missing
         var username = req.body.username;
@@ -129,7 +141,7 @@ var provider = (function() {
     });
 
     // Anything except POST /login is denied with a 405
-    router.use('/login', function(req, res) {
+    router.all('/login', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -141,7 +153,7 @@ var provider = (function() {
     });
 
     // Anything except POST /logout is denied with a 405
-    router.use('/logout', function(req, res) {
+    router.all('/logout', function(req, res) {
       four0four.methodNotAllowed(req, res, ['POST']);
     });
 
@@ -250,6 +262,10 @@ var provider = (function() {
           }
         );
       }
+    });
+
+    router.all('/profile', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['GET', 'POST']);
     });
 
     return router;

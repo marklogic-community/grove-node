@@ -43,12 +43,16 @@ TODO: set up way to trust MarkLogic- or self-signed certificates. See HTTPS.mdow
 
   1. Set `GROVE_ENABLE_HTTPS_IN_MIDDLETIER` to true.
 
-  2. Set `GROVE_MIDDLETIER_SSLCERT` to the relative or absolute path of the server certificate.
+  2. Set `GROVE_MIDDLETIER_SSLCERT` to the relative or absolute path of the PEM formatted server certificate.
 
     `GROVE_MIDDLETIER_SSLCERT=server.crt`
 
   3. Set `GROVE_MIDDLETIER_SSLKEY` to the relative or absolute path of the server key.
 
     `GROVE_MIDDLETIER_SSLKEY=server.key`
+  
+  4. (Optional) Set `GROVE_MIDDLETIER_CA` to the relative or absolute path of your certificate authority (CA) to optionally override the Mozilla-trusted CA certificates.
+
+    `GROVE_MIDDLETIER_CA=customCA.crt`
 
 5. Start Grove Node with those environment variables set.

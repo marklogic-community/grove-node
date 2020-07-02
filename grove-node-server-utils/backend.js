@@ -32,18 +32,29 @@ var backend = (function() {
     delete backendOptions.body;
     if (body) {
       delete backendOptions.headers['content-length'];
+
+      if (body instanceof URLSearchParams) {
+        body = body.toString();
+        backendOptions.headers['content-type'] =
+          'application/x-www-form-urlencoded';
+      }
     }
 
     // get rid of some headers that throw off ML authentication
+    delete backendOptions.headers.host;
     delete backendOptions.headers['x-forwarded-for'];
     delete backendOptions.headers['x-forwarded-host'];
     delete backendOptions.headers['x-forwarded-port'];
     delete backendOptions.headers['x-forwarded-proto'];
 
     // append unencoded JSON params to request path
-    if (backendOptions.params) {
-      var params = [];
+    var params = [];
 
+    if (options.mlTargetDbName) {
+      params.push('database=' + options.mlTargetDbName);
+    }
+
+    if (backendOptions.params) {
       Object.keys(backendOptions.params).forEach(function(key) {
         var value = backendOptions.params[key];
         if (Array.isArray(value)) {
@@ -59,17 +70,17 @@ var backend = (function() {
         }
       });
 
-      var path = backendOptions.path;
-      backendOptions.path =
-        path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
-
       delete backendOptions.params;
     }
 
+    var path = backendOptions.path;
+    backendOptions.path =
+      path + (path.indexOf('?') > -1 ? '&' : '?') + params.join('&');
+
     // Debug info
-    // console.log(backendOptions)
+    // console.log(backendOptions);
     // if (body) {
-    //   console.log(body)
+    //   console.log(body);
     // }
 
     // make actual backend call

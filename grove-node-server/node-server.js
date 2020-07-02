@@ -6,6 +6,8 @@ var provider = (function() {
   var helmet = require('helmet');
   var expressSession = require('express-session');
   const { constants } = require('crypto');
+  const compression = require('compression');
+  var MemoryStore = require('memorystore')(expressSession);
 
   var provide = function(config) {
     var app = express();
@@ -21,6 +23,11 @@ var provider = (function() {
     var port = options.appPort;
 
     authHelper.init(); // FIXME: is this thread-safe? what if we spin up two listeners in one script?
+
+    // compress all responses
+    if (options.compressResponses) {
+      app.use(compression());
+    }
 
     // Making this middle-tier slightly more secure: https://www.npmjs.com/package/helmet#how-it-works
     app.use(
@@ -46,7 +53,12 @@ var provider = (function() {
         name: options.appName,
         secret: options.sessionSecret,
         saveUninitialized: true,
-        resave: true
+        resave: true,
+        rolling: true,
+        cookie: { maxAge: 172800000 }, //expire sessions after 2 days of inactivity
+        store: new MemoryStore({
+          checkPeriod: 86400000 // prune expired entries every 24h
+        })
       })
     );
 
@@ -55,7 +67,9 @@ var provider = (function() {
 
     app.use(config.routes); // FIXME: check for routes, and throw error if not
 
-    app.use(four0four.notFound);
+    app.use('/*', function(req, res) {
+      four0four.fileNotFound(req, res, req.url);
+    });
 
     let server;
     if (options.useHTTPSInMiddleTier) {
@@ -78,6 +92,9 @@ var provider = (function() {
         key: privateKey,
         cert: certificate
       };
+      if (options.middleTierCA) {
+        credentials.ca = fs.readFileSync(options.middleTierCA, 'utf8');
+      }
       server = https.createServer(credentials, app);
     } else {
       console.log('Starting the server in HTTP');

@@ -1,13 +1,16 @@
 'use strict';
 
 var options = require('./options')();
+const four0four = require('./404')();
 var https = require('https');
 var http = require('http');
 var q = require('q');
-var wwwAuthenticate = require('www-authenticate');
 var _ = require('underscore');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+
+const authHeaderLib = require('auth-header');
+const md5Hex = require('md5-hex');
 
 var httpClient = http;
 if (options.httpsEnabledInBackend) {
@@ -41,7 +44,7 @@ function init() {
       },
       function(req, username, password, done) {
         // Debug info
-        // console.log('LocalStrategy callback')
+        //console.log('LocalStrategy callback');
         // console.log(req)
         var reqOptions = {
           hostname: options.mlHost,
@@ -70,7 +73,14 @@ function init() {
 
               if (response.statusCode === 200) {
                 response.on('data', function(chunk) {
-                  var json = JSON.parse(chunk);
+                  var json = {};
+                  try {
+                    json = JSON.parse(chunk);
+                  } catch (e) {
+                    done(null, false, {
+                      message: 'API error: ' + e
+                    });
+                  }
                   if (json.user !== undefined) {
                     user.profile = json.user;
                   } else {
@@ -130,94 +140,84 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   } else {
-    res.status(401).send('Unauthorized');
+    four0four.unauthorized(req, res);
   }
-}
-
-var authenticators = {};
-
-setInterval(function() {
-  for (var id in authenticators) {
-    if (isExpired(authenticators[id])) {
-      delete authenticators[id];
-    }
-  }
-}, 1000 * 60 * 30);
-
-function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return (
-    s4() +
-    s4() +
-    '-' +
-    s4() +
-    '-' +
-    s4() +
-    '-' +
-    s4() +
-    '-' +
-    s4() +
-    s4() +
-    s4()
-  );
 }
 
 function clearAuthenticator(session) {
-  if (session.authenticators) {
-    for (var key in session.authenticators) {
-      var authenticatorId = session.authenticators[key];
-      delete authenticators[authenticatorId];
-    }
-  }
-  delete session.authenticators;
+  delete session.currentAuth;
 }
 
-function createAuthenticator(session, host, port, user, password, challenge) {
-  var authenticator = wwwAuthenticate(user, password)(challenge);
-  if (!session.authenticators) {
-    session.authenticators = {};
-  }
-  var authenticatorId = session.authenticators[user + ':' + host + ':' + port];
-  if (!authenticatorId) {
-    authenticatorId = guid();
-    session.authenticators[user + ':' + host + ':' + port] = authenticatorId;
-  }
+function processAuthenticateHeader(session, challenge) {
+  let authHeader = authHeaderLib.parse(challenge);
 
-  authenticators[authenticatorId] = authenticator;
-  timestampAuthenticator(authenticator);
-  return authenticator;
+  return authHeader;
 }
 
-function timestampAuthenticator(authenticator) {
-  if (authenticator) {
-    authenticator.lastAccessed = new Date();
+function processAuth(
+  authHeader,
+  username,
+  password,
+  reqMethod,
+  reqPath,
+  session
+) {
+  if (authHeader.scheme === 'Digest') {
+    //digest
+    let secret = genDigestSecret(username, password, authHeader.params.realm);
+
+    let cnonce = genNonce(10); // opaque random string value provided by the client
+    let nc = 0; // count of the number of requests (including the current request) that the client has sent with the nonce value
+
+    let params = {
+      cnonce: cnonce,
+      nc: nc,
+      username: username,
+      method: reqMethod,
+      uri: reqPath,
+      ...authHeader.params
+    };
+    session.currentAuth = {
+      scheme: 'Digest',
+      digestParams: params,
+      digestSecret: secret
+    };
+
+    return HttpDigestHeader(params, secret);
+  } else {
+    //basic
+
+    let secret = Buffer.from(username + ':' + password).toString('base64');
+
+    session.currentAuth = {
+      scheme: 'Basic',
+      header: `Basic ${secret}`
+    };
+
+    return session.currentAuth.header;
   }
 }
 
-var expirationTime = 1000 * 60 * 60 * 12;
-
-function isExpired(authenticator) {
-  return (
-    authenticator.lastAccessed &&
-    new Date() - authenticator.lastAccessed > expirationTime
-  );
-}
-
-function getAuthenticator(session, user, host, port) {
-  if (!session.authenticators) {
+function getCurrentAuthorization(session, reqMethod, reqPath) {
+  if (!session.currentAuth) {
     return null;
   }
-  var authenticatorId = session.authenticators[user + ':' + host + ':' + port];
-  if (!authenticatorId) {
-    return null;
+
+  if (session.currentAuth.scheme === 'Digest') {
+    let params = session.currentAuth.digestParams;
+    let secret = session.currentAuth.digestSecret;
+
+    params.method = reqMethod;
+    params.uri = reqPath;
+    params.nc = params.nc + 1;
+
+    session.currentAuth.digestParams = params;
+
+    return HttpDigestHeader(params, secret);
+  } else {
+    //basic
+    return session.currentAuth.header;
   }
-  var authenticator = authenticators[authenticatorId];
-  timestampAuthenticator(authenticator);
-  return authenticator;
 }
 
 function getAuth(session, reqOptions) {
@@ -240,21 +240,16 @@ function getAuth(session, reqOptions) {
 
 function getAuthorization(session, reqMethod, reqPath, authOptions) {
   reqMethod = reqMethod || 'GET';
-  var authorization = null;
+  let authorization = null;
   var d = q.defer();
   if (!authOptions.authUser) {
     d.reject('Unauthorized');
     return d.promise;
   }
   var mergedOptions = _.extend({}, defaultOptions, authOptions || {});
-  var authenticator = getAuthenticator(
-    session,
-    mergedOptions.authUser,
-    mergedOptions.authHost,
-    mergedOptions.authPort
-  );
-  if (authenticator) {
-    authorization = authenticator.authorize(reqMethod, reqPath);
+
+  authorization = getCurrentAuthorization(session, reqMethod, reqPath);
+  if (authorization) {
     d.resolve(authorization);
   } else {
     var challengeReq = httpClient.request(
@@ -267,20 +262,23 @@ function getAuthorization(session, reqMethod, reqPath, authOptions) {
       function(response) {
         var statusCode = response.statusCode;
         var challenge = response.headers['www-authenticate'];
+
         var hasChallenge = challenge !== null;
         if (statusCode === 401 && hasChallenge) {
-          authenticator = createAuthenticator(
-            session,
-            mergedOptions.authHost,
-            mergedOptions.authPort,
+          let authHeader = processAuthenticateHeader(session, challenge);
+
+          let authorization = processAuth(
+            authHeader,
             mergedOptions.authUser,
             mergedOptions.authPassword,
-            challenge
+            reqMethod,
+            reqPath,
+            session
           );
-          authorization = authenticator.authorize(reqMethod, reqPath);
+
           d.resolve(authorization);
         } else {
-          session.authenticators = {};
+          session.currentAuth = null;
           d.reject('Unauthorized');
         }
       }
@@ -307,18 +305,64 @@ function getAuthorization(session, reqMethod, reqPath, authOptions) {
   return d.promise;
 }
 
-// TODO, but looks broken at the moment (authenticator isn't used)
-// function expiresAt(session) {
-//   var authenticator = getAuthenticator(
-//     session,
-//     session.passport.user,
-//     defaultOptions.authHost,
-//     defaultOptions.authPort
-//   );
-//   var d = new Date();
-//   d.setTime(d.getTime() + expirationTime);
-//   return d;
-// }
+function genNonce(b) {
+  var c = [],
+    e = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    a = e.length;
+  for (var d = 0; d < b; ++d) {
+    c.push(e[(Math.random() * a) | 0]);
+  }
+  return c.join('');
+}
+
+function genDigestSecret(username, password, realm) {
+  return md5Hex(username + ':' + realm + ':' + password);
+}
+
+function HttpDigestHeader(params, SECRET) {
+  /*
+    {
+        nc: optional,
+        cnonce: optional,
+        username: username,
+        method: reqMethod,
+        uri: reqPath,
+        realm: 'public',
+        qop: 'auth',
+        nonce: '379fb206fbe88e:urD2gEqZJ7ApwKmJHDz1Gw==',
+        opaque: '9d9c655418122b53' }
+    */
+  let nonce = params.nonce; // unique string value specified by the server
+  let realm = params.realm; // authentication realm, defaults to "IsmuserAPI"
+
+  let qop = params.qop; // list of quality of protection values supported by the server (auth | auth-int); auth set.
+
+  let USER = params.username;
+  let method = params.method;
+  let URI = params.uri;
+
+  let cnonce = params.cnonce; // opaque random string value provided by the client
+  let nc = params.nc; // count of the number of requests (including the current request) that the client has sent with the nonce value
+
+  //then use previous and increment nonce
+  if (params.cnonce == null || params.nc == null) {
+    //generate
+    cnonce = genNonce(10);
+    nc = 0;
+  }
+
+  //SECRET = md5Hex(user:realm:pass)
+
+  // ha2 = md5Hex(method:uri)
+  let HA2 = md5Hex(method + ':' + URI);
+
+  // response = md5Hex((SECRET + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + HA2)
+  let response = md5Hex(`${SECRET}:${nonce}:${nc}:${cnonce}:${qop}:${HA2}`);
+
+  const header = `Digest username="${USER}", realm="${realm}", nonce="${nonce}", uri="${URI}", cnonce="${cnonce}", nc="${nc}", qop="${qop}", response="${response}"`;
+
+  return header;
+}
 
 var authHelper = {
   init: init,
@@ -327,7 +371,6 @@ var authHelper = {
   getAuthorization: getAuthorization,
   getAuth: getAuth,
   clearAuthenticator: clearAuthenticator
-  // expiresAt: expiresAt
 };
 
 module.exports = authHelper;

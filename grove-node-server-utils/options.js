@@ -1,5 +1,7 @@
 'use strict';
 
+const pkg = require('../package.json');
+
 var options;
 var optionsNotSetByUser = [];
 var availableOptions = {
@@ -8,8 +10,16 @@ var availableOptions = {
     variable: 'NODE_ENV'
   },
   appName: {
-    default: 'grove-app',
+    default: pkg.name,
     variable: 'GROVE_APP_NAME'
+  },
+  pingName: {
+    default: pkg.name,
+    variable: 'GROVE_PING_NAME'
+  },
+  pingVersion: {
+    default: pkg.version,
+    variable: 'GROVE_PING_VERSION'
   },
   sessionSecret: {
     default: 'D5sktFU2flpH&fPzf6Sw',
@@ -29,6 +39,10 @@ var availableOptions = {
     default: 8063,
     variable: 'GROVE_ML_REST_PORT',
     coerce: 'port'
+  },
+  mlTargetDbName: {
+    default: '',
+    variable: 'GROVE_ML_TARGET_DB_NAME'
   },
   disallowUpdates: {
     default: false,
@@ -56,8 +70,15 @@ var availableOptions = {
   middleTierSSLKey: {
     variable: 'GROVE_MIDDLETIER_SSLKEY'
   },
+  middleTierCA: {
+    variable: 'GROVE_MIDDLETIER_CA'
+  },
   staticUIDirectory: {
     variable: 'GROVE_UI_BUILD_PATH'
+  },
+  compressResponses: {
+    variable: 'GROVE_COMPRESS_RESPONSES',
+    default: true
   }
 };
 

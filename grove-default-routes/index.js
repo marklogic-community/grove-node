@@ -1,6 +1,10 @@
 'use strict';
 
 const factory = (function() {
+  const defaultPingRoute = function(config) {
+    return require('./ping')(config);
+  };
+
   const defaultAuthRoute = function(config) {
     return require('./auth')(config);
   };
@@ -17,11 +21,17 @@ const factory = (function() {
     return require('./static')(config);
   };
 
+  const defaultExtensionRoute = function(config) {
+    return require('./ext')(config);
+  };
+
   return {
+    defaultPingRoute: defaultPingRoute,
     defaultAuthRoute: defaultAuthRoute,
     defaultCrudRoute: defaultCrudRoute,
     defaultSearchRoute: defaultSearchRoute,
-    defaultStaticRoute: defaultStaticRoute
+    defaultStaticRoute: defaultStaticRoute,
+    defaultExtensionRoute: defaultExtensionRoute
   };
 })();
 
