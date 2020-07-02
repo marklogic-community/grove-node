@@ -105,7 +105,13 @@ var provider = (function() {
               reqOptions.body = JSON.stringify(builtQuery);
 
               backend.call(req, reqOptions, function(backendResponse, data) {
-                var json = JSON.parse(data.toString());
+                var json = {};
+                // TODO: improve this error handling
+                try {
+                  json = JSON.parse(data.toString());
+                } catch (e) {
+                  json = data.toString();
+                }
                 if (backendResponse.statusCode === 200) {
                   res.json(processSearchResponse(json));
                 } else {
