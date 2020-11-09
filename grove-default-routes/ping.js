@@ -1,6 +1,6 @@
 'use strict';
 
-var provider = (function() {
+const provider = (function() {
   const backend = require('../grove-node-server-utils/backend');
   //const fs = require('fs')
   const four0four = require('../grove-node-server-utils/404')();
@@ -14,7 +14,7 @@ var provider = (function() {
   // }
 
   // Note: config should not reveal any implementation details
-  var provide = function(config) {
+  const provide = function(config = {}) {
     const authProvider = config.authProvider;
     if (config.authed && !authProvider) {
       throw new Error(

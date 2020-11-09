@@ -278,16 +278,21 @@ module.exports = exports = {
     var args = asArray.apply(null, arguments);
 
     var constraintName = args.shift();
+    var operator = 'contains';
 
-    // horrible hack for when arguments.length === 2 and arguments[1] is an array
-    if (args.length === 1 && Array.isArray(args[0])) {
+    if (args.length === 2 && (isObject(args[1]) || Array.isArray(args[1]))) {
+      operator = args.shift();
+    }
+
+    if (args.length === 1 && (isObject(args[0]) || Array.isArray(args[0]))) {
       args = args[0];
     }
 
     var geoValues = geospatialValues(args);
     var query = {
       'geo-region-constraint-query': {
-        'constraint-name': constraintName
+        'constraint-name': constraintName,
+        'geospatial-operator': operator
       }
     };
 

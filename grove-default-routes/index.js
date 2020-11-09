@@ -25,13 +25,18 @@ const factory = (function() {
     return require('./ext')(config);
   };
 
+  const defaultRestRoute = function(config) {
+    return require('./rest')(config);
+  };
+
   return {
     defaultPingRoute: defaultPingRoute,
     defaultAuthRoute: defaultAuthRoute,
     defaultCrudRoute: defaultCrudRoute,
     defaultSearchRoute: defaultSearchRoute,
     defaultStaticRoute: defaultStaticRoute,
-    defaultExtensionRoute: defaultExtensionRoute
+    defaultExtensionRoute: defaultExtensionRoute,
+    defaultRestRoute: defaultRestRoute
   };
 })();
 

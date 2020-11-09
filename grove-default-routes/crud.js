@@ -1,10 +1,10 @@
 'use strict';
 
-var provider = (function() {
+const provider = (function() {
   const backend = require('../grove-node-server-utils/backend');
   //const fs = require('fs')
   const four0four = require('../grove-node-server-utils/404')();
-  //const options = require('../grove-node-server-utils/options')()
+  const options = require('../grove-node-server-utils/options')();
 
   var ca = '';
   // FIXME: better handled inside options?
@@ -14,7 +14,7 @@ var provider = (function() {
   // }
 
   // Note: config should not reveal any implementation details
-  var provide = function(config) {
+  const provide = function(config = {}) {
     const authProvider = config.authProvider;
     if (!authProvider) {
       throw new Error(
@@ -178,166 +178,172 @@ var provider = (function() {
     // Update -> PUT with id
     // Delete -> DELETE with id
 
-    router.post(/^[/]?$/, function(req, res) {
-      // reply with 405 if a non-allowed method is used
-      if (['POST'].indexOf(req.method) < 0) {
-        four0four.methodNotAllowed(req, res, ['POST']);
-        return;
-      }
-
-      // reply with 415 if body doesn't match expected Content-Type
-      if (!req.is(contentType)) {
-        four0four.unsupportedMediaType(req, res, [contentType]);
-        return;
-      }
-
-      var params = {};
-
-      params.collection = config.collections;
-
-      // ML Rest api will generate a uri using prefix and extension
-      params.directory = config.directory || '/';
-      params.extension = config.extension || 'json';
-
-      // temporal applies to all methods, if specified (null is ignored)
-      params['temporal-collection'] = config.temporalCollection;
-
-      docsBackendCall(req, res, config, req.method, null, params, function(
-        backendResponse,
-        data
-      ) {
-        var location;
-        res.status(backendResponse.statusCode);
-        for (var header in backendResponse.headers) {
-          // rewrite location
-          if (header === 'location') {
-            location = backendResponse.headers[header];
-            res.header(
-              header,
-              idConverter.toId(backendResponse.headers[header].substring(18))
-            );
-
-            // copy all others except auth challenge headers
-          } else if (header !== 'www-authenticate') {
-            res.header(header, backendResponse.headers[header]);
-          }
+    if (!config.disallowUpdates && !options.disallowUpdates) {
+      router.post(/^[/]?$/, function(req, res) {
+        // reply with 405 if a non-allowed method is used
+        if (['POST'].indexOf(req.method) < 0) {
+          four0four.methodNotAllowed(req, res, ['POST']);
+          return;
         }
-        if ('' + req.query.download === 'true') {
-          res.header(
-            'content-disposition',
-            'attachment; filename=' + location.split('/').pop()
-          );
+
+        // reply with 415 if body doesn't match expected Content-Type
+        if (!req.is(contentType)) {
+          four0four.unsupportedMediaType(req, res, [contentType]);
+          return;
         }
-        res.write(data);
-        res.end();
-      });
-    });
 
-    router.all(['/:id', '/:id/:action?'], function(req, res) {
-      const id = req.params.id;
-      const actionName = req.params.action || '_default';
-      const action = config.actions[actionName];
-
-      if (!action && actionName !== '_default') {
-        four0four.notImplemented(req, res, '/' + id + '/' + actionName);
-        return;
-      }
-
-      var method = req.method;
-
-      // reply with 405 if a non-allowed method is used
-      let methods = action ? allowedActionMethods(action) : ['DELETE', 'PUT'];
-      if (methods.indexOf(method) < 0) {
-        four0four.methodNotAllowed(req, res, ['DELETE', 'PUT']);
-        return;
-      }
-
-      // reply 400 if id is missing
-      if (!id) {
-        four0four.missingRequired(req, res, ['id']);
-        return;
-      }
-
-      // reply with 415 if body doesn't match expected Content-Type
-      let cType = action ? action.contentType : contentType;
-      if (expectBody(method) && !req.is(cType)) {
-        four0four.unsupportedMediaType(req, res, [cType]);
-        return;
-      }
-
-      // assume whatever comes after (the first) / is id
-      const uri = idConverter.toUri(id);
-
-      var data = [];
-      req.on('data', function(chunk) {
-        data.push(chunk);
-      });
-      req.on('end', function() {
-        var body = Buffer.concat(data).toString();
         var params = {};
 
-        if (action && action[method]) {
-          var tmp = action[method](body, params);
-          method = tmp.method;
-          body = tmp.body;
-          params = tmp.params;
-        } else if (expectBody(method)) {
-          params.collection = config.collections;
-        }
+        params.collection = config.collections;
+
+        // ML Rest api will generate a uri using prefix and extension
+        params.directory = config.directory || '/';
+        params.extension = config.extension || 'json';
 
         // temporal applies to all methods, if specified (null is ignored)
-        params['temporal-collection'] = action
-          ? action.temporalCollection
-          : config.temporalCollection;
+        params['temporal-collection'] = config.temporalCollection;
 
-        docsBackendCall(
-          req,
-          res,
-          config,
-          method,
-          uri,
-          params,
-          function(backendResponse, data) {
-            res.status(backendResponse.statusCode);
-            for (var header in backendResponse.headers) {
-              // rewrite location
-              if (header === 'location') {
-                res.header(
-                  header,
-                  idConverter.toId(
-                    backendResponse.headers[header].substring(18)
-                  )
-                );
-
-                // copy all others except auth challenge headers
-              } else if (header !== 'www-authenticate') {
-                res.header(header, backendResponse.headers[header]);
-              }
-            }
-            if ('' + req.query.download === 'true') {
+        docsBackendCall(req, res, config, req.method, null, params, function(
+          backendResponse,
+          data
+        ) {
+          var location;
+          res.status(backendResponse.statusCode);
+          for (var header in backendResponse.headers) {
+            // rewrite location
+            if (header === 'location') {
+              location = backendResponse.headers[header];
               res.header(
-                'content-disposition',
-                'attachment; filename=' + uri.split('/').pop()
+                header,
+                idConverter.toId(backendResponse.headers[header].substring(18))
               );
+
+              // copy all others except auth challenge headers
+            } else if (header !== 'www-authenticate') {
+              res.header(header, backendResponse.headers[header]);
             }
-            res.write(data);
-            res.end();
-          },
-          body
-        );
+          }
+          if ('' + req.query.download === 'true') {
+            res.header(
+              'content-disposition',
+              'attachment; filename=' + location.split('/').pop()
+            );
+          }
+          res.write(data);
+          res.end();
+        });
       });
+
+      router.all(['/:id', '/:id/:action?'], function(req, res) {
+        const id = req.params.id;
+        const actionName = req.params.action || '_default';
+        const action = config.actions[actionName];
+
+        if (!action && actionName !== '_default') {
+          four0four.notImplemented(req, res, '/' + id + '/' + actionName);
+          return;
+        }
+
+        var method = req.method;
+
+        // reply with 405 if a non-allowed method is used
+        let methods = action ? allowedActionMethods(action) : ['DELETE', 'PUT'];
+        if (methods.indexOf(method) < 0) {
+          four0four.methodNotAllowed(req, res, ['DELETE', 'PUT']);
+          return;
+        }
+
+        // reply 400 if id is missing
+        if (!id) {
+          four0four.missingRequired(req, res, ['id']);
+          return;
+        }
+
+        // reply with 415 if body doesn't match expected Content-Type
+        let cType = action ? action.contentType : contentType;
+        if (expectBody(method) && !req.is(cType)) {
+          four0four.unsupportedMediaType(req, res, [cType]);
+          return;
+        }
+
+        // assume whatever comes after (the first) / is id
+        const uri = idConverter.toUri(id);
+
+        var data = [];
+        req.on('data', function(chunk) {
+          data.push(chunk);
+        });
+        req.on('end', function() {
+          var body = Buffer.concat(data).toString();
+          var params = {};
+
+          if (action && action[method]) {
+            var tmp = action[method](body, params);
+            method = tmp.method;
+            body = tmp.body;
+            params = tmp.params;
+          } else if (expectBody(method)) {
+            params.collection = config.collections;
+          }
+
+          // temporal applies to all methods, if specified (null is ignored)
+          params['temporal-collection'] = action
+            ? action.temporalCollection
+            : config.temporalCollection;
+
+          docsBackendCall(
+            req,
+            res,
+            config,
+            method,
+            uri,
+            params,
+            function(backendResponse, data) {
+              res.status(backendResponse.statusCode);
+              for (var header in backendResponse.headers) {
+                // rewrite location
+                if (header === 'location') {
+                  res.header(
+                    header,
+                    idConverter.toId(
+                      backendResponse.headers[header].substring(18)
+                    )
+                  );
+
+                  // copy all others except auth challenge headers
+                } else if (header !== 'www-authenticate') {
+                  res.header(header, backendResponse.headers[header]);
+                }
+              }
+              if ('' + req.query.download === 'true') {
+                res.header(
+                  'content-disposition',
+                  'attachment; filename=' + uri.split('/').pop()
+                );
+              }
+              res.write(data);
+              res.end();
+            },
+            body
+          );
+        });
+      });
+    }
+
+    router.get('/:id/:view?', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['GET']);
     });
 
-    router.all('/:id/:view?', function(req, res) {
-      four0four.methodNotAllowed(req, res, ['GET']);
+    router.post('/', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['POST']);
+    });
+
+    router.all('/:id/:action?', function(req, res) {
+      four0four.methodNotAllowed(req, res, ['POST', 'PUT', 'DELETE']);
     });
 
     router.all('/:id', function(req, res) {
       four0four.methodNotAllowed(req, res, ['PUT', 'DELETE']);
-    });
-
-    router.all('/', function(req, res) {
-      four0four.methodNotAllowed(req, res, ['POST']);
     });
 
     return router;

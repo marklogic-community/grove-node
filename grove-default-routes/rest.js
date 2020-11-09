@@ -32,10 +32,9 @@ const provider = (function() {
       router.use(authProvider.isAuthenticated);
     }
 
-    router.all('/:action', function(req, res, next) {
+    router.all('*', function(req, res, next) {
       var method = req.method;
-      const actionName = req.params.action;
-      const action = config.actions[actionName];
+      const action = config.action;
 
       // only respond if an action is actually defined
       if (action) {
@@ -66,6 +65,7 @@ const provider = (function() {
           method = tmp.method;
           body = tmp.body;
           params = tmp.params;
+          var callback = tmp.callback;
 
           docsBackendCall(
             req,
@@ -78,9 +78,15 @@ const provider = (function() {
               res.status(backendResponse.statusCode);
               for (var header in backendResponse.headers) {
                 // copy all others except auth challenge headers
-                if (header !== 'www-authenticate') {
+                if (
+                  header !== 'www-authenticate' &&
+                  (!callback || header !== 'content-length')
+                ) {
                   res.header(header, backendResponse.headers[header]);
                 }
+              }
+              if (callback) {
+                data = callback(data);
               }
               res.write(data);
               res.end();

@@ -5,7 +5,7 @@ const provider = (function() {
   const path = require('path');
   const fs = require('fs');
 
-  const provide = function(config) {
+  const provide = function(config = {}) {
     if (!config.staticUIDirectory) {
       throw new Error(
         'defaultStaticRoute configuration must include a staticUIDirectory'
