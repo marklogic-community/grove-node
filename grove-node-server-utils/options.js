@@ -22,7 +22,7 @@ var availableOptions = {
     variable: 'GROVE_PING_VERSION'
   },
   sessionSecret: {
-    default: 'D5sktFU2flpH&fPzf6Sw',
+    default: 'D5sktFU2flpH&fPzf6Sw', // TODO: Randomize?
     variable: 'GROVE_SESSION_SECRET',
     secret: true
   },
@@ -79,6 +79,11 @@ var availableOptions = {
   compressResponses: {
     variable: 'GROVE_COMPRESS_RESPONSES',
     default: true
+  },
+  maintenanceMode: {
+    variable: 'GROVE_MAINTENANCE_MODE',
+    default: false,
+    coerce: 'boolean'
   }
 };
 
@@ -115,7 +120,7 @@ function setOptions() {
   Object.keys(availableOptions).forEach(function(optionKey) {
     var optionConfig = availableOptions[optionKey];
     var variable = optionConfig.variable;
-    var providedValue = process.env[variable];
+    const providedValue = process.env[variable];
     var finalValue;
     if (providedValue === undefined) {
       optionsNotSetByUser.push(variable);

@@ -1,6 +1,6 @@
 'use strict';
 
-var provider = (function() {
+const provider = (function() {
   var fs = require('fs');
   var express = require('express');
   var helmet = require('helmet');
@@ -9,7 +9,7 @@ var provider = (function() {
   const compression = require('compression');
   var MemoryStore = require('memorystore')(expressSession);
 
-  var provide = function(config) {
+  const provide = function(config) {
     var app = express();
     var logger = require('morgan');
     app.use(logger('dev'));
@@ -21,6 +21,18 @@ var provider = (function() {
     var authHelper = require('../grove-node-server-utils/auth-helper');
     var options = require('../grove-node-server-utils/options')();
     var port = options.appPort;
+
+    var session = expressSession({
+      name: options.appName,
+      secret: options.sessionSecret,
+      saveUninitialized: true,
+      resave: true,
+      rolling: true,
+      cookie: { maxAge: 172800000 }, //expire sessions after 2 days of inactivity
+      store: new MemoryStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      })
+    });
 
     authHelper.init(); // FIXME: is this thread-safe? what if we spin up two listeners in one script?
 
@@ -48,19 +60,7 @@ var provider = (function() {
       })
     );
 
-    app.use(
-      expressSession({
-        name: options.appName,
-        secret: options.sessionSecret,
-        saveUninitialized: true,
-        resave: true,
-        rolling: true,
-        cookie: { maxAge: 172800000 }, //expire sessions after 2 days of inactivity
-        store: new MemoryStore({
-          checkPeriod: 86400000 // prune expired entries every 24h
-        })
-      })
-    );
+    app.use(session);
 
     app.use(passport.initialize());
     app.use(passport.session());

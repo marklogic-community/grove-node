@@ -1,3 +1,4 @@
+/*global URLSearchParams:writable*/
 const options = require('../grove-node-server-utils/options')();
 
 const http = require('http');
@@ -33,6 +34,9 @@ var backend = (function() {
     if (body) {
       delete backendOptions.headers['content-length'];
 
+      if (typeof URLSearchParams === 'undefined') {
+        URLSearchParams = require('url').URLSearchParams;
+      }
       if (body instanceof URLSearchParams) {
         body = body.toString();
         backendOptions.headers['content-type'] =

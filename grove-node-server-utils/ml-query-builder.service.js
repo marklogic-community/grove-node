@@ -1,5 +1,5 @@
 /* eslint no-unused-vars: "off" */
-var provider = (function() {
+const provider = (function() {
   'use strict';
 
   var extensions = require('./query-builder-extensions.js');
@@ -22,7 +22,7 @@ var provider = (function() {
    * supporting various constraint queries, operator state query components,
    * and combined queries.
    */
-  var provide = function(config) {
+  const provide = function(config) {
     function where() {
       var args = asArray.apply(null, arguments);
       return {

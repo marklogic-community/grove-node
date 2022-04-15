@@ -5,7 +5,12 @@ const router = express.Router();
 
 const options = require('../grove-node-server-utils/options')();
 const authProvider = require('../grove-node-server-utils/auth-helper');
+const four0four = require('../grove-node-server-utils/404')();
 const enableLegacyProxy = true; // TODO: expose this as an env option
+
+if (options.maintenanceMode) {
+  router.all('*', four0four.maintenanceMode);
+}
 
 router.use('/api', require('./api'));
 
@@ -40,7 +45,7 @@ if (enableLegacyProxy) {
           endpoint: '/resources/extsimilar',
           methods: ['get'],
           authed: true
-        }
+        },
         // TODO: move this to visjs documentation for visjs-graph
         // Other possibilities:
         // {
@@ -48,11 +53,11 @@ if (enableLegacyProxy) {
         //   methods: ['get'],
         //   authed: true
         // },
-        // {
-        //   endpoint: '/graphs/sparql',
-        //   methods: ['get', 'post'],
-        //   authed: true
-        // },
+        {
+          endpoint: '/graphs/sparql',
+          methods: ['post'],
+          authed: true
+        }
         // {
         //   endpoint: '/search',
         //   methods: ['get', 'post'],

@@ -1,6 +1,6 @@
 'use strict';
 
-var provider = (function() {
+const provider = (function() {
   const backend = require('../grove-node-server-utils/backend');
   //const fs = require('fs')
   const four0four = require('../grove-node-server-utils/404')();
@@ -13,7 +13,7 @@ var provider = (function() {
   //   ca = fs.readFileSync(options.mlCertificate)
   // }
 
-  var provide = function(config) {
+  const provide = function(config = {}) {
     var router = require('express').Router();
 
     const authProvider = config.authProvider;

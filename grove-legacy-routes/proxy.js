@@ -12,8 +12,8 @@ var ca = '';
 //   ca = fs.readFileSync(options.mlCertificate)
 // }
 
-var provider = (function() {
-  var provide = function(config) {
+const provider = (function() {
+  const provide = function(config) {
     var router = require('express').Router();
 
     const authProvider = config.authProvider;

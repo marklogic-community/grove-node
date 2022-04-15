@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = exports = {
-  asArray: function asArray() {
+var util = (function() {
+  var asArray = function() {
     var args;
 
     if (arguments.length === 1) {
@@ -18,16 +18,16 @@ module.exports = exports = {
     }
 
     return args;
-  },
+  };
 
   // from lodash
-  isObject: function isObject(value) {
+  var isObject = function(value) {
     var type = typeof value;
     return !!value && (type === 'object' || type === 'function');
-  },
+  };
 
   // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
-  extendObject: function extendObject(target) {
+  var extendObject = function(target) {
     // istanbul ignore if
     if (target === undefined || target === null) {
       throw new TypeError('Cannot convert first argument to object');
@@ -57,5 +57,27 @@ module.exports = exports = {
       }
     }
     return to;
-  }
-};
+  };
+
+  var formData = function(params) {
+    let data = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      let val = params[key];
+      if (isObject(val)) {
+        data.append(key, JSON.stringify(val));
+      } else {
+        data.append(key, val);
+      }
+    });
+    return data;
+  };
+
+  return {
+    asArray,
+    isObject,
+    extendObject,
+    formData
+  };
+})();
+
+module.exports = exports = util;

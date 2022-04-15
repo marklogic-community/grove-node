@@ -11,6 +11,7 @@ module.exports = function() {
     notAcceptable: notAcceptable,
     unsupportedMediaType: unsupportedMediaType,
     notImplemented: notImplemented,
+    maintenanceMode: maintenanceMode,
     send: send
   };
 
@@ -97,6 +98,16 @@ module.exports = function() {
     );
   }
 
+  function maintenanceMode(req, res) {
+    send(
+      req,
+      res,
+      503,
+      'Service Unavailable',
+      'Service is currently in Maintenance Mode, please try again later'
+    );
+  }
+
   function send(req, res, status, text, message, headers) {
     var data = {
       status: status,
@@ -110,6 +121,8 @@ module.exports = function() {
         res.header(header[0], header[1]);
       });
     }
+
+    console.log('four0four: ', status, data);
 
     res.status(status).json(data);
   }

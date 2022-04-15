@@ -1,12 +1,15 @@
 'use strict';
 
-var provider = (function() {
+const provider = (function() {
   const express = require('express');
   const backend = require('../grove-node-server-utils/backend');
   const four0four = require('../grove-node-server-utils/404')();
 
-  var provide = function(config) {
+  const provide = function(config = {}) {
     var router = express.Router();
+
+    const filter =
+      config.filter || require('../grove-node-server-utils/filter')(config);
 
     const authProvider = config.authProvider;
     if (!authProvider) {
@@ -36,30 +39,6 @@ var provider = (function() {
         searchResponse.results = processResults(searchResponse.results);
       }
       return searchResponse;
-    };
-
-    // TODO: extract out to separate module that could alternatively
-    // be run inside MarkLogic itself
-    const buildMarklogicQuery = function(query) {
-      var options = query.options || {};
-
-      // Combine the provided query options with any options defined in the
-      // config object.  WARNING: May override saved search options.
-      options = { ...options, ...config.options };
-
-      var structuredQuery = {};
-      if (query.filters) {
-        structuredQuery = require('../grove-node-server-utils/filter').buildQuery(
-          query.filters
-        );
-      }
-
-      return {
-        search: {
-          query: structuredQuery,
-          options: options
-        }
-      };
     };
 
     const processSearchError = error => error.errorResponse;
@@ -97,7 +76,7 @@ var provider = (function() {
                 reqOptions.headers.authorization = auth;
               }
 
-              const builtQuery = buildMarklogicQuery(query);
+              const builtQuery = filter.buildCombinedQuery(query);
 
               builtQuery.search.options['return-facets'] = withFacets;
               builtQuery.search.options['return-results'] = withResults;
